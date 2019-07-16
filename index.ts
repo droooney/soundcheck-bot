@@ -1,7 +1,10 @@
+import * as util from 'util';
 import * as http from 'http';
 import Application = require('koa');
 import BodyParser = require('koa-bodyparser');
 import Router = require('koa-router');
+
+util.inspect.defaultOptions.depth = 10;
 
 const app = new Application();
 const server = http.createServer(app.callback());
