@@ -13,7 +13,7 @@ const server = http.createServer(app.callback());
 const router = new Router();
 
 interface Message {
-  user_id: number;
+  peer_id: number;
   payload?: string;
 }
 
@@ -52,8 +52,9 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
 
     if (payload && payload.command === 'start') {
       const query = qs.stringify({
+        v: '5.101',
         access_token: '45b653e39139ffec49a014720e9233e22c74adbccadc06a0224899fb5d3097697da3403ec6124efe9570a',
-        user_id: body.object.user_id,
+        peer_id: body.object.peer_id,
         message: 'Начнем!'
       });
       const {
