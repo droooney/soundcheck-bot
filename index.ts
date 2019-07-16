@@ -55,6 +55,7 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
         v: '5.101',
         access_token: '45b653e39139ffec49a014720e9233e22c74adbccadc06a0224899fb5d3097697da3403ec6124efe9570a',
         peer_id: body.object.peer_id,
+        random_id: Math.floor(Math.random() * 2 ** 32),
         message: 'Начнем!'
       });
       const {
