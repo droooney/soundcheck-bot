@@ -105,21 +105,23 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
           keyboard: JSON.stringify({
             one_time: true,
             buttons: [[{
-              type: 'vkpay',
-              payload: JSON.stringify({
-                command: 'paid',
-                amount: payload.amount
-              }),
-              hash: qs.stringify({
-                action: 'pay-to-group',
-                amount: 10 * payload.amount,
-                /* description: 'Билеты',
-                data: JSON.stringify({
-                  peer_id: body.object.peer_id,
+              action: {
+                type: 'vkpay',
+                payload: JSON.stringify({
+                  command: 'paid',
                   amount: payload.amount
-                }),*/
-                group_id: body.group_id
-              })
+                }),
+                hash: qs.stringify({
+                  action: 'pay-to-group',
+                  amount: 10 * payload.amount,
+                  description: 'Билеты',
+                  data: JSON.stringify({
+                    peer_id: body.object.peer_id,
+                    amount: payload.amount
+                  }),
+                  group_id: body.group_id
+                })
+              }
             }]]
           })
         });
