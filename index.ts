@@ -99,7 +99,7 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
 
         console.log('message sent', status, data);
       } else if (payload.command === 'amount') {
-        const payQuery = {
+        const payQuery = qs.stringify({
           ...query,
           message: 'Плати с VK Pay, уебок',
           keyboard: JSON.stringify({
@@ -122,7 +122,7 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
               })
             }]]
           })
-        };
+        });
         const {
           data,
           status
