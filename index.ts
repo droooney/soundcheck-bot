@@ -32,7 +32,7 @@ app.use(router.allowedMethods());
 
 async function main() {
   await new Promise((resolve) => {
-    server.listen(5778, () => {
+    server.listen(process.env.PORT || 5778, () => {
       console.log('Listening...');
 
       resolve();
