@@ -12,9 +12,12 @@ interface Body {
 }
 
 router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
+  const body: Body = ctx.request.body;
   const {
     type
-  } = ctx.request.body as Body;
+  } = body;
+
+  console.log('bot message', body);
 
   if (type === 'confirmation') {
     ctx.body = 'd48b8072';
