@@ -25,6 +25,11 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
   }
 });
 
+app.use(async (ctx, next) => {
+  console.log(ctx.method, ctx.type, ctx.url);
+
+  await next();
+});
 app.use(BodyParser());
 
 app.use(router.routes());
