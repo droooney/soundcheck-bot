@@ -17,22 +17,31 @@ interface Message {
   payload?: string;
 }
 
-interface ConfirmationBody {
+interface BaseBody {
+  group_id: number;
+}
+
+interface ConfirmationBody extends BaseBody {
   type: 'confirmation';
 }
 
-interface NewMessageBody {
+interface NewMessageBody extends BaseBody {
   type: 'message_new';
   object: Message;
 }
 
 type Body = ConfirmationBody | NewMessageBody;
 
-interface StartPayload {
+interface StartButtonPayload {
   command: 'start';
 }
 
-type ButtonPayload = StartPayload;
+interface AmountButtonPayload {
+  command: 'amount';
+  amount: number;
+}
+
+type ButtonPayload = StartButtonPayload | AmountButtonPayload;
 
 router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
   const body: Body = ctx.request.body;
@@ -50,20 +59,77 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
       } catch (err) {}
     }
 
-    if (payload && payload.command === 'start') {
-      const query = qs.stringify({
+    if (payload) {
+      const query = {
         v: '5.101',
         access_token: '45b653e39139ffec49a014720e9233e22c74adbccadc06a0224899fb5d3097697da3403ec6124efe9570a',
         peer_id: body.object.peer_id,
-        random_id: Math.floor(Math.random() * 2 ** 32),
-        message: 'Начнем!'
-      });
-      const {
-        data,
-        status
-      } = await axios.post(`https://api.vk.com/method/messages.send?${query}`);
+        random_id: Math.floor(Math.random() * 2 ** 32)
+      };
 
-      console.log('message sent', status, data);
+      if (payload.command === 'start') {
+        const generateAmountButton = (amount: number) => ({
+          action: {
+            type: 'text',
+            label: `${amount}`,
+            payload: JSON.stringify({
+              command: 'amount',
+              amount
+            })
+          },
+          color: 'primary'
+        });
+        const welcomeQuery = qs.stringify({
+          ...query,
+          message: 'Даров, пидор! Сколько билетов?',
+          keyboard: JSON.stringify({
+            one_time: true,
+            buttons: [
+              generateAmountButton(1),
+              generateAmountButton(2),
+              generateAmountButton(3),
+              generateAmountButton(4)
+            ]
+          })
+        });
+        const {
+          data,
+          status
+        } = await axios.post(`https://api.vk.com/method/messages.send?${welcomeQuery}`);
+
+        console.log('message sent', status, data);
+      } else if (payload.command === 'amount') {
+        const payQuery = {
+          ...query,
+          message: 'Плати с VK Pay, уебок',
+          keyboard: JSON.stringify({
+            one_time: true,
+            buttons: [{
+              type: 'vkpay',
+              payload: JSON.stringify({
+                command: 'paid',
+                amount: payload.amount
+              }),
+              hash: qs.stringify({
+                action: 'pay-to-group',
+                amount: 10 * payload.amount,
+                description: 'Билеты',
+                data: JSON.stringify({
+                  peer_id: body.object.peer_id,
+                  amount: payload.amount
+                }),
+                group_id: body.group_id
+              })
+            }]
+          })
+        };
+        const {
+          data,
+          status
+        } = await axios.post(`https://api.vk.com/method/messages.send?${payQuery}`);
+
+        console.log('message sent', status, data);
+      }
     }
 
     ctx.body = 'ok';
