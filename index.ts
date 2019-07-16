@@ -119,7 +119,8 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
                     peer_id: body.object.peer_id,
                     amount: payload.amount
                   }),
-                  group_id: body.group_id
+                  group_id: body.group_id,
+                  aid: 7059622
                 })
               }
             }]]
