@@ -112,14 +112,14 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
                   amount: payload.amount
                 }),
                 hash: qs.stringify({
-                  action: 'pay-to-group',
+                  action: 'pay-to-user',
                   amount: 10 * payload.amount,
                   description: 'Билеты',
                   data: JSON.stringify({
                     peer_id: body.object.peer_id,
                     amount: payload.amount
                   }),
-                  group_id: body.group_id,
+                  user_id: 184913972,
                   aid: 7059622
                 })
               }
