@@ -84,12 +84,12 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
           message: 'Даров, пидор! Сколько билетов?',
           keyboard: JSON.stringify({
             one_time: true,
-            buttons: [
+            buttons: [[
               generateAmountButton(1),
               generateAmountButton(2),
               generateAmountButton(3),
               generateAmountButton(4)
-            ]
+            ]]
           })
         });
         const {
@@ -104,7 +104,7 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
           message: 'Плати с VK Pay, уебок',
           keyboard: JSON.stringify({
             one_time: true,
-            buttons: [{
+            buttons: [[{
               type: 'vkpay',
               payload: JSON.stringify({
                 command: 'paid',
@@ -120,7 +120,7 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
                 }),
                 group_id: body.group_id
               })
-            }]
+            }]]
           })
         };
         const {
