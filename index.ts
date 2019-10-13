@@ -66,7 +66,7 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
 
       const query = {
         v: '5.101',
-        access_token: '45b653e39139ffec49a014720e9233e22c74adbccadc06a0224899fb5d3097697da3403ec6124efe9570a',
+        access_token: '2d0c91d1f4f816ed81c83008fa171fe5642e9153de1bebdf08f993392675512944a731975ad559157906b',
         peer_id: body.object.peer_id,
         random_id: Math.floor(Math.random() * 2 ** 32)
       };
