@@ -34,16 +34,38 @@ interface NewMessageBody extends BaseBody {
 
 type Body = ConfirmationBody | NewMessageBody;
 
-interface StartButtonPayload {
+interface BaseButtonPayload {
+  command: string;
+}
+
+interface StartButtonPayload extends BaseButtonPayload {
   command: 'start';
 }
 
-interface AmountButtonPayload {
-  command: 'amount';
-  amount: number;
+interface PosterButtonPayload {
+  command: 'poster';
 }
 
-type ButtonPayload = StartButtonPayload | AmountButtonPayload;
+interface PlaylistButtonPayload {
+  command: 'playlist';
+}
+
+type ButtonPayload = (
+  StartButtonPayload
+  | PosterButtonPayload
+  | PlaylistButtonPayload
+);
+
+const generateButton = (text: string, payload: ButtonPayload) => {
+  return {
+    action: {
+      type: 'text',
+      label: text,
+      payload: JSON.stringify(payload)
+    },
+    color: 'primary'
+  };
+};
 
 router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
   const body: Body = ctx.request.body;
@@ -72,27 +94,13 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
       };
 
       if (payload.command === 'start') {
-        const generateAmountButton = (amount: number) => ({
-          action: {
-            type: 'text',
-            label: `${amount}`,
-            payload: JSON.stringify({
-              command: 'amount',
-              amount
-            })
-          },
-          color: 'primary'
-        });
         const welcomeQuery = qs.stringify({
           ...query,
-          message: 'Даров, пидор! Сколько билетов?',
           keyboard: JSON.stringify({
-            one_time: true,
+            one_time: false,
             buttons: [[
-              generateAmountButton(1),
-              generateAmountButton(2),
-              generateAmountButton(3),
-              generateAmountButton(4)
+              generateButton('Афиша', { command: 'poster' }),
+              generateButton('Плейлисты', { command: 'playlist' })
             ]]
           })
         });
@@ -102,38 +110,16 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
         } = await axios.post(`https://api.vk.com/method/messages.send?${welcomeQuery}`);
 
         console.log('message sent', status, data);
-      } else if (payload.command === 'amount') {
-        const payQuery = qs.stringify({
+      } else if (payload.command === 'playlist') {
+        const playlistQuery = qs.stringify({
           ...query,
-          message: 'Плати с VK Pay, уебок',
-          keyboard: JSON.stringify({
-            one_time: true,
-            buttons: [[{
-              action: {
-                type: 'vkpay',
-                payload: JSON.stringify({
-                  command: 'paid',
-                  amount: payload.amount
-                }),
-                hash: qs.stringify({
-                  action: 'pay-to-user',
-                  amount: 10 * payload.amount,
-                  description: 'Билеты',
-                  data: JSON.stringify({
-                    peer_id: body.object.peer_id,
-                    amount: payload.amount
-                  }),
-                  user_id: 184913972,
-                  aid: 7059622
-                })
-              }
-            }]]
-          })
+          message: 'Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections'
         });
+
         const {
           data,
           status
-        } = await axios.post(`https://api.vk.com/method/messages.send?${payQuery}`);
+        } = await axios.post(`https://api.vk.com/method/messages.send?${playlistQuery}`);
 
         console.log('message sent', status, data);
       }
