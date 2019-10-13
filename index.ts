@@ -49,7 +49,7 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
   console.log('bot message', body);
 
   if (body.type === 'confirmation') {
-    ctx.body = 'd48b8072';
+    ctx.body = 'afcb8751';
   } else if (body.type === 'message_new') {
     let payload: ButtonPayload | null = null;
 
@@ -60,6 +60,8 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
     }
 
     if (payload) {
+      console.log(payload);
+
       const query = {
         v: '5.101',
         access_token: '45b653e39139ffec49a014720e9233e22c74adbccadc06a0224899fb5d3097697da3403ec6124efe9570a',
