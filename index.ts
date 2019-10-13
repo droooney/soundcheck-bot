@@ -10,7 +10,9 @@ util.inspect.defaultOptions.depth = 10;
 
 const app = new Application();
 const server = http.createServer(app.callback());
-const router = new Router();
+const router = new Router({
+  prefix: '/soundcheck-bot5778'
+});
 
 interface Message {
   peer_id: number;
