@@ -96,6 +96,7 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
       if (payload.command === 'start') {
         const welcomeQuery = qs.stringify({
           ...query,
+          message: 'Добро пожаловать в Soundcheck - Музыка Екатеринбурга. Что Вас интересует?',
           keyboard: JSON.stringify({
             one_time: false,
             buttons: [[
