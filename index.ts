@@ -154,7 +154,7 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
       if (payload.command === 'start') {
         await sendMessage('Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?', mainKeyboard);
       } else if (payload.command === 'playlist') {
-        await sendMessage('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections');
+        await sendMessage('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections', mainKeyboard);
       } else if (payload.command === 'refresh') {
         await sendMessage('Клавиатура обновлена', mainKeyboard);
       }
