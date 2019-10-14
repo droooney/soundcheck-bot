@@ -34,16 +34,22 @@ interface NewMessageBody extends BaseBody {
 
 type Body = ConfirmationBody | NewMessageBody;
 
-interface BaseButtonPayload {
-  command: string;
+interface StartButtonPayload {
+  command: 'start';
 }
 
-interface StartButtonPayload extends BaseButtonPayload {
-  command: 'start';
+interface BackButtonPayload {
+  command: 'back';
+  dest: string;
 }
 
 interface PosterButtonPayload {
   command: 'poster';
+}
+
+interface PosterPeriodButtonPayload {
+  command: 'poster_period';
+  period: 'day' | 'week';
 }
 
 interface PlaylistButtonPayload {
@@ -51,12 +57,14 @@ interface PlaylistButtonPayload {
 }
 
 interface RefreshKeyboardButtonPayload {
-  command: 'refresh';
+  command: 'refresh_keyboard';
 }
 
 type ButtonPayload = (
   StartButtonPayload
+  | BackButtonPayload
   | PosterButtonPayload
+  | PosterPeriodButtonPayload
   | PlaylistButtonPayload
   | RefreshKeyboardButtonPayload
 );
@@ -112,8 +120,9 @@ const mainKeyboard: Keyboard = {
   one_time: true,
   buttons: [[
     generateButton('Афиша', { command: 'poster' }),
-    generateButton('Плейлисты', { command: 'playlist' }),
-    generateButton('Обновить клавиатуру', { command: 'refresh' })
+    generateButton('Плейлисты', { command: 'playlist' })
+  ], [
+    generateButton('Обновить клавиатуру', { command: 'refresh_keyboard' })
   ]]
 };
 
@@ -152,9 +161,24 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
 
       if (payload.command === 'start') {
         await sendMessage('Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?', mainKeyboard);
+      } else if (payload.command === 'back') {
+        if (payload.dest === 'main') {
+          await sendMessage('Главное меню', mainKeyboard);
+        }
+      } else if (payload.command === 'poster') {
+        await sendMessage('Выберите период', {
+          one_time: true,
+          buttons: [[
+            generateButton('Назад', { command: 'back', dest: 'main' }),
+            generateButton('День', { command: 'poster_period', period: 'day' }),
+            generateButton('Неделя', { command: 'poster_period', period: 'week' })
+          ]]
+        });
+      } else if (payload.command === 'poster_period') {
+
       } else if (payload.command === 'playlist') {
         await sendMessage('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections', mainKeyboard);
-      } else if (payload.command === 'refresh') {
+      } else if (payload.command === 'refresh_keyboard') {
         await sendMessage('Клавиатура обновлена', mainKeyboard);
       }
     }
