@@ -84,9 +84,16 @@ interface LocationButtonAction extends BaseButtonAction {
 
 type ButtonAction = TextButtonAction | LocationButtonAction;
 
+enum ButtonColor {
+  PRIMARY = 'primary',
+  SECONDARY = 'secondary',
+  NEGATIVE = 'negative',
+  POSITIVE = 'positive'
+}
+
 interface KeyboardButton {
   action: ButtonAction;
-  color: 'primary' | 'secondary' | 'negative' | 'positive';
+  color: ButtonColor;
 }
 
 interface Keyboard {
@@ -94,14 +101,14 @@ interface Keyboard {
   buttons: KeyboardButton[][];
 }
 
-const generateButton = (text: string, payload: ButtonPayload): KeyboardButton => {
+const generateButton = (text: string, color: ButtonColor | null, payload: ButtonPayload): KeyboardButton => {
   return {
     action: {
       type: 'text',
       label: text,
       payload: JSON.stringify(payload)
     },
-    color: 'primary'
+    color: color || ButtonColor.PRIMARY
   };
 };
 const defaultQuery = {
@@ -119,10 +126,10 @@ const sendRequest = <T>(method: string, query: object = {}): Promise<AxiosRespon
 const mainKeyboard: Keyboard = {
   one_time: false,
   buttons: [[
-    generateButton('Афиша', { command: 'poster' }),
-    generateButton('Плейлисты', { command: 'playlist' })
+    generateButton('Афиша', null, { command: 'poster' }),
+    generateButton('Плейлисты', null, { command: 'playlist' })
   ], [
-    generateButton('Обновить клавиатуру', { command: 'refresh_keyboard' })
+    generateButton('Обновить клавиатуру', ButtonColor.POSITIVE, { command: 'refresh_keyboard' })
   ]]
 };
 
@@ -169,10 +176,10 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
         await sendMessage('Выберите период', {
           one_time: false,
           buttons: [[
-            generateButton('День', { command: 'poster_period', period: 'day' }),
-            generateButton('Неделя', { command: 'poster_period', period: 'week' })
+            generateButton('День', null, { command: 'poster_period', period: 'day' }),
+            generateButton('Неделя', null, { command: 'poster_period', period: 'week' })
           ], [
-            generateButton('Назад', { command: 'back', dest: 'main' })
+            generateButton('Назад', ButtonColor.SECONDARY, { command: 'back', dest: 'main' })
           ]]
         });
       } else if (payload.command === 'poster_period') {
