@@ -109,7 +109,6 @@ enum ButtonColor {
 interface KeyboardButton {
   action: ButtonAction;
   color: ButtonColor;
-  url?: string;
 }
 
 interface Keyboard {
@@ -117,7 +116,7 @@ interface Keyboard {
   buttons: KeyboardButton[][];
 }
 
-const generateButton = (text: string, color: ButtonColor | null, payload: ButtonPayload, url?: string): KeyboardButton => {
+const generateButton = (text: string, color: ButtonColor | null, payload: ButtonPayload): KeyboardButton => {
   return {
     action: {
       type: 'text',
@@ -125,7 +124,6 @@ const generateButton = (text: string, color: ButtonColor | null, payload: Button
       payload: JSON.stringify(payload)
     },
     color: color || ButtonColor.PRIMARY,
-    url,
   };
 };
 const defaultQuery = {
@@ -150,7 +148,7 @@ const mainKeyboard: Keyboard = {
     ],
     [
       generateButton('Рассказать о группе', null, { command: 'tell_about_group' }),
-      generateButton('Сообщить о релизе', null, { command: 'tell_about_release' }, 'https://vk.com/im?sel=38367670'),
+      generateButton('Сообщить о релизе', null, { command: 'tell_about_release' }),
     ],
     [
       generateButton('Обновить клавиатуру', ButtonColor.POSITIVE, { command: 'refresh_keyboard' }),
