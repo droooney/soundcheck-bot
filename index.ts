@@ -112,8 +112,7 @@ const mainKeyboard: Keyboard = {
   one_time: true,
   buttons: [[
     generateButton('Афиша', { command: 'poster' }),
-    generateButton('Плейлисты', { command: 'playlist' })
-  ], [
+    generateButton('Плейлисты', { command: 'playlist' }),
     generateButton('Обновить клавиатуру', { command: 'refresh' })
   ]]
 };
