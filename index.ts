@@ -60,6 +60,14 @@ interface LongreadButtonPayload {
   command: 'longread'
 }
 
+interface TellAboutGroupButtonPayload {
+  command: 'tell_about_group';
+}
+
+interface TellAboutReleaseButtonPayload {
+  command: 'tell_about_release';
+}
+
 interface RefreshKeyboardButtonPayload {
   command: 'refresh_keyboard';
 }
@@ -71,6 +79,8 @@ type ButtonPayload = (
   | PosterPeriodButtonPayload
   | PlaylistButtonPayload
   | LongreadButtonPayload
+  | TellAboutGroupButtonPayload
+  | TellAboutReleaseButtonPayload
   | RefreshKeyboardButtonPayload
 );
 
@@ -135,6 +145,9 @@ const mainKeyboard: Keyboard = {
     generateButton('Плейлисты', null, { command: 'playlist' }),
     generateButton('Лонгриды', null, { command: 'longread' })
   ], [
+    generateButton('Рассказать о группе', null, { command: 'tell_about_group' }),
+    generateButton('Сообщить о релизе', null, { command: 'tell_about_release' })
+  ], [
     generateButton('Обновить клавиатуру', ButtonColor.POSITIVE, { command: 'refresh_keyboard' })
   ]]
 };
@@ -194,6 +207,10 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
         await sendMessage('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections');
       } else if (payload.command === 'longread') {
         await sendMessage('Смотри лонгриды тут: https://vk.com/@soundcheck_ural');
+      } else if (payload.command === 'tell_about_group') {
+        await sendMessage('Пиши Сане: https://vk.com/im?sel=38367670');
+      } else if (payload.command === 'tell_about_release') {
+        await sendMessage('Пиши Сане: https://vk.com/im?sel=38367670');
       } else if (payload.command === 'refresh_keyboard') {
         await sendMessage('Клавиатура обновлена', mainKeyboard);
       }
