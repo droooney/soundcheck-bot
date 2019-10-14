@@ -232,7 +232,13 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
 app.use(async (ctx, next) => {
   console.log(ctx.method, ctx.type, ctx.url);
 
-  await next();
+  try {
+    await next();
+  } catch (e) {
+    console.log(e);
+
+    ctx.status = 500;
+  }
 });
 app.use(BodyParser());
 
