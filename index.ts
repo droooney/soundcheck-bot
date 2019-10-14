@@ -4,7 +4,7 @@ import * as http from 'http';
 import Application = require('koa');
 import BodyParser = require('koa-bodyparser');
 import Router = require('koa-router');
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
 util.inspect.defaultOptions.depth = 10;
 
@@ -50,13 +50,43 @@ interface PlaylistButtonPayload {
   command: 'playlist';
 }
 
+interface RefreshKeyboardButtonPayload {
+  command: 'refresh';
+}
+
 type ButtonPayload = (
   StartButtonPayload
   | PosterButtonPayload
   | PlaylistButtonPayload
+  | RefreshKeyboardButtonPayload
 );
 
-const generateButton = (text: string, payload: ButtonPayload) => {
+interface BaseButtonAction {
+  payload?: string;
+}
+
+interface TextButtonAction extends BaseButtonAction {
+  type: 'text';
+  label: string;
+}
+
+interface LocationButtonAction extends BaseButtonAction {
+  type: 'location';
+}
+
+type ButtonAction = TextButtonAction | LocationButtonAction;
+
+interface KeyboardButton {
+  action: ButtonAction;
+  color: 'primary' | 'secondary' | 'negative' | 'positive';
+}
+
+interface Keyboard {
+  one_time?: boolean;
+  buttons: KeyboardButton[][];
+}
+
+const generateButton = (text: string, payload: ButtonPayload): KeyboardButton => {
   return {
     action: {
       type: 'text',
@@ -65,6 +95,27 @@ const generateButton = (text: string, payload: ButtonPayload) => {
     },
     color: 'primary'
   };
+};
+const defaultQuery = {
+  v: '5.101',
+  access_token: '2d0c91d1f4f816ed81c83008fa171fe5642e9153de1bebdf08f993392675512944a731975ad559157906b'
+};
+const sendRequest = <T>(method: string, query: object = {}): Promise<AxiosResponse<T>> => {
+  const queryString = qs.stringify({
+    ...defaultQuery,
+    ...query
+  });
+
+  return axios.post(`https://api.vk.com/method/${method}?${queryString}`);
+};
+const mainKeyboard: Keyboard = {
+  one_time: false,
+  buttons: [[
+    generateButton('Афиша', { command: 'poster' }),
+    generateButton('Плейлисты', { command: 'playlist' })
+  ], [
+    generateButton('Обновить клавиатуру', { command: 'refresh' })
+  ]]
 };
 
 router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
@@ -84,45 +135,28 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
     }
 
     if (payload) {
-      console.log(payload);
+      const sendMessage = async (message: string, keyboard?: Keyboard) => {
+        const {
+          data,
+          status
+        } = await sendRequest('messages.send', {
+          peer_id: body.object.peer_id,
+          random_id: Math.floor(Math.random() * 2 ** 32),
+          message,
+          keyboard
+        });
 
-      const query = {
-        v: '5.101',
-        access_token: '2d0c91d1f4f816ed81c83008fa171fe5642e9153de1bebdf08f993392675512944a731975ad559157906b',
-        peer_id: body.object.peer_id,
-        random_id: Math.floor(Math.random() * 2 ** 32)
+        console.log('message sent', status, data);
       };
 
+      console.log(payload);
+
       if (payload.command === 'start') {
-        const welcomeQuery = qs.stringify({
-          ...query,
-          message: 'Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?',
-          keyboard: JSON.stringify({
-            one_time: false,
-            buttons: [[
-              generateButton('Афиша', { command: 'poster' }),
-              generateButton('Плейлисты', { command: 'playlist' })
-            ]]
-          })
-        });
-        const {
-          data,
-          status
-        } = await axios.post(`https://api.vk.com/method/messages.send?${welcomeQuery}`);
-
-        console.log('message sent', status, data);
+        await sendMessage('Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?', mainKeyboard);
       } else if (payload.command === 'playlist') {
-        const playlistQuery = qs.stringify({
-          ...query,
-          message: 'Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections'
-        });
-
-        const {
-          data,
-          status
-        } = await axios.post(`https://api.vk.com/method/messages.send?${playlistQuery}`);
-
-        console.log('message sent', status, data);
+        await sendMessage('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections');
+      } else if (payload.command === 'refresh') {
+        await sendMessage('Клавиатура обновлена', mainKeyboard);
       }
     }
 
