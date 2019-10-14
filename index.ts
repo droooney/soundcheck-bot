@@ -56,6 +56,10 @@ interface PlaylistButtonPayload {
   command: 'playlist';
 }
 
+interface LongreadButtonPayload {
+  command: 'longread'
+}
+
 interface RefreshKeyboardButtonPayload {
   command: 'refresh_keyboard';
 }
@@ -66,6 +70,7 @@ type ButtonPayload = (
   | PosterButtonPayload
   | PosterPeriodButtonPayload
   | PlaylistButtonPayload
+  | LongreadButtonPayload
   | RefreshKeyboardButtonPayload
 );
 
@@ -127,7 +132,8 @@ const mainKeyboard: Keyboard = {
   one_time: false,
   buttons: [[
     generateButton('Афиша', null, { command: 'poster' }),
-    generateButton('Плейлисты', null, { command: 'playlist' })
+    generateButton('Плейлисты', null, { command: 'playlist' }),
+    generateButton('Лонгриды', null, { command: 'longread' })
   ], [
     generateButton('Обновить клавиатуру', ButtonColor.POSITIVE, { command: 'refresh_keyboard' })
   ]]
@@ -185,7 +191,9 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
       } else if (payload.command === 'poster_period') {
 
       } else if (payload.command === 'playlist') {
-        await sendMessage('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections', mainKeyboard);
+        await sendMessage('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections');
+      } else if (payload.command === 'longread') {
+        await sendMessage('Смотри лонгриды тут: https://vk.com/@soundcheck_ural');
       } else if (payload.command === 'refresh_keyboard') {
         await sendMessage('Клавиатура обновлена', mainKeyboard);
       }
