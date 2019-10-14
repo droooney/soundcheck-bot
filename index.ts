@@ -109,7 +109,7 @@ const sendRequest = <T>(method: string, query: object = {}): Promise<AxiosRespon
   return axios.post(`https://api.vk.com/method/${method}?${queryString}`);
 };
 const mainKeyboard: Keyboard = {
-  one_time: false,
+  one_time: true,
   buttons: [[
     generateButton('Афиша', { command: 'poster' }),
     generateButton('Плейлисты', { command: 'playlist' })
