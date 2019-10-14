@@ -163,11 +163,11 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
         await sendMessage('Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?', mainKeyboard);
       } else if (payload.command === 'back') {
         if (payload.dest === 'main') {
-          await sendMessage('Главное меню', mainKeyboard);
+          await sendMessage('Выберите действие', mainKeyboard);
         }
       } else if (payload.command === 'poster') {
         await sendMessage('Выберите период', {
-          one_time: true,
+          one_time: false,
           buttons: [[
             generateButton('День', { command: 'poster_period', period: 'day' }),
             generateButton('Неделя', { command: 'poster_period', period: 'week' })
