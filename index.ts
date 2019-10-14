@@ -117,7 +117,7 @@ const sendRequest = <T>(method: string, query: object = {}): Promise<AxiosRespon
   return axios.post(`https://api.vk.com/method/${method}?${queryString}`);
 };
 const mainKeyboard: Keyboard = {
-  one_time: true,
+  one_time: false,
   buttons: [[
     generateButton('Афиша', { command: 'poster' }),
     generateButton('Плейлисты', { command: 'playlist' })
@@ -151,7 +151,7 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
           peer_id: body.object.peer_id,
           random_id: Math.floor(Math.random() * 2 ** 32),
           message,
-          keyboard
+          keyboard: JSON.stringify(keyboard)
         });
 
         console.log('message sent', status, data);
@@ -169,9 +169,10 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
         await sendMessage('Выберите период', {
           one_time: true,
           buttons: [[
-            generateButton('Назад', { command: 'back', dest: 'main' }),
             generateButton('День', { command: 'poster_period', period: 'day' }),
             generateButton('Неделя', { command: 'poster_period', period: 'week' })
+          ], [
+            generateButton('Назад', { command: 'back', dest: 'main' })
           ]]
         });
       } else if (payload.command === 'poster_period') {
