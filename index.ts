@@ -109,6 +109,7 @@ enum ButtonColor {
 interface KeyboardButton {
   action: ButtonAction;
   color: ButtonColor;
+  url?: string;
 }
 
 interface Keyboard {
@@ -116,40 +117,45 @@ interface Keyboard {
   buttons: KeyboardButton[][];
 }
 
-const generateButton = (text: string, color: ButtonColor | null, payload: ButtonPayload): KeyboardButton => {
+const generateButton = (text: string, color: ButtonColor | null, payload: ButtonPayload, url?: string): KeyboardButton => {
   return {
     action: {
       type: 'text',
       label: text,
       payload: JSON.stringify(payload)
     },
-    color: color || ButtonColor.PRIMARY
+    color: color || ButtonColor.PRIMARY,
+    url,
   };
 };
 const defaultQuery = {
   v: '5.101',
-  access_token: '2d0c91d1f4f816ed81c83008fa171fe5642e9153de1bebdf08f993392675512944a731975ad559157906b'
+  access_token: '2d0c91d1f4f816ed81c83008fa171fe5642e9153de1bebdf08f993392675512944a731975ad559157906b',
 };
 const sendRequest = <T>(method: string, query: object = {}): Promise<AxiosResponse<T>> => {
   const queryString = qs.stringify({
     ...defaultQuery,
-    ...query
+    ...query,
   });
 
   return axios.post(`https://api.vk.com/method/${method}?${queryString}`);
 };
 const mainKeyboard: Keyboard = {
   one_time: false,
-  buttons: [[
-    generateButton('Афиша', null, { command: 'poster' }),
-    generateButton('Плейлисты', null, { command: 'playlist' }),
-    generateButton('Лонгриды', null, { command: 'longread' })
-  ], [
-    generateButton('Рассказать о группе', null, { command: 'tell_about_group' }),
-    generateButton('Сообщить о релизе', null, { command: 'tell_about_release' })
-  ], [
-    generateButton('Обновить клавиатуру', ButtonColor.POSITIVE, { command: 'refresh_keyboard' })
-  ]]
+  buttons: [
+    [
+      generateButton('Афиша', null, { command: 'poster' }),
+      generateButton('Плейлисты', null, { command: 'playlist' }),
+      generateButton('Лонгриды', null, { command: 'longread' }),
+    ],
+    [
+      generateButton('Рассказать о группе', null, { command: 'tell_about_group' }),
+      generateButton('Сообщить о релизе', null, { command: 'tell_about_release' }, 'https://vk.com/im?sel=38367670'),
+    ],
+    [
+      generateButton('Обновить клавиатуру', ButtonColor.POSITIVE, { command: 'refresh_keyboard' }),
+    ],
+  ]
 };
 
 router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
@@ -194,12 +200,15 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
       } else if (payload.command === 'poster') {
         await sendMessage('Выберите период', {
           one_time: false,
-          buttons: [[
-            generateButton('День', null, { command: 'poster_period', period: 'day' }),
-            generateButton('Неделя', null, { command: 'poster_period', period: 'week' })
-          ], [
-            generateButton('Назад', ButtonColor.SECONDARY, { command: 'back', dest: 'main' })
-          ]]
+          buttons: [
+            [
+              generateButton('День', null, { command: 'poster_period', period: 'day' }),
+              generateButton('Неделя', null, { command: 'poster_period', period: 'week' })
+            ],
+            [
+              generateButton('Назад', ButtonColor.SECONDARY, { command: 'back', dest: 'main' })
+            ],
+          ]
         });
       } else if (payload.command === 'poster_period') {
 
@@ -210,7 +219,7 @@ router.post('/oajhnswfa78sfnah87hbhnas9f8', async (ctx) => {
       } else if (payload.command === 'tell_about_group') {
         await sendMessage('Пиши Сане: https://vk.com/im?sel=38367670');
       } else if (payload.command === 'tell_about_release') {
-        await sendMessage('Пиши Сане: https://vk.com/im?sel=38367670');
+
       } else if (payload.command === 'refresh_keyboard') {
         await sendMessage('Клавиатура обновлена', mainKeyboard);
       }
