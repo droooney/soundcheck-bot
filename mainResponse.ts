@@ -159,7 +159,11 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'poster_day') {
         const concerts = await getDailyConcerts(moment(payload.dayStart));
 
-        await sendMessage(getConcertsString(concerts));
+        await sendMessage(
+          concerts.length
+            ? getConcertsString(concerts)
+            : 'В этот день концертов нет'
+        );
       } else if (payload.command === 'poster_week') {
         const today = +moment().startOf('day');
         const concerts = (await getWeeklyConcerts(moment(payload.weekStart))).filter(({ startTime }) => +startTime >= today);
