@@ -183,7 +183,9 @@ export function capitalizeWords(string: string): string {
 export function getWeekString(week: moment.Moment): string {
   const endOfWeek = week.clone().endOf('week');
 
-  return endOfWeek.isSame(week, 'month')
-    ? `${week.format('DD')} - ${endOfWeek.format('DD')} ${_.capitalize(week.format('MMMM'))}`
-    : capitalizeWords(`${week.format('DD MMMM')} - ${endOfWeek.format('DD MMMM')}`);
+  return capitalizeWords(
+    endOfWeek.isSame(week, 'month')
+      ? `${week.format('DD')} - ${endOfWeek.format('DD MMMM')}`
+      : `${week.format('DD MMMM')} - ${endOfWeek.format('DD MMMM')}`
+  );
 }
