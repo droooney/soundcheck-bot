@@ -164,7 +164,11 @@ export default async (ctx: Context) => {
         const concerts = await getWeeklyConcerts(moment(payload.weekStart));
         const groups = getConcertsByDays(concerts);
 
-        await sendMessage(getConcertsByDaysString(groups));
+        await sendMessage(
+          concerts.length
+            ? getConcertsByDaysString(groups)
+            : 'На эту неделю концертов нет'
+        );
       } else if (payload.command === 'poster_genre') {
         const genre = payload.genre;
         const allConcerts = await getConcerts(moment().startOf('day'));
