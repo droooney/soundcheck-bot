@@ -164,6 +164,8 @@ export default async (ctx: Context) => {
         const concerts = await getWeeklyConcerts(moment(payload.weekStart));
         const groups = getConcertsByDays(concerts);
 
+        console.log(getConcertsByDaysString(groups).length);
+
         await sendMessage(
           concerts.length
             ? getConcertsByDaysString(groups)
