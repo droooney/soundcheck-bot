@@ -98,7 +98,7 @@ export default async (ctx: Context) => {
             [
               generateButton('День', null, { command: 'poster_type', type: 'day' }),
               generateButton('Неделя', null, { command: 'poster_type', type: 'week' }),
-              generateButton('Неделя', null, { command: 'poster_type', type: 'genres' })
+              generateButton('По жанрам', null, { command: 'poster_type', type: 'genres' })
             ],
             [generateBackButton('main')]
           ]
