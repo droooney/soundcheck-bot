@@ -161,7 +161,8 @@ export default async (ctx: Context) => {
 
         await sendMessage(getConcertsString(concerts));
       } else if (payload.command === 'poster_week') {
-        const concerts = await getWeeklyConcerts(moment(payload.weekStart));
+        const today = +moment().startOf('day');
+        const concerts = (await getWeeklyConcerts(moment(payload.weekStart))).filter(({ startTime }) => +startTime >= today);
         const groups = getConcertsByDays(concerts);
 
         console.log(getConcertsByDaysString(groups).length);
