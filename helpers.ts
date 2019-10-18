@@ -102,12 +102,10 @@ export function getConcertsByDays(concerts: Concert[]): Record<string, Concert[]
 }
 
 export function sendVKRequest<T>(method: string, query: object = {}): Promise<AxiosResponse<T>> {
-  const queryString = qs.stringify({
+  return axios.post(`https://api.vk.com/method/${method}`, qs.stringify({
     ...defaultVKQuery,
     ...query,
-  });
-
-  return axios.post(`https://api.vk.com/method/${method}?${queryString}`);
+  }));
 }
 
 export function getConcertFields(description?: string): Partial<Record<string, string>> {
