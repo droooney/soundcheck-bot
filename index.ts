@@ -27,7 +27,11 @@ app.use(async (ctx, next) => {
   try {
     await next();
   } catch (e) {
-    console.log(e);
+    if (e.isAxiosError) {
+      console.log(e.response.data);
+    } else {
+      console.log(e);
+    }
 
     ctx.status = 500;
   }
