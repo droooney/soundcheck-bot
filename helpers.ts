@@ -45,10 +45,11 @@ export async function sendGoogleRequest<T>(method: string, query?: object): Prom
     try {
       return await trySendGoogleRequest(method, query);
     } catch (err) {
-      console.log(err.response.data);
-      console.log('refreshing', i);
-
-      await refreshGoogleAccessToken();
+      if (err.response.data.error && err.response.data.error.code === 401) {
+        await refreshGoogleAccessToken();
+      } else {
+        throw err;
+      }
     }
   }
 
