@@ -92,7 +92,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'back' && payload.dest === 'main') {
         await sendMessage('Выберите действие', mainKeyboard);
       } else if (payload.command === 'poster' || (payload.command === 'back' && payload.dest === 'poster')) {
-        await sendMessage('Выберите период', {
+        await sendMessage('Выберите тип афиши', {
           one_time: false,
           buttons: [
             [
@@ -154,7 +154,7 @@ export default async (ctx: Context) => {
             ]
           });
         } else if (payload.type === 'genres') {
-          await sendMessage('Выберите день', genresKeyboard);
+          await sendMessage('Выберите жанр', genresKeyboard);
         }
       } else if (payload.command === 'poster_day') {
         const concerts = await getDailyConcerts(moment(payload.dayStart));
