@@ -1,7 +1,9 @@
 import { Moment } from 'moment';
 
 export interface Message {
+  id: number;
   peer_id: number;
+  text: string;
   payload?: string;
 }
 
@@ -87,6 +89,11 @@ export type ButtonPayload = (
   | TellAboutReleaseButtonPayload
   | RefreshKeyboardButtonPayload
 );
+
+export enum BackButtonDest {
+  MAIN = 'main',
+  POSTER = 'poster'
+}
 
 export interface BaseButtonAction {
   payload?: string;

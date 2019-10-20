@@ -4,7 +4,7 @@ import * as jwt from 'jsonwebtoken';
 import * as _ from 'lodash';
 import moment = require('moment-timezone');
 
-import { Concert, Event, EventsResponse } from './types';
+import { Concert, Event, EventsResponse, Keyboard } from './types';
 
 const {
   private_key,
@@ -107,6 +107,16 @@ export function sendVKRequest<T>(method: string, query: object = {}): Promise<Ax
     ...defaultVKQuery,
     ...query,
   }));
+}
+
+export async function sendVKMessage(dest: number | string, message: string, keyboard?: Keyboard, forward_messages: number[] = []) {
+  await sendVKRequest('messages.send', {
+    peer_id: dest,
+    random_id: Math.floor(Math.random() * 2 ** 32),
+    message,
+    keyboard: JSON.stringify(keyboard),
+    forward_messages: forward_messages.join(',')
+  });
 }
 
 export function getConcertFields(description?: string): Partial<Record<string, string>> {
