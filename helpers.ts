@@ -122,7 +122,7 @@ export async function sendVKMessage(dest: number | string, message: string, opti
     message,
     keyboard: JSON.stringify(options.keyboard),
     forward_messages: (options.forwardMessages || []).join(','),
-    attachments: (options.attachments || []).join(',')
+    attachment: (options.attachments || []).join(',')
   });
 }
 
