@@ -119,7 +119,7 @@ export default async (ctx: Context) => {
               return false;
             }
 
-            const dayOfTheWeek = moment(+day).day();
+            const dayOfTheWeek = moment(+day).weekday();
 
             buttons.push(generateButton(
               capitalizeWords(moment(+day).format('DD MMM')),
