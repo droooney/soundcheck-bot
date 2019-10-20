@@ -30,7 +30,7 @@ const backButtonText: Record<BackButtonDest, string> = {
   [BackButtonDest.POSTER]: 'Афиша'
 };
 const generateBackButton = (dest: BackButtonDest = BackButtonDest.MAIN): KeyboardButton => {
-  return generateButton(backButtonText[dest], { command: 'back', dest }, ButtonColor.SECONDARY);
+  return generateButton(`← ${backButtonText[dest]}`, { command: 'back', dest }, ButtonColor.SECONDARY);
 };
 const mainKeyboard: Keyboard = {
   one_time: false,
@@ -45,7 +45,7 @@ const mainKeyboard: Keyboard = {
       generateButton('Сообщить о релизе', { command: 'tell_about_release' }),
     ],
     [
-      generateButton('Обновить клавиатуру', { command: 'refresh_keyboard' }, ButtonColor.POSITIVE),
+      generateButton('🔄 Обновить клавиатуру', { command: 'refresh_keyboard' }, ButtonColor.POSITIVE),
     ],
   ]
 };
