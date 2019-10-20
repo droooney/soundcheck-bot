@@ -71,6 +71,9 @@ export default async (ctx: Context) => {
   if (body.type === 'confirmation') {
     ctx.body = 'afcb8751';
   } else if (body.type === 'message_new') {
+    const respond = async (message: string, keyboard?: Keyboard) => {
+      await sendVKMessage(body.object.peer_id, message, keyboard);
+    };
     let payload: ButtonPayload | null = null;
 
     if (body.object.payload) {
@@ -80,18 +83,14 @@ export default async (ctx: Context) => {
     }
 
     if (payload) {
-      const sendMessageBack = async (message: string, keyboard?: Keyboard) => {
-        await sendVKMessage(body.object.peer_id, message, keyboard);
-      };
-
       console.log(payload);
 
       command: if (payload.command === 'start') {
-        await sendMessageBack('Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?', mainKeyboard);
+        await respond('Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?', mainKeyboard);
       } else if (payload.command === 'back' && payload.dest === 'main') {
-        await sendMessageBack('Выберите действие', mainKeyboard);
+        await respond('Выберите действие', mainKeyboard);
       } else if (payload.command === 'poster' || (payload.command === 'back' && payload.dest === 'poster')) {
-        await sendMessageBack('Выберите тип афиши', {
+        await respond('Выберите тип афиши', {
           one_time: false,
           buttons: [
             [
@@ -107,7 +106,7 @@ export default async (ctx: Context) => {
           const upcomingConcerts = await getConcerts(moment().startOf('day'));
 
           if (!upcomingConcerts.length) {
-            await sendMessageBack('В ближайшее время концертов нет');
+            await respond('В ближайшее время концертов нет');
 
             break command;
           }
@@ -123,7 +122,7 @@ export default async (ctx: Context) => {
             buttons.push(generateButton(capitalizeWords(moment(+day).format('DD MMMM')), { command: 'poster_day', dayStart: +day }));
           });
 
-          await sendMessageBack('Выберите день', {
+          await respond('Выберите день', {
             one_time: false,
             buttons: [
               ..._.chunk(buttons, 4),
@@ -140,7 +139,7 @@ export default async (ctx: Context) => {
             thisWeek.clone().add(3, 'week')
           ];
 
-          await sendMessageBack('Выберите неделю', {
+          await respond('Выберите неделю', {
             one_time: false,
             buttons: [
               ...weeks.map((week, index) => [
@@ -151,12 +150,12 @@ export default async (ctx: Context) => {
             ]
           });
         } else if (payload.type === 'genres') {
-          await sendMessageBack('Выберите жанр', genresKeyboard);
+          await respond('Выберите жанр', genresKeyboard);
         }
       } else if (payload.command === 'poster_day') {
         const concerts = await getDailyConcerts(moment(payload.dayStart));
 
-        await sendMessageBack(
+        await respond(
           concerts.length
             ? getConcertsString(concerts)
             : 'В этот день концертов нет'
@@ -168,7 +167,7 @@ export default async (ctx: Context) => {
 
         console.log(getConcertsByDaysString(groups).length);
 
-        await sendMessageBack(
+        await respond(
           concerts.length
             ? getConcertsByDaysString(groups)
             : 'На эту неделю концертов нет'
@@ -178,29 +177,35 @@ export default async (ctx: Context) => {
         const allConcerts = await getConcerts(moment().startOf('day'));
         const genreConcerts = allConcerts.filter(({ genres }) => genres.includes(genre));
 
-        await sendMessageBack(
+        await respond(
           genreConcerts.length
             ? getConcertsByDaysString(getConcertsByDays(genreConcerts))
             : `В ближайшее время концертов в жанре "${genre}" нет`
         );
       } else if (payload.command === 'playlist') {
-        await sendMessageBack('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections');
+        await respond('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections');
       } else if (payload.command === 'longread') {
-        await sendMessageBack('Смотри лонгриды тут: https://vk.com/@soundcheck_ural');
+        await respond('Смотри лонгриды тут: https://vk.com/@soundcheck_ural');
       } else if (payload.command === 'tell_about_group') {
-        await sendMessageBack(`Испольхуйте хэштег ${TELL_ABOUT_GROUP_HASHTAG}`);
+        await respond(`Испольхуйте хэштег ${TELL_ABOUT_GROUP_HASHTAG}`);
       } else if (payload.command === 'tell_about_release') {
-        await sendMessageBack(`Испольхуйте хэштег ${RELEASE_HASHTAG}`);
+        await respond(`Испольхуйте хэштег ${RELEASE_HASHTAG}`);
       } else if (payload.command === 'refresh_keyboard') {
-        await sendMessageBack('Клавиатура обновлена', mainKeyboard);
+        await respond('Клавиатура обновлена', mainKeyboard);
       }
     } else {
       const text = body.object.text;
 
       if (text.includes(TELL_ABOUT_GROUP_HASHTAG)) {
-        await sendVKMessage(TELL_ABOUT_GROUP_TARGET, 'Рассказ о группе', undefined, [body.object.id]);
+        await Promise.all([
+          respond('Рассказ о группе принят'),
+          sendVKMessage(TELL_ABOUT_GROUP_TARGET, 'Рассказ о группе', undefined, [body.object.id])
+        ]);
       } else if (text.includes(RELEASE_HASHTAG)) {
-        await sendVKMessage(RELEASES_TARGET, 'Релиз', undefined, [body.object.id]);
+        await Promise.all([
+          respond('Релиз принят'),
+          sendVKMessage(RELEASES_TARGET, 'Релиз', undefined, [body.object.id])
+        ]);
       }
     }
 
