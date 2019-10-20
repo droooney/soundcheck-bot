@@ -63,6 +63,19 @@ export interface LongreadButtonPayload {
   command: 'longread'
 }
 
+export interface ReleasesButtonPayload {
+  command: 'releases';
+}
+
+export interface ServicesButtonPayload {
+  command: 'services';
+}
+
+export interface ServiceButtonPayload {
+  command: 'service';
+  serviceId: string;
+}
+
 export interface TellAboutGroupButtonPayload {
   command: 'tell_about_group';
 }
@@ -85,6 +98,9 @@ export type ButtonPayload = (
   | PosterGenreButtonPayload
   | PlaylistButtonPayload
   | LongreadButtonPayload
+  | ReleasesButtonPayload
+  | ServicesButtonPayload
+  | ServiceButtonPayload
   | TellAboutGroupButtonPayload
   | TellAboutReleaseButtonPayload
   | RefreshKeyboardButtonPayload

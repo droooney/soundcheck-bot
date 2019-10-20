@@ -3,6 +3,8 @@ import moment = require('moment-timezone');
 import { Context } from 'koa';
 
 import {
+  SendVkMessageOptions,
+
   capitalizeWords,
   getConcerts,
   getConcertsByDays,
@@ -32,6 +34,7 @@ const backButtonText: Record<BackButtonDest, string> = {
 const generateBackButton = (dest: BackButtonDest = BackButtonDest.MAIN): KeyboardButton => {
   return generateButton(`← ${backButtonText[dest]}`, { command: 'back', dest }, ButtonColor.SECONDARY);
 };
+const GENRES = ['Поп-рок', 'Джаз', 'Инди-рок', 'Рок', 'Хип-хоп'];
 const mainKeyboard: Keyboard = {
   one_time: false,
   buttons: [
@@ -39,6 +42,10 @@ const mainKeyboard: Keyboard = {
       generateButton('Афиша', { command: 'poster' }),
       generateButton('Плейлисты', { command: 'playlist' }),
       generateButton('Лонгриды', { command: 'longread' }),
+    ],
+    [
+      generateButton('Релизы', { command: 'releases' }),
+      generateButton('Услуги', { command: 'services' }),
     ],
     [
       generateButton('Рассказать о группе', { command: 'tell_about_group' }),
@@ -49,13 +56,20 @@ const mainKeyboard: Keyboard = {
     ],
   ]
 };
-const GENRES = ['Поп-рок', 'Джаз', 'Инди-рок', 'Рок', 'Хип-хоп'];
 const genresKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     ..._.chunk(GENRES.map((genre) => generateButton(genre, { command: 'poster_genre', genre })), 4),
     [generateBackButton(BackButtonDest.POSTER)],
     [generateBackButton()],
+  ]
+};
+const servicesKeyboard: Keyboard = {
+  one_time: false,
+  buttons: [
+    [generateButton('Дизайн стикеров', { command: 'service', serviceId: 'market177574047_3113786' })],
+    [generateButton('Реклама в Soundcheck', { command: 'service', serviceId: 'market177574047_2685381' })],
+    [generateBackButton(BackButtonDest.MAIN)],
   ]
 };
 const TELL_ABOUT_GROUP_HASHTAG = '#tell_about_group';
@@ -71,8 +85,8 @@ export default async (ctx: Context) => {
   if (body.type === 'confirmation') {
     ctx.body = 'afcb8751';
   } else if (body.type === 'message_new') {
-    const respond = async (message: string, keyboard?: Keyboard) => {
-      await sendVKMessage(body.object.peer_id, message, keyboard);
+    const respond = async (message: string, options: SendVkMessageOptions = {}) => {
+      await sendVKMessage(body.object.peer_id, message, options);
     };
     let payload: ButtonPayload | null = null;
 
@@ -86,20 +100,22 @@ export default async (ctx: Context) => {
       console.log(payload);
 
       command: if (payload.command === 'start') {
-        await respond('Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?', mainKeyboard);
+        await respond('Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?', { keyboard: mainKeyboard });
       } else if (payload.command === 'back' && payload.dest === 'main') {
-        await respond('Выберите действие', mainKeyboard);
+        await respond('Выберите действие', { keyboard: mainKeyboard });
       } else if (payload.command === 'poster' || (payload.command === 'back' && payload.dest === 'poster')) {
         await respond('Выберите тип афиши', {
-          one_time: false,
-          buttons: [
-            [
-              generateButton('День', { command: 'poster_type', type: 'day' }),
-              generateButton('Неделя', { command: 'poster_type', type: 'week' }),
-              generateButton('По жанрам', { command: 'poster_type', type: 'genres' })
-            ],
-            [generateBackButton()],
-          ]
+          keyboard: {
+            one_time: false,
+            buttons: [
+              [
+                generateButton('День', { command: 'poster_type', type: 'day' }),
+                generateButton('Неделя', { command: 'poster_type', type: 'week' }),
+                generateButton('По жанрам', { command: 'poster_type', type: 'genres' })
+              ],
+              [generateBackButton()],
+            ]
+          }
         });
       } else if (payload.command === 'poster_type') {
         if (payload.type === 'day') {
@@ -129,12 +145,14 @@ export default async (ctx: Context) => {
           });
 
           await respond('Выберите день', {
-            one_time: false,
-            buttons: [
-              ..._.chunk(buttons, 4),
-              [generateBackButton(BackButtonDest.POSTER)],
-              [generateBackButton()],
-            ]
+            keyboard: {
+              one_time: false,
+              buttons: [
+                ..._.chunk(buttons, 4),
+                [generateBackButton(BackButtonDest.POSTER)],
+                [generateBackButton()],
+              ]
+            }
           });
         } else if (payload.type === 'week') {
           const thisWeek = moment().startOf('week');
@@ -146,17 +164,19 @@ export default async (ctx: Context) => {
           ];
 
           await respond('Выберите неделю', {
-            one_time: false,
-            buttons: [
-              ...weeks.map((week, index) => [
-                generateButton(index === 0 ? 'Эта неделя' : getWeekString(week), { command: 'poster_week', weekStart: +week })
-              ]),
-              [generateBackButton(BackButtonDest.POSTER)],
-              [generateBackButton()],
-            ]
+            keyboard: {
+              one_time: false,
+              buttons: [
+                ...weeks.map((week, index) => [
+                  generateButton(index === 0 ? 'Эта неделя' : getWeekString(week), { command: 'poster_week', weekStart: +week })
+                ]),
+                [generateBackButton(BackButtonDest.POSTER)],
+                [generateBackButton()],
+              ]
+            }
           });
         } else if (payload.type === 'genres') {
-          await respond('Выберите жанр', genresKeyboard);
+          await respond('Выберите жанр', { keyboard: genresKeyboard });
         }
       } else if (payload.command === 'poster_day') {
         const concerts = await getDailyConcerts(moment(payload.dayStart));
@@ -192,12 +212,20 @@ export default async (ctx: Context) => {
         await respond('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections');
       } else if (payload.command === 'longread') {
         await respond('Смотри лонгриды тут: https://vk.com/@soundcheck_ural');
+      } else if (payload.command === 'releases') {
+        await respond('Смотри релизы тут: https://vk.com/soundcheck_ural/new_release');
+      } else if (payload.command === 'services') {
+        await respond('Выберите товар', { keyboard: servicesKeyboard });
+      } else if (payload.command === 'service') {
+        await respond('', {
+          attachments: [payload.serviceId]
+        });
       } else if (payload.command === 'tell_about_group') {
         await respond(`Испольхуйте хэштег ${TELL_ABOUT_GROUP_HASHTAG}`);
       } else if (payload.command === 'tell_about_release') {
         await respond(`Испольхуйте хэштег ${RELEASE_HASHTAG}`);
       } else if (payload.command === 'refresh_keyboard') {
-        await respond('Клавиатура обновлена', mainKeyboard);
+        await respond('Клавиатура обновлена', { keyboard: mainKeyboard });
       }
     } else {
       const text = body.object.text;
@@ -205,12 +233,16 @@ export default async (ctx: Context) => {
       if (text.includes(TELL_ABOUT_GROUP_HASHTAG)) {
         await Promise.all([
           respond('Рассказ о группе принят'),
-          sendVKMessage(TELL_ABOUT_GROUP_TARGET, 'Рассказ о группе', undefined, [body.object.id])
+          sendVKMessage(TELL_ABOUT_GROUP_TARGET, 'Рассказ о группе', {
+            forwardMessages: [body.object.id]
+          })
         ]);
       } else if (text.includes(RELEASE_HASHTAG)) {
         await Promise.all([
           respond('Релиз принят'),
-          sendVKMessage(RELEASES_TARGET, 'Релиз', undefined, [body.object.id])
+          sendVKMessage(RELEASES_TARGET, 'Релиз', {
+            forwardMessages: [body.object.id]
+          })
         ]);
       }
     }

@@ -109,13 +109,20 @@ export function sendVKRequest<T>(method: string, query: object = {}): Promise<Ax
   }));
 }
 
-export async function sendVKMessage(dest: number | string, message: string, keyboard?: Keyboard, forward_messages: number[] = []) {
+export interface SendVkMessageOptions {
+  keyboard?: Keyboard;
+  forwardMessages?: number[];
+  attachments?: string[];
+}
+
+export async function sendVKMessage(dest: number | string, message: string, options: SendVkMessageOptions = {}) {
   await sendVKRequest('messages.send', {
     peer_id: dest,
     random_id: Math.floor(Math.random() * 2 ** 32),
     message,
-    keyboard: JSON.stringify(keyboard),
-    forward_messages: forward_messages.join(',')
+    keyboard: JSON.stringify(options.keyboard),
+    forward_messages: (options.forwardMessages || []).join(','),
+    attachments: (options.attachments || []).join(',')
   });
 }
 
@@ -150,7 +157,7 @@ export function getConcertFromEvent(event: Event): Concert {
     startTime: moment(event.start.dateTime),
     genres: (fields.Жанр || '').split(/\s*,\s*/).filter(Boolean),
     description: fields.Описание || '',
-    location: event.location || '',
+    location: (event.location || '').trim(),
     entry: fields.Вход || ''
   };
 }
