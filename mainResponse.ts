@@ -119,7 +119,13 @@ export default async (ctx: Context) => {
               return false;
             }
 
-            buttons.push(generateButton(capitalizeWords(moment(+day).format('DD MMMM')), { command: 'poster_day', dayStart: +day }));
+            const dayOfTheWeek = moment(+day).day();
+
+            buttons.push(generateButton(
+              capitalizeWords(moment(+day).format('DD MMM')),
+              { command: 'poster_day', dayStart: +day },
+              dayOfTheWeek > 4 ? ButtonColor.POSITIVE : ButtonColor.PRIMARY
+            ));
           });
 
           await respond('Выберите день', {
