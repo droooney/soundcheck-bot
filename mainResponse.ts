@@ -60,8 +60,8 @@ const genresKeyboard: Keyboard = {
 };
 const TELL_ABOUT_GROUP_HASHTAG = '#tell_about_group';
 const RELEASE_HASHTAG = '#release';
-const TELL_ABOUT_GROUP_TARGET = 175810060;
-const RELEASES_TARGET = 175810060;
+const TELL_ABOUT_GROUP_TARGET = 521725484;
+const RELEASES_TARGET = 521725484;
 
 export default async (ctx: Context) => {
   const body: Body = ctx.request.body;
