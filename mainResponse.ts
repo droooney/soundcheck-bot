@@ -219,7 +219,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'services') {
         await respond('Выберите товар', { keyboard: servicesKeyboard });
       } else if (payload.command === 'service') {
-        await respond('', {
+        await respond('Товар', {
           attachments: [payload.serviceId]
         });
       } else if (payload.command === 'tell_about_group') {
