@@ -67,6 +67,7 @@ const genresKeyboard: Keyboard = {
 const servicesKeyboard: Keyboard = {
   one_time: false,
   buttons: [
+    [generateButton('Тестовый товар', { command: 'service', serviceId: 'market164134127_3088332' })],
     [generateButton('Дизайн стикеров', { command: 'service', serviceId: 'market177574047_3113786' })],
     [generateButton('Реклама в Soundcheck', { command: 'service', serviceId: 'market177574047_2685381' })],
     [generateBackButton(BackButtonDest.MAIN)],
