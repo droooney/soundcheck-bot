@@ -15,69 +15,21 @@ import {
   getWeekString,
   sendVKMessage
 } from './helpers';
-import { BackButtonDest, Body, ButtonColor, ButtonPayload, Keyboard, KeyboardButton } from './types';
+import { BackButtonDest, Body, ButtonColor, ButtonPayload, KeyboardButton } from './types';
+import {
+  TELL_ABOUT_GROUP_HASHTAG,
+  RELEASE_HASHTAG,
+  TELL_ABOUT_GROUP_TARGET,
+  RELEASES_TARGET
+} from './constants';
+import {
+  generateButton,
+  generateBackButton,
 
-const generateButton = (text: string, payload: ButtonPayload, color: ButtonColor = ButtonColor.PRIMARY): KeyboardButton => {
-  return {
-    action: {
-      type: 'text',
-      label: text,
-      payload: JSON.stringify(payload)
-    },
-    color,
-  };
-};
-const backButtonText: Record<BackButtonDest, string> = {
-  [BackButtonDest.MAIN]: 'Главное меню',
-  [BackButtonDest.POSTER]: 'Афиша'
-};
-const generateBackButton = (dest: BackButtonDest = BackButtonDest.MAIN): KeyboardButton => {
-  return generateButton(`← ${backButtonText[dest]}`, { command: 'back', dest }, ButtonColor.SECONDARY);
-};
-const GENRES = ['Поп-рок', 'Джаз', 'Инди-рок', 'Рок', 'Хип-хоп'];
-const mainKeyboard: Keyboard = {
-  one_time: false,
-  buttons: [
-    [
-      generateButton('Афиша', { command: 'poster' }),
-      generateButton('Плейлисты', { command: 'playlist' }),
-      generateButton('Лонгриды', { command: 'longread' }),
-    ],
-    [
-      generateButton('Релизы', { command: 'releases' }),
-      generateButton('Услуги', { command: 'services' }),
-    ],
-    [
-      generateButton('Рассказать о группе', { command: 'tell_about_group' }),
-      generateButton('Сообщить о релизе', { command: 'tell_about_release' }),
-    ],
-    [
-      generateButton('🔄 Обновить клавиатуру', { command: 'refresh_keyboard' }, ButtonColor.POSITIVE),
-    ],
-  ]
-};
-const genresKeyboard: Keyboard = {
-  one_time: false,
-  buttons: [
-    ..._.chunk(GENRES.map((genre) => generateButton(genre, { command: 'poster_genre', genre })), 4),
-    [generateBackButton(BackButtonDest.POSTER)],
-    [generateBackButton()],
-  ]
-};
-const servicesKeyboard: Keyboard = {
-  one_time: false,
-  buttons: [
-    [
-      generateButton('Дизайн стикеров', { command: 'service', serviceId: 'market-177574047_3113786' }),
-      generateButton('Реклама в Soundcheck', { command: 'service', serviceId: 'market-177574047_2685381' }),
-    ],
-    [generateBackButton(BackButtonDest.MAIN)],
-  ]
-};
-const TELL_ABOUT_GROUP_HASHTAG = '#tell_about_group';
-const RELEASE_HASHTAG = '#release';
-const TELL_ABOUT_GROUP_TARGET = 175810060;
-const RELEASES_TARGET = 175810060;
+  mainKeyboard,
+  genresKeyboard,
+  servicesKeyboard
+} from './keyboards';
 
 export default async (ctx: Context) => {
   const body: Body = ctx.request.body;
@@ -192,8 +144,6 @@ export default async (ctx: Context) => {
         const today = +moment().startOf('day');
         const concerts = (await getWeeklyConcerts(moment(payload.weekStart))).filter(({ startTime }) => +startTime >= today);
         const groups = getConcertsByDays(concerts);
-
-        console.log(getConcertsByDaysString(groups).length);
 
         await respond(
           concerts.length

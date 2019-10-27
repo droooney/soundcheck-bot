@@ -5,17 +5,13 @@ import * as _ from 'lodash';
 import moment = require('moment-timezone');
 
 import { Concert, Event, EventsResponse, Keyboard } from './types';
+import { defaultVKQuery, SOUNDCHECK_ID } from './constants';
 
 const {
   private_key,
   client_email,
   token_uri
 } = require('./googleCredentials.json');
-
-const defaultVKQuery = {
-  v: '5.101',
-  access_token: '2d0c91d1f4f816ed81c83008fa171fe5642e9153de1bebdf08f993392675512944a731975ad559157906b',
-};
 
 let googleAPIAccessToken = '';
 
@@ -201,7 +197,36 @@ export function getWeekString(week: moment.Moment): string {
 
   return capitalizeWords(
     endOfWeek.isSame(week, 'month')
-      ? `${week.format('DD')} - ${endOfWeek.format('DD MMMM')}`
-      : `${week.format('DD MMMM')} - ${endOfWeek.format('DD MMMM')}`
+      ? `${week.format('DD')}-${endOfWeek.format('DD MMMM')}`
+      : `${week.format('DD MMMM')} - ${endOfWeek.format('D MMMM')}`
   );
+}
+
+export async function postPoster(day: moment.Moment) {
+  let posterText = '';
+
+  if (day.weekday() === 0) {
+    const concerts = await getWeeklyConcerts(day);
+
+    if (concerts.length) {
+      const groups = getConcertsByDays(concerts);
+
+      posterText = `🥃 Афиша выступлений местных музыкантов на ${getWeekString(day)} от @soundcheck_ural (Soundcheck – Музыка Екатеринбурга).
+
+${getConcertsByDaysString(groups)}`;
+    }
+  } else {
+    const concerts = await getDailyConcerts(day);
+
+    if (concerts.length) {
+      posterText = `🥃 Афиша выступлений местных музыкантов на ${day.format('DD MMM')} от @soundcheck_ural (Soundcheck – Музыка Екатеринбурга).`;
+    }
+  }
+
+  await sendVKRequest('wall.post', {
+    owner_id: -SOUNDCHECK_ID,
+    from_group: 1,
+    message: posterText,
+    publish_date: +day.clone().startOf('day').hours(12) / 1000
+  });
 }

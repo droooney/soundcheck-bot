@@ -6,7 +6,8 @@ import Router = require('koa-router');
 import moment = require('moment-timezone');
 
 import { refreshGoogleAccessToken } from './helpers';
-import mainResponse from './mainResponse';
+import vkBotCallback from './vkBotCallback';
+import getConcertsCallback from './getConcertsCallback';
 
 util.inspect.defaultOptions.depth = 10;
 
@@ -19,7 +20,8 @@ const router = new Router({
   prefix: '/soundcheck-bot5778'
 });
 
-router.post('/oajhnswfa78sfnah87hbhnas9f8', mainResponse);
+router.get('/oajhnswfa78sfnah87hbhnas9f8/concerts', getConcertsCallback);
+router.post('/oajhnswfa78sfnah87hbhnas9f8', vkBotCallback);
 
 app.use(async (ctx, next) => {
   console.log(ctx.method, ctx.type, ctx.url);
