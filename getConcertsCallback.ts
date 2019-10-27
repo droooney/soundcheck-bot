@@ -4,6 +4,7 @@ import moment = require('moment-timezone');
 import {
   getConcertsByDays,
   getConcertsByDaysString,
+  getConcertsString,
   getDailyConcerts,
   getWeeklyConcerts,
   getWeekString
@@ -31,7 +32,9 @@ ${getConcertsByDaysString(groups)}`;
     const concerts = await getDailyConcerts(day);
 
     if (concerts.length) {
-      posterText = `🥃 Афиша выступлений местных музыкантов на ${day.format('DD MMM')} от @soundcheck_ural (Soundcheck – Музыка Екатеринбурга).`;
+      posterText = `🥃 Афиша выступлений местных музыкантов на ${day.format('DD MMM')} от @soundcheck_ural (Soundcheck – Музыка Екатеринбурга).
+
+${getConcertsString(concerts)}`;
     }
   }
 
