@@ -2,6 +2,7 @@ import { Context } from 'koa';
 import moment = require('moment-timezone');
 
 import {
+  capitalizeWords,
   getConcertsByDays,
   getConcertsByDaysString,
   getConcertsString,
@@ -32,7 +33,7 @@ ${getConcertsByDaysString(groups)}`;
     const concerts = await getDailyConcerts(day);
 
     if (concerts.length) {
-      posterText = `🥃 Афиша выступлений местных музыкантов на ${day.format('DD MMM')} от @soundcheck_ural (Soundcheck – Музыка Екатеринбурга).
+      posterText = `🥃 Афиша выступлений местных музыкантов на ${capitalizeWords(day.format('DD MMMM'))} от @soundcheck_ural (Soundcheck – Музыка Екатеринбурга).
 
 ${getConcertsString(concerts)}`;
     }

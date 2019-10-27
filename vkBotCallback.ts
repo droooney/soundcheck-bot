@@ -92,7 +92,7 @@ export default async (ctx: Context) => {
             const dayOfTheWeek = moment(+day).weekday();
 
             buttons.push(generateButton(
-              capitalizeWords(moment(+day).format('DD MMM')),
+              capitalizeWords(moment(+day).format('DD MMMM')),
               { command: 'poster_day', dayStart: +day },
               dayOfTheWeek > 4 ? ButtonColor.POSITIVE : ButtonColor.PRIMARY
             ));
