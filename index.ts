@@ -20,8 +20,8 @@ const router = new Router({
   prefix: '/soundcheck-bot5778'
 });
 
-router.get('/oajhnswfa78sfnah87hbhnas9f8/concerts', getConcertsCallback);
-router.post('/oajhnswfa78sfnah87hbhnas9f8', vkBotCallback);
+router.get('/api/concerts', getConcertsCallback);
+router.post('/9lyvg7xn27axayu5ybpy3o1og67', vkBotCallback);
 
 app.use(async (ctx, next) => {
   console.log(ctx.method, ctx.type, ctx.url);
