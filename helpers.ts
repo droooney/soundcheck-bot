@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import moment = require('moment-timezone');
 
 import { Concert, Event, EventsResponse, Keyboard } from './types';
-import { defaultVKQuery, SOUNDCHECK_ID } from './constants';
+import { defaultVKQuery } from './constants';
 
 const {
   private_key,
@@ -200,33 +200,4 @@ export function getWeekString(week: moment.Moment): string {
       ? `${week.format('DD')}-${endOfWeek.format('DD MMMM')}`
       : `${week.format('DD MMMM')} - ${endOfWeek.format('D MMMM')}`
   );
-}
-
-export async function postPoster(day: moment.Moment) {
-  let posterText = '';
-
-  if (day.weekday() === 0) {
-    const concerts = await getWeeklyConcerts(day);
-
-    if (concerts.length) {
-      const groups = getConcertsByDays(concerts);
-
-      posterText = `🥃 Афиша выступлений местных музыкантов на ${getWeekString(day)} от @soundcheck_ural (Soundcheck – Музыка Екатеринбурга).
-
-${getConcertsByDaysString(groups)}`;
-    }
-  } else {
-    const concerts = await getDailyConcerts(day);
-
-    if (concerts.length) {
-      posterText = `🥃 Афиша выступлений местных музыкантов на ${day.format('DD MMM')} от @soundcheck_ural (Soundcheck – Музыка Екатеринбурга).`;
-    }
-  }
-
-  await sendVKRequest('wall.post', {
-    owner_id: -SOUNDCHECK_ID,
-    from_group: 1,
-    message: posterText,
-    publish_date: +day.clone().startOf('day').hours(12) / 1000
-  });
 }
