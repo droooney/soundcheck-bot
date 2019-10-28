@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import moment = require('moment-timezone');
 
 import { Concert, Event, EventsResponse, Keyboard } from './types';
-import { defaultVKQuery } from './constants';
+import { defaultVKQuery, NOTIFY_ABOUT_POSTER_TARGET } from './constants';
 
 const {
   private_key,
@@ -200,4 +200,67 @@ export function getWeekString(week: moment.Moment): string {
       ? `${week.format('DD')}-${endOfWeek.format('DD MMMM')}`
       : `${week.format('DD MMMM')} - ${endOfWeek.format('D MMMM')}`
   );
+}
+
+export function getDayString(day: moment.Moment): string {
+  return capitalizeWords(day.format('D MMMM'));
+}
+
+export async function getPosterText(posterTime: moment.Moment): Promise<string | null> {
+  const isWeekly = posterTime.weekday() === 0;
+  const posterHeader = `🥃 Афиша выступлений местных музыкантов на ${
+    isWeekly ? getWeekString(posterTime) : getDayString(posterTime)
+  } от @soundcheck_ural (Soundcheck – Музыка Екатеринбурга).`;
+  let posterText: string | null = null;
+
+  if (isWeekly) {
+    const concerts = await getWeeklyConcerts(posterTime);
+
+    if (concerts.length) {
+      const groups = getConcertsByDays(concerts);
+
+      posterText = `${posterHeader}\n\n${getConcertsByDaysString(groups)}`;
+    }
+  } else {
+    const concerts = await getDailyConcerts(posterTime);
+
+    if (concerts.length > 1) {
+      posterText = `${posterHeader}\n\n${getConcertsString(concerts)}`;
+    }
+  }
+
+  return posterText;
+}
+
+export function sendNextPosterMessage() {
+  const now = moment();
+  const nextSendMessageTime = now
+    .clone()
+    .startOf('day')
+    .hours(23);
+
+  if (now.isSameOrAfter(nextSendMessageTime)) {
+    nextSendMessageTime.add(1, 'day');
+  }
+
+  const posterDay = nextSendMessageTime
+    .clone()
+    .add(1, 'day')
+    .startOf('day')
+    .hours(12);
+
+  setTimeout(() => {
+    sendPosterMessage(posterDay);
+    sendNextPosterMessage();
+  }, +nextSendMessageTime - +now);
+}
+
+export async function sendPosterMessage(posterDay: moment.Moment) {
+  const posterText = await getPosterText(posterDay);
+
+  if (posterText) {
+    await sendVKMessage(NOTIFY_ABOUT_POSTER_TARGET, `Афиша на ${
+      posterDay.weekday() === 0 ? getWeekString(posterDay) : getDayString(posterDay)
+    }: https://all-chess.org/soundcheck-bot5778/api/concerts?date=${posterDay.format('YYYY-MM-DD')}`);
+  }
 }

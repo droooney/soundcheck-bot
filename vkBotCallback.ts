@@ -5,12 +5,12 @@ import { Context } from 'koa';
 import {
   SendVkMessageOptions,
 
-  capitalizeWords,
   getConcerts,
   getConcertsByDays,
   getConcertsByDaysString,
   getConcertsString,
   getDailyConcerts,
+  getDayString,
   getWeeklyConcerts,
   getWeekString,
   sendVKMessage
@@ -92,7 +92,7 @@ export default async (ctx: Context) => {
             const dayOfTheWeek = moment(+day).weekday();
 
             buttons.push(generateButton(
-              capitalizeWords(moment(+day).format('DD MMMM')),
+              getDayString(moment(+day)),
               { command: 'poster_day', dayStart: +day },
               dayOfTheWeek > 4 ? ButtonColor.POSITIVE : ButtonColor.PRIMARY
             ));

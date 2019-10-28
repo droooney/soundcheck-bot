@@ -5,7 +5,7 @@ import BodyParser = require('koa-bodyparser');
 import Router = require('koa-router');
 import moment = require('moment-timezone');
 
-import { refreshGoogleAccessToken } from './helpers';
+import { refreshGoogleAccessToken, sendNextPosterMessage } from './helpers';
 import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
 
@@ -53,6 +53,8 @@ async function main() {
       resolve();
     });
   });
+
+  sendNextPosterMessage();
 }
 
 main();
