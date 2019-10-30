@@ -5,6 +5,7 @@ import BodyParser = require('koa-bodyparser');
 import Router = require('koa-router');
 import moment = require('moment-timezone');
 
+import Database from './Database';
 import { refreshGoogleAccessToken, sendNextPosterMessage } from './helpers';
 import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
@@ -44,7 +45,10 @@ app.use(router.routes());
 app.use(router.allowedMethods());
 
 async function main() {
-  await refreshGoogleAccessToken();
+  await Promise.all([
+    refreshGoogleAccessToken(),
+    Database.prepare()
+  ]);
 
   await new Promise((resolve) => {
     server.listen(process.env.PORT || 5778, () => {

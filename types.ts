@@ -210,3 +210,33 @@ export interface MarketService {
 }
 
 export type Service = MarketService;
+
+export interface Drawing {
+  id: string;
+  name: string;
+  description: string;
+  postId: number;
+}
+
+export type DrawingParams = Omit<Drawing, 'id'>;
+
+export interface AddDrawingSetNameUserState {
+  type: 'admin/add-drawing/set-name';
+}
+
+export interface AddDrawingSetDescriptionUserState {
+  type: 'admin/add-drawing/set-description';
+  name: string;
+}
+
+export interface AddDrawingSetPostIdUserState {
+  type: 'admin/add-drawing/set-postId';
+  name: string;
+  description: string;
+}
+
+export type UserState = null | (
+  AddDrawingSetNameUserState
+  | AddDrawingSetDescriptionUserState
+  | AddDrawingSetPostIdUserState
+);
