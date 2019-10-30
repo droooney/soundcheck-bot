@@ -178,7 +178,7 @@ export default async (ctx: Context) => {
         await respond('Смотри истории групп тут: https://vk.com/soundcheck_ural/music_history');
       } else if (payload.command === 'releases') {
         await respond('Смотри релизы тут: https://vk.com/soundcheck_ural/new_release');
-      } else if (payload.command === 'for_musicians') {
+      } else if (payload.command === 'for_musicians' || (payload.command === 'back' && payload.dest === 'for_musicians')) {
         await respond(`Если хотите сообщить о новом релизе, напишите сообщение с хэштегом ${RELEASE_HASHTAG}, \
 прикрепив пост или аудиозапись. Если хотите рассказать о своей группе, пишите историю группы, \
 упомянув хэштег ${TELL_ABOUT_GROUP_HASHTAG}. Также у нас имеются различные услуги для музыкантов.`, { keyboard: forMusiciansKeyboard });
