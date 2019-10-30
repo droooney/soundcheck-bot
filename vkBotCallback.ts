@@ -23,6 +23,7 @@ import {
   RELEASE_HASHTAG,
   TELL_ABOUT_GROUP_TARGET,
   RELEASES_TARGET,
+  COLLABORATION_TARGET,
 } from './constants';
 import {
   generateButton,
@@ -187,11 +188,15 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'tell_about_release') {
         await respond(`Напишите сообщение с хэштегом ${RELEASE_HASHTAG}, прикрепив пост или аудиозапись`);
       } else if (payload.command === 'services') {
-        await respond('Выберите товар', { keyboard: servicesKeyboard });
+        await respond('Выберите услугу', { keyboard: servicesKeyboard });
       } else if (payload.command === 'service') {
-        await respond('', {
-          attachments: [payload.serviceId]
-        });
+        if (payload.service.type === 'market') {
+          await respond('', {
+            attachments: [payload.service.id]
+          });
+        }
+      } else if (payload.command === 'collaboration') {
+        await respond(`Пишите Андрею: https://vk.com/im?sel=${COLLABORATION_TARGET}`);
       } else if (payload.command === 'refresh_keyboard') {
         await respond('Клавиатура обновлена', { keyboard: mainKeyboard });
       }

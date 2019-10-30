@@ -22,6 +22,7 @@ export const mainKeyboard: Keyboard = {
     ],
     [
       generateButton('Для музыкантов', { command: 'for_musicians' }),
+      generateButton('Сотрудничество', { command: 'collaboration' }),
     ],
     [
       generateButton('🔄 Обновить клавиатуру', { command: 'refresh_keyboard' }, ButtonColor.POSITIVE),
@@ -44,8 +45,8 @@ export const servicesKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton('Дизайн стикеров', { command: 'service', serviceId: 'market-177574047_3113786' }),
-      generateButton('Реклама в Soundcheck', { command: 'service', serviceId: 'market-177574047_2685381' }),
+      generateButton('Дизайн стикеров', { command: 'service', service: { type: 'market', id: 'market-177574047_3113786' } }),
+      generateButton('Реклама в Soundcheck', { command: 'service', service: { type: 'market', id: 'market-177574047_2685381' } }),
     ],
     [generateBackButton(BackButtonDest.FOR_MUSICIANS)],
     [generateBackButton()],

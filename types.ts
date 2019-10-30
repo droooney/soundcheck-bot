@@ -93,7 +93,11 @@ export interface ServicesButtonPayload {
 
 export interface ServiceButtonPayload {
   command: 'service';
-  serviceId: string;
+  service: Service;
+}
+
+export interface CollaborationButtonPayload {
+  command: 'collaboration';
 }
 
 export interface RefreshKeyboardButtonPayload {
@@ -118,6 +122,7 @@ export type ButtonPayload = (
   | TellAboutReleaseButtonPayload
   | ServicesButtonPayload
   | ServiceButtonPayload
+  | CollaborationButtonPayload
   | RefreshKeyboardButtonPayload
 );
 
@@ -198,3 +203,10 @@ export enum Genre {
   METAL = 'METAL',
   POST = 'POST',
 }
+
+export interface MarketService {
+  type: 'market';
+  id: string;
+}
+
+export type Service = MarketService;
