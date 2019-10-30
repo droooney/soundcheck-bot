@@ -52,19 +52,39 @@ export interface PosterWeekButtonPayload {
 
 export interface PosterGenreButtonPayload {
   command: 'poster_genre';
-  genre: string;
+  genre: Genre;
 }
 
 export interface PlaylistButtonPayload {
   command: 'playlist';
 }
 
+export interface TextMaterialsButtonPayload {
+  command: 'text_materials';
+}
+
 export interface LongreadButtonPayload {
-  command: 'longread'
+  command: 'longread';
+}
+
+export interface GroupHistoryButtonPayload {
+  command: 'group_history';
 }
 
 export interface ReleasesButtonPayload {
   command: 'releases';
+}
+
+export interface ForMusiciansButtonPayload {
+  command: 'for_musicians';
+}
+
+export interface TellAboutGroupButtonPayload {
+  command: 'tell_about_group';
+}
+
+export interface TellAboutReleaseButtonPayload {
+  command: 'tell_about_release';
 }
 
 export interface ServicesButtonPayload {
@@ -74,14 +94,6 @@ export interface ServicesButtonPayload {
 export interface ServiceButtonPayload {
   command: 'service';
   serviceId: string;
-}
-
-export interface TellAboutGroupButtonPayload {
-  command: 'tell_about_group';
-}
-
-export interface TellAboutReleaseButtonPayload {
-  command: 'tell_about_release';
 }
 
 export interface RefreshKeyboardButtonPayload {
@@ -97,18 +109,22 @@ export type ButtonPayload = (
   | PosterWeekButtonPayload
   | PosterGenreButtonPayload
   | PlaylistButtonPayload
+  | TextMaterialsButtonPayload
   | LongreadButtonPayload
+  | GroupHistoryButtonPayload
   | ReleasesButtonPayload
-  | ServicesButtonPayload
-  | ServiceButtonPayload
+  | ForMusiciansButtonPayload
   | TellAboutGroupButtonPayload
   | TellAboutReleaseButtonPayload
+  | ServicesButtonPayload
+  | ServiceButtonPayload
   | RefreshKeyboardButtonPayload
 );
 
 export enum BackButtonDest {
   MAIN = 'main',
-  POSTER = 'poster'
+  POSTER = 'poster',
+  FOR_MUSICIANS = 'for_musicians',
 }
 
 export interface BaseButtonAction {
@@ -169,4 +185,16 @@ export interface Concert {
 export interface EventsResponse {
   nextPageToken?: string;
   items?: Event[];
+}
+
+export enum Genre {
+  ROCK = 'ROCK',
+  INDIE = 'INDIE',
+  HIP_HOP = 'HIP_HOP',
+  ELECTRONIC = 'ELECTRONIC',
+  COVERS = 'COVERS',
+  JAZZ = 'JAZZ',
+  POP = 'POP',
+  METAL = 'METAL',
+  POST = 'POST',
 }

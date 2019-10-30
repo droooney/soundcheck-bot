@@ -151,7 +151,7 @@ export function getConcertFromEvent(event: Event): Concert {
     ready: event.colorId === '2',
     title: event.summary || '',
     startTime: moment(event.start.dateTime),
-    genres: (fields.Жанр || '').split(/\s*,\s*/).filter(Boolean),
+    genres: (fields.Жанр || '').split(/\s*,\s*/).filter(Boolean).map((genre) => genre.toLowerCase()),
     description: fields.Описание || '',
     location: (event.location || '').trim(),
     entry: fields.Вход || ''

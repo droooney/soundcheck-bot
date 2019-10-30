@@ -17,10 +17,12 @@ import {
 } from './helpers';
 import { BackButtonDest, Body, ButtonColor, ButtonPayload, KeyboardButton } from './types';
 import {
+  genreNames,
+  genreMatches,
   TELL_ABOUT_GROUP_HASHTAG,
   RELEASE_HASHTAG,
   TELL_ABOUT_GROUP_TARGET,
-  RELEASES_TARGET
+  RELEASES_TARGET,
 } from './constants';
 import {
   generateButton,
@@ -28,7 +30,9 @@ import {
 
   mainKeyboard,
   genresKeyboard,
-  servicesKeyboard
+  servicesKeyboard,
+  textMaterialsKeyboard,
+  forMusiciansKeyboard,
 } from './keyboards';
 
 export default async (ctx: Context) => {
@@ -153,7 +157,9 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'poster_genre') {
         const genre = payload.genre;
         const allConcerts = await getConcerts(moment().startOf('day'));
-        const genreConcerts = allConcerts.filter(({ genres }) => genres.includes(genre));
+        const genreConcerts = allConcerts.filter(({ genres }) => (
+          genres.some((g) => g === genreNames[genre] || genreMatches[genre].includes(g))
+        ));
 
         await respond(
           genreConcerts.length
@@ -162,20 +168,30 @@ export default async (ctx: Context) => {
         );
       } else if (payload.command === 'playlist') {
         await respond('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections');
+      } else if (payload.command === 'text_materials') {
+        await respond('У нас есть широкий выбор текстовых материалов: интервью, репортажи, истории групп', {
+          keyboard: textMaterialsKeyboard
+        });
       } else if (payload.command === 'longread') {
         await respond('Смотри лонгриды тут: https://vk.com/@soundcheck_ural');
+      } else if (payload.command === 'group_history') {
+        await respond('Смотри истории групп тут: https://vk.com/soundcheck_ural/music_history');
       } else if (payload.command === 'releases') {
         await respond('Смотри релизы тут: https://vk.com/soundcheck_ural/new_release');
+      } else if (payload.command === 'for_musicians') {
+        await respond(`Если хотите сообщить о новом релизе, напишите сообщение с хэштегом ${RELEASE_HASHTAG}, \
+прикрепив пост или аудиозапись. Если хотите рассказать о своей группе, пишите историю группы, \
+упомянув хэштег ${TELL_ABOUT_GROUP_HASHTAG}. Также у нас имеются различные услуги для музыкантов.`, { keyboard: forMusiciansKeyboard });
+      } else if (payload.command === 'tell_about_group') {
+        await respond(`Пишите историю группы, упомянув хэштег ${TELL_ABOUT_GROUP_HASHTAG}`);
+      } else if (payload.command === 'tell_about_release') {
+        await respond(`Напишите сообщение с хэштегом ${RELEASE_HASHTAG}, прикрепив пост или аудиозапись`);
       } else if (payload.command === 'services') {
         await respond('Выберите товар', { keyboard: servicesKeyboard });
       } else if (payload.command === 'service') {
         await respond('', {
           attachments: [payload.serviceId]
         });
-      } else if (payload.command === 'tell_about_group') {
-        await respond(`Испольхуйте хэштег ${TELL_ABOUT_GROUP_HASHTAG}`);
-      } else if (payload.command === 'tell_about_release') {
-        await respond(`Испольхуйте хэштег ${RELEASE_HASHTAG}`);
       } else if (payload.command === 'refresh_keyboard') {
         await respond('Клавиатура обновлена', { keyboard: mainKeyboard });
       }
