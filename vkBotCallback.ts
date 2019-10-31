@@ -159,13 +159,13 @@ export default async (ctx: Context) => {
         const genre = payload.genre;
         const allConcerts = await getConcerts(moment().startOf('day'));
         const genreConcerts = allConcerts.filter(({ genres }) => (
-          genres.some((g) => g === genreNames[genre] || genreMatches[genre].includes(g))
+          genres.some((g) => g.toLowerCase() === genreNames[genre].toLowerCase() || genreMatches[genre].includes(g.toLowerCase()))
         ));
 
         await respond(
           genreConcerts.length
             ? getConcertsByDaysString(getConcertsByDays(genreConcerts))
-            : `В ближайшее время концертов в жанре "${genre}" нет`
+            : `В ближайшее время концертов в жанре "${genreNames[genre]}" нет`
         );
       } else if (payload.command === 'playlist') {
         await respond('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections');

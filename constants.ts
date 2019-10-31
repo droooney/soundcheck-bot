@@ -6,36 +6,38 @@ export const defaultVKQuery = {
 };
 
 export const genreNames: Record<Genre, string> = {
-  [Genre.ROCK]: 'рок',
-  [Genre.INDIE]: 'инди',
-  [Genre.HIP_HOP]: 'хип-хоп',
-  [Genre.ELECTRONIC]: 'электроника',
-  [Genre.COVERS]: 'каверы',
-  [Genre.JAZZ]: 'джаз',
-  [Genre.POP]: 'поп',
-  [Genre.METAL]: 'иетал',
-  [Genre.POST]: 'пост и мета'
+  [Genre.ROCK]: 'Рок',
+  [Genre.INDIE]: 'Инди',
+  [Genre.HIP_HOP]: 'Хип-хоп',
+  [Genre.ELECTRONIC]: 'Электроника',
+  [Genre.COVERS]: 'Каверы',
+  [Genre.JAZZ]: 'Джаз',
+  [Genre.POP]: 'Поп',
+  [Genre.FOLK]: 'Фолк',
+  [Genre.ABOUT_MUSIC]: 'На тему музыки'
 };
 
 export const genreMatches: Record<Genre, string[]> = {
   [Genre.ROCK]: [
-    'панк', 'альтернатива', 'метал', 'хардкор', 'пост-рок', 'пост-хардкор',
-    'блюз-рок', 'рок-н-ролл', 'русский рок', 'поп-панк', 'поп-рок', 'пост-гранж'
+    'панк', 'панк-рок', 'альтернатива', 'альтернативный рок', 'метал', 'мелодик метал',
+    'хард-рок', 'трэш-метал', 'ню-метал', 'блэк-метал', 'хардкор', 'пост-рок', 'пост-хардкор',
+    'блюз-рок', 'рок-н-ролл', 'русский рок', 'поп-панк', 'поп-рок', 'пост-гранж', 'индастриал',
+    'дарк-индастриал', 'дрим-рок', 'инди-рок'
   ],
-  [Genre.INDIE]: [],
-  [Genre.HIP_HOP]: ['инди-рок', 'инди-поп'],
-  [Genre.ELECTRONIC]: ['хаус'],
+  [Genre.INDIE]: ['инди-рок', 'инди-поп', 'инди-фолк'],
+  [Genre.HIP_HOP]: ['рэп', 'реп', 'баттл', 'батл', 'баттл-рэп', 'батл-рэп', 'old school', 'new school'],
+  [Genre.ELECTRONIC]: ['хаус', 'эмбиент', 'чиптюн', 'фьюжн', 'dj'],
   [Genre.COVERS]: [],
-  [Genre.JAZZ]: ['блюз', 'брасс'],
-  [Genre.POP]: ['электропоп', 'диско', 'инди-поп'],
-  [Genre.METAL]: [],
-  [Genre.POST]: []
+  [Genre.JAZZ]: ['блюз', 'брасс', 'дикселенд', 'фанк'],
+  [Genre.POP]: ['электро-поп', 'диско', 'инди-поп', 'синти-поп', 'r\'n\'b', 'соул', 'синт', 'synth'],
+  [Genre.FOLK]: ['фолк-рок', 'инди-фолк', 'народная музыка', 'этника', 'этническая музыка'],
+  [Genre.ABOUT_MUSIC]: ['лекция', 'выставка', 'кино']
 };
 
 export const GENRES_BUTTONS = [
   [Genre.ROCK, Genre.INDIE, Genre.HIP_HOP],
   [Genre.ELECTRONIC, Genre.COVERS, Genre.JAZZ],
-  [Genre.POP, Genre.METAL, Genre.POST]
+  [Genre.POP, Genre.FOLK, Genre.ABOUT_MUSIC]
 ];
 
 export const SOUNDCHECK_ID = 164134127;

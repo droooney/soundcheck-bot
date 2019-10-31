@@ -200,8 +200,8 @@ export enum Genre {
   COVERS = 'COVERS',
   JAZZ = 'JAZZ',
   POP = 'POP',
-  METAL = 'METAL',
-  POST = 'POST',
+  FOLK = 'FOLK',
+  ABOUT_MUSIC = 'ABOUT_MUSIC',
 }
 
 export interface MarketService {
