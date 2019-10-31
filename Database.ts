@@ -32,7 +32,7 @@ export default class Database {
       const users = await fs.readdir(Database.userStatesDir);
 
       await Promise.all(
-        users.map((pathname) => async () => {
+        users.map(async (pathname) => {
           const match = pathname.match(/^(\d+)\.json$/);
 
           if (match) {
