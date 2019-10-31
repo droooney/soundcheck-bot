@@ -64,7 +64,7 @@ export default async (ctx: Context) => {
     }
 
     message: if (payload) {
-      if (payload.command.startsWith('admin') && !isManager) {
+      if ((payload.command.startsWith('admin') || (payload.command === 'back' && payload.dest.startsWith('admin'))) && !isManager) {
         await respond('Вы не являетесь администратором', { keyboard: mainKeyboard });
 
         break message;
@@ -72,9 +72,9 @@ export default async (ctx: Context) => {
 
       command: if (payload.command === 'start') {
         await respond('Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?', { keyboard: mainKeyboard });
-      } else if (payload.command === 'back' && payload.dest === 'main') {
+      } else if (payload.command === 'back' && payload.dest === BackButtonDest.MAIN) {
         await respond('Выберите действие', { keyboard: mainKeyboard });
-      } else if (payload.command === 'poster' || (payload.command === 'back' && payload.dest === 'poster')) {
+      } else if (payload.command === 'poster' || (payload.command === 'back' && payload.dest === BackButtonDest.POSTER)) {
         await respond('Выберите тип афиши', {
           keyboard: {
             one_time: false,
@@ -218,7 +218,7 @@ export default async (ctx: Context) => {
         await respond(`${drawing.name}\n\n${drawing.description}`, {
           attachments: [`wall${drawing.postOwnerId}_${drawing.postId}`]
         });
-      } else if (payload.command === 'for_musicians' || (payload.command === 'back' && payload.dest === 'for_musicians')) {
+      } else if (payload.command === 'for_musicians' || (payload.command === 'back' && payload.dest === BackButtonDest.FOR_MUSICIANS)) {
         await respond(`Если хотите сообщить о новом релизе, напишите сообщение с хэштегом ${RELEASE_HASHTAG}, \
 прикрепив пост или аудиозапись. Если хотите рассказать о своей группе, пишите историю группы, \
 упомянув хэштег ${TELL_ABOUT_GROUP_HASHTAG}. Также у нас имеются различные услуги для музыкантов.`, { keyboard: forMusiciansKeyboard });
@@ -236,7 +236,7 @@ export default async (ctx: Context) => {
         }
       } else if (payload.command === 'collaboration') {
         await respond(`Пишите Андрею: https://vk.com/im?sel=${COLLABORATION_TARGET}`);
-      } else if (payload.command === 'admin') {
+      } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
         await respond('Выберите действие', { keyboard: adminKeyboard });
       } else if (payload.command === 'admin/drawings') {
         await respond('Выберите действие', { keyboard: adminDrawingsKeyboard });

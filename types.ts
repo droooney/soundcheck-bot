@@ -56,7 +56,7 @@ export interface StartButtonPayload {
 
 export interface BackButtonPayload {
   command: 'back';
-  dest: string;
+  dest: BackButtonDest;
 }
 
 export interface PosterButtonPayload {
