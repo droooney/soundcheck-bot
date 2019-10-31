@@ -194,7 +194,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'releases') {
         await respond('Смотри релизы тут: https://vk.com/soundcheck_ural/new_release');
       } else if (payload.command === 'drawings') {
-        const buttons = Database.drawings.map(({ id, name }) => [generateButton(name, { command: 'drawing', drawingId: id })]);
+        const buttons = Database.drawings.map(({ id, name }) => [generateButton(name, { command: 'drawings/drawing', drawingId: id })]);
 
         await respond('Смотри релизы тут: https://vk.com/soundcheck_ural/new_release', {
           keyboard: {
@@ -204,6 +204,19 @@ export default async (ctx: Context) => {
               [generateBackButton()],
             ]
           }
+        });
+      } else if (payload.command === 'drawings/drawing') {
+        const drawingId = payload.drawingId;
+        const drawing = Database.drawings.find(({ id }) => id === drawingId);
+
+        if (!drawing) {
+          await respond('Такого розыгрыша не существует');
+
+          break command;
+        }
+
+        await respond(`${drawing.name}\n\n${drawing.description}`, {
+          attachments: [`wall${drawing.postOwnerId}_${drawing.postId}`]
         });
       } else if (payload.command === 'for_musicians' || (payload.command === 'back' && payload.dest === 'for_musicians')) {
         await respond(`Если хотите сообщить о новом релизе, напишите сообщение с хэштегом ${RELEASE_HASHTAG}, \

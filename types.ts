@@ -108,7 +108,7 @@ export interface DrawingsButtonPayload {
 }
 
 export interface DrawingButtonPayload {
-  command: 'drawing';
+  command: 'drawings/drawing';
   drawingId: string;
 }
 
