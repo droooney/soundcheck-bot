@@ -50,10 +50,6 @@ async function main() {
     Database.prepare()
   ]);
 
-  console.log(Database.managers);
-  console.log(Database.drawings);
-  console.log(Database.userStates);
-
   await new Promise((resolve) => {
     server.listen(process.env.PORT || 5778, () => {
       console.log('Listening...');
