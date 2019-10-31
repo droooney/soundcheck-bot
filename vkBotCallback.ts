@@ -45,7 +45,8 @@ export default async (ctx: Context) => {
   if (body.type === 'confirmation') {
     ctx.body = 'afcb8751';
   } else if (body.type === 'message_new') {
-    const mainKeyboard = generateMainKeyboard(Database.managers.includes(body.object.peer_id));
+    const isManager = Database.managers.includes(body.object.peer_id);
+    const mainKeyboard = generateMainKeyboard(isManager);
     const respond = async (message: string, options: SendVkMessageOptions = {}) => {
       await sendVKMessage(body.object.peer_id, message, options);
     };
@@ -202,6 +203,10 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'collaboration') {
         await respond(`Пишите Андрею: https://vk.com/im?sel=${COLLABORATION_TARGET}`);
       } else if (payload.command === 'admin') {
+        if (!isManager) {
+          break command;
+        }
+
         await respond('Админка');
       } else if (payload.command === 'refresh_keyboard') {
         await respond('Клавиатура обновлена', { keyboard: mainKeyboard });
