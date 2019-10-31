@@ -20,7 +20,24 @@ export interface NewMessageBody extends BaseBody {
   object: Message;
 }
 
-export type Body = ConfirmationBody | NewMessageBody;
+export interface ChangeManagerBody extends BaseBody {
+  type: 'group_officers_edit';
+  object: {
+    admin_id: number;
+    user_id: number;
+    level_old: number;
+    level_new: number;
+  };
+}
+
+export type Body = ConfirmationBody | NewMessageBody | ChangeManagerBody;
+
+export interface ManagersResponse {
+  response: {
+    count: number;
+    items: { id: number; role: string; permissions: string[]; }[];
+  };
+}
 
 export interface StartButtonPayload {
   command: 'start';
@@ -100,6 +117,10 @@ export interface CollaborationButtonPayload {
   command: 'collaboration';
 }
 
+export interface AdminButtonPayload {
+  command: 'admin';
+}
+
 export interface RefreshKeyboardButtonPayload {
   command: 'refresh_keyboard';
 }
@@ -123,6 +144,7 @@ export type ButtonPayload = (
   | ServicesButtonPayload
   | ServiceButtonPayload
   | CollaborationButtonPayload
+  | AdminButtonPayload
   | RefreshKeyboardButtonPayload
 );
 

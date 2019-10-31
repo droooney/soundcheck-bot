@@ -1,5 +1,3 @@
-import * as _ from 'lodash';
-
 import { BackButtonDest, ButtonColor, ButtonPayload, Keyboard, KeyboardButton } from './types';
 import { genreNames, GENRES_BUTTONS } from './constants';
 
@@ -9,32 +7,39 @@ export const backButtonText: Record<BackButtonDest, string> = {
   [BackButtonDest.FOR_MUSICIANS]: 'Для музыкантов',
 };
 
-export const mainKeyboard: Keyboard = {
-  one_time: false,
-  buttons: [
-    [
-      generateButton('Афиша', { command: 'poster' }),
-      generateButton('Плейлисты', { command: 'playlist' }),
-    ],
-    [
-      generateButton('Текстовые материалы', { command: 'text_materials' }),
-      generateButton('Релизы', { command: 'releases' }),
-    ],
-    [
-      generateButton('Для музыкантов', { command: 'for_musicians' }),
-      generateButton('Сотрудничество', { command: 'collaboration' }),
-    ],
-    [
-      generateButton('🔄 Обновить клавиатуру', { command: 'refresh_keyboard' }, ButtonColor.POSITIVE),
-    ],
-  ]
-};
+export function generateMainKeyboard(isManager: boolean): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      [
+        generateButton('Афиша', { command: 'poster' }),
+        generateButton('Плейлисты', { command: 'playlist' }),
+      ],
+      [
+        generateButton('Текстовые материалы', { command: 'text_materials' }),
+        generateButton('Релизы', { command: 'releases' }),
+      ],
+      [
+        generateButton('Для музыкантов', { command: 'for_musicians' }),
+        generateButton('Сотрудничество', { command: 'collaboration' }),
+      ],
+      ...(
+        isManager
+          ? [[generateButton('Админка', { command: 'admin' })]]
+          : []
+      ),
+      [
+        generateButton('🔄 Обновить клавиатуру', { command: 'refresh_keyboard' }, ButtonColor.POSITIVE),
+      ],
+    ]
+  };
+}
 
 export const genresKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     ...GENRES_BUTTONS.map((buttons) => (
-      buttons.map((genre) => generateButton(_.upperFirst(genreNames[genre]), { command: 'poster_genre', genre }))
+      buttons.map((genre) => generateButton(genreNames[genre], { command: 'poster_genre', genre }))
     )),
     [generateBackButton(BackButtonDest.POSTER)],
     [generateBackButton()],

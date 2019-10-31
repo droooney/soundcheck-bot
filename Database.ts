@@ -1,6 +1,8 @@
 import * as fs from 'fs-extra';
 
-import { Drawing, DrawingParams, UserState } from './types';
+import { Drawing, DrawingParams, ManagersResponse, UserState } from './types';
+import { sendVKRequest } from './helpers';
+import { SOUNDCHECK_ID } from './constants';
 
 export type Preparation = () => void;
 
@@ -38,12 +40,29 @@ export default class Database {
           }
         })
       );
+    },
+
+    // prepare managers
+    async () => {
+      const {
+        data: {
+          response: {
+            items: managers
+          }
+        }
+      } = await sendVKRequest<ManagersResponse>('groups.getMembers', {
+        group_id: SOUNDCHECK_ID,
+        filter: 'managers'
+      });
+
+      Database.managers = managers.map(({ id }) => id);
     }
   ];
   static locks: Record<string, Promise<any>> = {};
 
   static drawings: Drawing[] = [];
   static userStates: Partial<Record<number, UserState>> = {};
+  static managers: number[] = [];
 
   static async prepare() {
     for (const preparation of Database.preparations) {

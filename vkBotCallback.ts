@@ -15,7 +15,7 @@ import {
   getWeekString,
   sendVKMessage
 } from './helpers';
-import { BackButtonDest, Body, ButtonColor, ButtonPayload, KeyboardButton } from './types';
+import { BackButtonDest, Body, ButtonColor, ButtonPayload, Genre, KeyboardButton } from './types';
 import {
   genreNames,
   genreMatches,
@@ -28,22 +28,24 @@ import {
 import {
   generateButton,
   generateBackButton,
+  generateMainKeyboard,
 
-  mainKeyboard,
   genresKeyboard,
   servicesKeyboard,
   textMaterialsKeyboard,
   forMusiciansKeyboard,
 } from './keyboards';
+import Database from './Database';
 
 export default async (ctx: Context) => {
   const body: Body = ctx.request.body;
 
-  console.log('bot message', body);
+  console.log('bot event', body);
 
   if (body.type === 'confirmation') {
     ctx.body = 'afcb8751';
   } else if (body.type === 'message_new') {
+    const mainKeyboard = generateMainKeyboard(Database.managers.includes(body.object.peer_id));
     const respond = async (message: string, options: SendVkMessageOptions = {}) => {
       await sendVKMessage(body.object.peer_id, message, options);
     };
@@ -165,7 +167,9 @@ export default async (ctx: Context) => {
         await respond(
           genreConcerts.length
             ? getConcertsByDaysString(getConcertsByDays(genreConcerts))
-            : `В ближайшее время концертов в жанре "${genreNames[genre]}" нет`
+            : genre === Genre.ABOUT_MUSIC
+              ? 'В ближайшее время событий на тему музыки нет'
+              : `В ближайшее время концертов в жанре "${genreNames[genre]}" нет`
         );
       } else if (payload.command === 'playlist') {
         await respond('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections');
@@ -197,6 +201,8 @@ export default async (ctx: Context) => {
         }
       } else if (payload.command === 'collaboration') {
         await respond(`Пишите Андрею: https://vk.com/im?sel=${COLLABORATION_TARGET}`);
+      } else if (payload.command === 'admin') {
+        await respond('Админка');
       } else if (payload.command === 'refresh_keyboard') {
         await respond('Клавиатура обновлена', { keyboard: mainKeyboard });
       }
@@ -221,6 +227,17 @@ export default async (ctx: Context) => {
     }
 
     ctx.body = 'ok';
+  } else if (body.type === 'group_officers_edit') {
+    const {
+      user_id,
+      level_new
+    } = body.object;
+
+    Database.managers = Database.managers.filter((id) => id !== user_id);
+
+    if (level_new > 1) {
+      Database.managers.push(user_id);
+    }
   } else {
     ctx.body = 'ok';
   }
