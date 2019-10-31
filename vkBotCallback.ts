@@ -204,6 +204,8 @@ export default async (ctx: Context) => {
         await respond(`Пишите Андрею: https://vk.com/im?sel=${COLLABORATION_TARGET}`);
       } else if (payload.command === 'admin') {
         if (!isManager) {
+          await respond('Вы не являетесь администратором', { keyboard: mainKeyboard });
+
           break command;
         }
 
