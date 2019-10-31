@@ -21,6 +21,9 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
         generateButton('Релизы', { command: 'releases' }),
       ],
       [
+        generateButton('Розыгрыши', { command: 'drawings' }),
+      ],
+      [
         generateButton('Для музыкантов', { command: 'for_musicians' }),
         generateButton('Сотрудничество', { command: 'collaboration' }),
       ],

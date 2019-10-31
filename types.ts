@@ -103,6 +103,15 @@ export interface ReleasesButtonPayload {
   command: 'releases';
 }
 
+export interface DrawingsButtonPayload {
+  command: 'drawings';
+}
+
+export interface DrawingButtonPayload {
+  command: 'drawing';
+  drawingId: string;
+}
+
 export interface ForMusiciansButtonPayload {
   command: 'for_musicians';
 }
@@ -157,6 +166,8 @@ export type ButtonPayload = (
   | LongreadButtonPayload
   | GroupHistoryButtonPayload
   | ReleasesButtonPayload
+  | DrawingsButtonPayload
+  | DrawingButtonPayload
   | ForMusiciansButtonPayload
   | TellAboutGroupButtonPayload
   | TellAboutReleaseButtonPayload
