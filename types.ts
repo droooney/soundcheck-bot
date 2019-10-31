@@ -162,10 +162,10 @@ export type ButtonPayload = (
   | PosterWeekButtonPayload
   | PosterGenreButtonPayload
   | PlaylistButtonPayload
+  | ReleasesButtonPayload
   | TextMaterialsButtonPayload
   | LongreadButtonPayload
   | GroupHistoryButtonPayload
-  | ReleasesButtonPayload
   | DrawingsButtonPayload
   | DrawingButtonPayload
   | ForMusiciansButtonPayload

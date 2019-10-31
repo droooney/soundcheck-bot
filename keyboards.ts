@@ -15,12 +15,10 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
       [
         generateButton('Афиша', { command: 'poster' }),
         generateButton('Плейлисты', { command: 'playlist' }),
-      ],
-      [
-        generateButton('Текстовые материалы', { command: 'text_materials' }),
         generateButton('Релизы', { command: 'releases' }),
       ],
       [
+        generateButton('Текстовые материалы', { command: 'text_materials' }),
         generateButton('Розыгрыши', { command: 'drawings' }),
       ],
       [

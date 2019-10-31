@@ -183,6 +183,8 @@ export default async (ctx: Context) => {
         );
       } else if (payload.command === 'playlist') {
         await respond('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections');
+      } else if (payload.command === 'releases') {
+        await respond('Смотри релизы тут: https://vk.com/soundcheck_ural/new_release');
       } else if (payload.command === 'text_materials') {
         await respond('У нас есть широкий выбор текстовых материалов: интервью, репортажи, истории групп', {
           keyboard: textMaterialsKeyboard
@@ -191,8 +193,6 @@ export default async (ctx: Context) => {
         await respond('Смотри лонгриды тут: https://vk.com/@soundcheck_ural');
       } else if (payload.command === 'text_materials/group_history') {
         await respond('Смотри истории групп тут: https://vk.com/soundcheck_ural/music_history');
-      } else if (payload.command === 'releases') {
-        await respond('Смотри релизы тут: https://vk.com/soundcheck_ural/new_release');
       } else if (payload.command === 'drawings') {
         const buttons = Database.drawings.map(({ id, name }) => [generateButton(name, { command: 'drawings/drawing', drawingId: id })]);
 
