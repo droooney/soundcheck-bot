@@ -22,7 +22,7 @@ export default class Database {
         await fs.writeJSON(Database.drawingsFile, []);
       }
 
-      Database.drawings = await fs.readJSON(Database.drawingsFile);
+      Database.drawings = await fs.readJSON(Database.drawingsFile, { encoding: 'utf8' });
     },
 
     // prepare user states
@@ -36,7 +36,7 @@ export default class Database {
           const match = pathname.match(/^(\d+)\.json$/);
 
           if (match) {
-            Database.userStates[match[1] as any] = await fs.readJSON(`${Database.userStatesDir}/${pathname}`);
+            Database.userStates[match[1] as any] = await fs.readJSON(`${Database.userStatesDir}/${pathname}`, { encoding: 'utf8' });
           }
         })
       );
@@ -75,7 +75,7 @@ export default class Database {
 
     await (Database.locks[file] = (async () => {
       await prevLock;
-      await fs.writeJSON(file, data);
+      await fs.writeJSON(file, data, { encoding: 'utf8' });
     })());
   }
 
