@@ -103,7 +103,7 @@ export const adminDrawingsKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton('Добавить розыгрыши', { command: 'admin/drawings/add' }, ButtonColor.POSITIVE)
+      generateButton('Добавить розыгрыш', { command: 'admin/drawings/add' }, ButtonColor.POSITIVE)
     ],
     [generateBackButton(BackButtonDest.ADMIN)],
     [generateBackButton()],
