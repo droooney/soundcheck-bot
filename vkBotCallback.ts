@@ -15,7 +15,7 @@ import {
   getWeekString,
   sendVKMessage
 } from './helpers';
-import { BackButtonDest, Body, ButtonColor, ButtonPayload, Genre, KeyboardButton } from './types';
+import { BackButtonDest, Body, ButtonColor, ButtonPayload, Genre, KeyboardButton, UserState } from './types';
 import {
   genreNames,
   genreMatches,
@@ -34,6 +34,8 @@ import {
   servicesKeyboard,
   textMaterialsKeyboard,
   forMusiciansKeyboard,
+  adminKeyboard,
+  adminDrawingsKeyboard,
 } from './keyboards';
 import Database from './Database';
 
@@ -45,11 +47,14 @@ export default async (ctx: Context) => {
   if (body.type === 'confirmation') {
     ctx.body = 'afcb8751';
   } else if (body.type === 'message_new') {
-    const isManager = Database.managers.includes(body.object.peer_id);
+    const userId = body.object.peer_id;
+    const isManager = Database.managers.includes(userId);
     const mainKeyboard = generateMainKeyboard(isManager);
     const respond = async (message: string, options: SendVkMessageOptions = {}) => {
-      await sendVKMessage(body.object.peer_id, message, options);
+      await sendVKMessage(userId, message, options);
     };
+    const userState = Database.userStates[userId];
+    let newUserState: UserState = null;
     let payload: ButtonPayload | null = null;
 
     if (body.object.payload) {
@@ -58,8 +63,12 @@ export default async (ctx: Context) => {
       } catch (err) {}
     }
 
-    if (payload) {
-      console.log(payload);
+    message: if (payload) {
+      if (payload.command.startsWith('admin') && !isManager) {
+        await respond('Вы не являетесь администратором', { keyboard: mainKeyboard });
+
+        break message;
+      }
 
       command: if (payload.command === 'start') {
         await respond('Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?', { keyboard: mainKeyboard });
@@ -71,15 +80,15 @@ export default async (ctx: Context) => {
             one_time: false,
             buttons: [
               [
-                generateButton('День', { command: 'poster_type', type: 'day' }),
-                generateButton('Неделя', { command: 'poster_type', type: 'week' }),
-                generateButton('По жанрам', { command: 'poster_type', type: 'genres' })
+                generateButton('День', { command: 'poster/type', type: 'day' }),
+                generateButton('Неделя', { command: 'poster/type', type: 'week' }),
+                generateButton('По жанрам', { command: 'poster/type', type: 'genres' })
               ],
               [generateBackButton()],
             ]
           }
         });
-      } else if (payload.command === 'poster_type') {
+      } else if (payload.command === 'poster/type') {
         if (payload.type === 'day') {
           const upcomingConcerts = await getConcerts(moment().startOf('day'));
 
@@ -101,7 +110,7 @@ export default async (ctx: Context) => {
 
             buttons.push(generateButton(
               getDayString(moment(+day)),
-              { command: 'poster_day', dayStart: +day },
+              { command: 'poster/type/day', dayStart: +day },
               dayOfTheWeek > 4 ? ButtonColor.POSITIVE : ButtonColor.PRIMARY
             ));
           });
@@ -130,7 +139,7 @@ export default async (ctx: Context) => {
               one_time: false,
               buttons: [
                 ...weeks.map((week, index) => [
-                  generateButton(index === 0 ? 'Эта неделя' : getWeekString(week), { command: 'poster_week', weekStart: +week })
+                  generateButton(index === 0 ? 'Эта неделя' : getWeekString(week), { command: 'poster/type/week', weekStart: +week })
                 ]),
                 [generateBackButton(BackButtonDest.POSTER)],
                 [generateBackButton()],
@@ -140,7 +149,7 @@ export default async (ctx: Context) => {
         } else if (payload.type === 'genres') {
           await respond('Выберите жанр', { keyboard: genresKeyboard });
         }
-      } else if (payload.command === 'poster_day') {
+      } else if (payload.command === 'poster/type/day') {
         const concerts = await getDailyConcerts(moment(payload.dayStart));
 
         await respond(
@@ -148,7 +157,7 @@ export default async (ctx: Context) => {
             ? getConcertsString(concerts)
             : 'В этот день концертов нет'
         );
-      } else if (payload.command === 'poster_week') {
+      } else if (payload.command === 'poster/type/week') {
         const today = +moment().startOf('day');
         const concerts = (await getWeeklyConcerts(moment(payload.weekStart))).filter(({ startTime }) => +startTime >= today);
         const groups = getConcertsByDays(concerts);
@@ -158,7 +167,7 @@ export default async (ctx: Context) => {
             ? getConcertsByDaysString(groups)
             : 'На эту неделю концертов нет'
         );
-      } else if (payload.command === 'poster_genre') {
+      } else if (payload.command === 'poster/type/genre') {
         const genre = payload.genre;
         const allConcerts = await getConcerts(moment().startOf('day'));
         const genreConcerts = allConcerts.filter(({ genres }) => (
@@ -178,9 +187,9 @@ export default async (ctx: Context) => {
         await respond('У нас есть широкий выбор текстовых материалов: интервью, репортажи, истории групп', {
           keyboard: textMaterialsKeyboard
         });
-      } else if (payload.command === 'longread') {
+      } else if (payload.command === 'text_materials/longread') {
         await respond('Смотри лонгриды тут: https://vk.com/@soundcheck_ural');
-      } else if (payload.command === 'group_history') {
+      } else if (payload.command === 'text_materials/group_history') {
         await respond('Смотри истории групп тут: https://vk.com/soundcheck_ural/music_history');
       } else if (payload.command === 'releases') {
         await respond('Смотри релизы тут: https://vk.com/soundcheck_ural/new_release');
@@ -188,13 +197,13 @@ export default async (ctx: Context) => {
         await respond(`Если хотите сообщить о новом релизе, напишите сообщение с хэштегом ${RELEASE_HASHTAG}, \
 прикрепив пост или аудиозапись. Если хотите рассказать о своей группе, пишите историю группы, \
 упомянув хэштег ${TELL_ABOUT_GROUP_HASHTAG}. Также у нас имеются различные услуги для музыкантов.`, { keyboard: forMusiciansKeyboard });
-      } else if (payload.command === 'tell_about_group') {
+      } else if (payload.command === 'for_musicians/tell_about_group') {
         await respond(`Пишите историю группы, упомянув хэштег ${TELL_ABOUT_GROUP_HASHTAG}`);
-      } else if (payload.command === 'tell_about_release') {
+      } else if (payload.command === 'for_musicians/tell_about_release') {
         await respond(`Напишите сообщение с хэштегом ${RELEASE_HASHTAG}, прикрепив пост или аудиозапись`);
-      } else if (payload.command === 'services') {
+      } else if (payload.command === 'for_musicians/services') {
         await respond('Выберите услугу', { keyboard: servicesKeyboard });
-      } else if (payload.command === 'service') {
+      } else if (payload.command === 'for_musicians/services/service') {
         if (payload.service.type === 'market') {
           await respond('', {
             attachments: [payload.service.id]
@@ -203,15 +212,59 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'collaboration') {
         await respond(`Пишите Андрею: https://vk.com/im?sel=${COLLABORATION_TARGET}`);
       } else if (payload.command === 'admin') {
-        if (!isManager) {
-          await respond('Вы не являетесь администратором', { keyboard: mainKeyboard });
+        await respond('Выберите действие', { keyboard: adminKeyboard });
+      } else if (payload.command === 'admin/drawings') {
+        await respond('Выберите действие', { keyboard: adminDrawingsKeyboard });
+      } else if (payload.command === 'admin/drawings/add') {
+        newUserState = {
+          type: 'admin/drawings/add/set-name'
+        };
 
-          break command;
-        }
-
-        await respond('Админка');
+        await respond('Введине название');
       } else if (payload.command === 'refresh_keyboard') {
         await respond('Клавиатура обновлена', { keyboard: mainKeyboard });
+      }
+    } else if (userState) {
+      const text = body.object.text;
+
+      if (userState.type.startsWith('admin') && !isManager) {
+        await respond('Вы не являетесь администратором', { keyboard: mainKeyboard });
+
+        break message;
+      }
+
+      if (userState.type === 'admin/drawings/add/set-name') {
+        newUserState = {
+          type: 'admin/drawings/add/set-description',
+          name: text
+        };
+
+        await respond('Введите описание');
+      } else if (userState.type === 'admin/drawings/add/set-description') {
+        newUserState = {
+          type: 'admin/drawings/add/set-postId',
+          name: userState.name,
+          description: text
+        };
+
+        await respond('Отправьте запись с розыгрышем');
+      } else if (userState.type === 'admin/drawings/add/set-postId') {
+        const wallAttachment = body.object.attachments.find(({ type }) => type === 'wall');
+
+        if (wallAttachment) {
+          await Database.addDrawing({
+            name: userState.name,
+            description: userState.description,
+            postId: wallAttachment.wall.id,
+            postOwnerId: wallAttachment.wall.to_id
+          });
+
+          await respond('Розыгрыш успешно добавлен');
+        } else {
+          newUserState = userState;
+
+          await respond('Отправьте запись с розыгрышем');
+        }
       }
     } else {
       const text = body.object.text;
@@ -232,6 +285,8 @@ export default async (ctx: Context) => {
         ]);
       }
     }
+
+    await Database.setUserState(userId, newUserState);
 
     ctx.body = 'ok';
   } else if (body.type === 'group_officers_edit') {

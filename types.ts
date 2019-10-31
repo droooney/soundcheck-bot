@@ -5,6 +5,7 @@ export interface Message {
   peer_id: number;
   text: string;
   payload?: string;
+  attachments: Attachment[];
 }
 
 export interface BaseBody {
@@ -39,6 +40,16 @@ export interface ManagersResponse {
   };
 }
 
+export interface WallAttachment {
+  type: 'wall';
+  wall: {
+    id: number;
+    to_id: number;
+  };
+}
+
+export type Attachment = WallAttachment;
+
 export interface StartButtonPayload {
   command: 'start';
 }
@@ -53,22 +64,22 @@ export interface PosterButtonPayload {
 }
 
 export interface PosterTypeButtonPayload {
-  command: 'poster_type';
+  command: 'poster/type';
   type: 'day' | 'week' | 'genres';
 }
 
 export interface PosterDayButtonPayload {
-  command: 'poster_day';
+  command: 'poster/type/day';
   dayStart: number;
 }
 
 export interface PosterWeekButtonPayload {
-  command: 'poster_week';
+  command: 'poster/type/week';
   weekStart: number;
 }
 
 export interface PosterGenreButtonPayload {
-  command: 'poster_genre';
+  command: 'poster/type/genre';
   genre: Genre;
 }
 
@@ -81,11 +92,11 @@ export interface TextMaterialsButtonPayload {
 }
 
 export interface LongreadButtonPayload {
-  command: 'longread';
+  command: 'text_materials/longread';
 }
 
 export interface GroupHistoryButtonPayload {
-  command: 'group_history';
+  command: 'text_materials/group_history';
 }
 
 export interface ReleasesButtonPayload {
@@ -97,19 +108,19 @@ export interface ForMusiciansButtonPayload {
 }
 
 export interface TellAboutGroupButtonPayload {
-  command: 'tell_about_group';
+  command: 'for_musicians/tell_about_group';
 }
 
 export interface TellAboutReleaseButtonPayload {
-  command: 'tell_about_release';
+  command: 'for_musicians/tell_about_release';
 }
 
 export interface ServicesButtonPayload {
-  command: 'services';
+  command: 'for_musicians/services';
 }
 
 export interface ServiceButtonPayload {
-  command: 'service';
+  command: 'for_musicians/services/service';
   service: Service;
 }
 
@@ -119,6 +130,14 @@ export interface CollaborationButtonPayload {
 
 export interface AdminButtonPayload {
   command: 'admin';
+}
+
+export interface AdminDrawingsButtonPayload {
+  command: 'admin/drawings';
+}
+
+export interface AdminDrawingsAddButtonPayload {
+  command: 'admin/drawings/add';
 }
 
 export interface RefreshKeyboardButtonPayload {
@@ -145,6 +164,8 @@ export type ButtonPayload = (
   | ServiceButtonPayload
   | CollaborationButtonPayload
   | AdminButtonPayload
+  | AdminDrawingsButtonPayload
+  | AdminDrawingsAddButtonPayload
   | RefreshKeyboardButtonPayload
 );
 
@@ -152,6 +173,7 @@ export enum BackButtonDest {
   MAIN = 'main',
   POSTER = 'poster',
   FOR_MUSICIANS = 'for_musicians',
+  ADMIN = 'admin',
 }
 
 export interface BaseButtonAction {
@@ -238,21 +260,22 @@ export interface Drawing {
   name: string;
   description: string;
   postId: number;
+  postOwnerId: number;
 }
 
 export type DrawingParams = Omit<Drawing, 'id'>;
 
 export interface AddDrawingSetNameUserState {
-  type: 'admin/add-drawing/set-name';
+  type: 'admin/drawings/add/set-name';
 }
 
 export interface AddDrawingSetDescriptionUserState {
-  type: 'admin/add-drawing/set-description';
+  type: 'admin/drawings/add/set-description';
   name: string;
 }
 
 export interface AddDrawingSetPostIdUserState {
-  type: 'admin/add-drawing/set-postId';
+  type: 'admin/drawings/add/set-postId';
   name: string;
   description: string;
 }
