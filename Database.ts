@@ -100,8 +100,12 @@ export default class Database {
     return drawing;
   }
 
+  static findDrawingById(id: string): Drawing | null {
+    return Database.drawings.find((drawing) => drawing.id === id) || null;
+  }
+
   static async editDrawing<K extends keyof DrawingParams>(id: string, key: K, value: DrawingParams[K]) {
-    const drawing = Database.drawings.find((drawing) => drawing.id === id);
+    const drawing = Database.findDrawingById(id);
 
     if (drawing) {
       // @ts-ignore
@@ -111,8 +115,8 @@ export default class Database {
     }
   }
 
-  static async removeDrawing(id: string) {
-    const drawing = Database.drawings.find((drawing) => drawing.id === id);
+  static async deleteDrawing(id: string) {
+    const drawing = Database.findDrawingById(id);
 
     if (drawing) {
       Database.drawings = Database.drawings.filter((drawing) => drawing.id !== id);

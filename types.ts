@@ -145,8 +145,33 @@ export interface AdminDrawingsButtonPayload {
   command: 'admin/drawings';
 }
 
+export interface AdminDrawingButtonPayload {
+  command: 'admin/drawings/drawing';
+  drawingId: string;
+}
+
 export interface AdminDrawingsAddButtonPayload {
   command: 'admin/drawings/add';
+}
+
+export interface AdminEditDrawingNameButtonPayload {
+  command: 'admin/drawings/drawing/edit_name';
+  drawingId: string;
+}
+
+export interface AdminEditDrawingDescriptionButtonPayload {
+  command: 'admin/drawings/drawing/edit_description';
+  drawingId: string;
+}
+
+export interface AdminEditDrawingPostButtonPayload {
+  command: 'admin/drawings/drawing/edit_post';
+  drawingId: string;
+}
+
+export interface AdminDeleteDrawingButtonPayload {
+  command: 'admin/drawings/drawing/delete';
+  drawingId: string;
 }
 
 export interface RefreshKeyboardButtonPayload {
@@ -176,7 +201,12 @@ export type ButtonPayload = (
   | CollaborationButtonPayload
   | AdminButtonPayload
   | AdminDrawingsButtonPayload
+  | AdminDrawingButtonPayload
   | AdminDrawingsAddButtonPayload
+  | AdminEditDrawingNameButtonPayload
+  | AdminEditDrawingDescriptionButtonPayload
+  | AdminEditDrawingPostButtonPayload
+  | AdminDeleteDrawingButtonPayload
   | RefreshKeyboardButtonPayload
 );
 
@@ -185,6 +215,7 @@ export enum BackButtonDest {
   POSTER = 'poster',
   FOR_MUSICIANS = 'for_musicians',
   ADMIN = 'admin',
+  ADMIN_DRAWINGS = 'admin/drawings',
 }
 
 export interface BaseButtonAction {
@@ -277,23 +308,29 @@ export interface Drawing {
 
 export type DrawingParams = Omit<Drawing, 'id'>;
 
-export interface AddDrawingSetNameUserState {
+export interface AdminAddDrawingSetNameUserState {
   type: 'admin/drawings/add/set-name';
 }
 
-export interface AddDrawingSetDescriptionUserState {
+export interface AdminAddDrawingSetDescriptionUserState {
   type: 'admin/drawings/add/set-description';
   name: string;
 }
 
-export interface AddDrawingSetPostIdUserState {
+export interface AdminAddDrawingSetPostIdUserState {
   type: 'admin/drawings/add/set-postId';
   name: string;
   description: string;
 }
 
+export interface AdminDeleteDrawingUserState {
+  type: 'admin/drawings/drawing/delete';
+  drawingId: string;
+}
+
 export type UserState = null | (
-  AddDrawingSetNameUserState
-  | AddDrawingSetDescriptionUserState
-  | AddDrawingSetPostIdUserState
+  AdminAddDrawingSetNameUserState
+  | AdminAddDrawingSetDescriptionUserState
+  | AdminAddDrawingSetPostIdUserState
+  | AdminDeleteDrawingUserState
 );

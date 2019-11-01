@@ -19,6 +19,7 @@ import { BackButtonDest, Body, ButtonColor, ButtonPayload, UserState } from './t
 import {
   genreNames,
   genreMatches,
+  confirmPositiveAnswers,
   TELL_ABOUT_GROUP_HASHTAG,
   RELEASE_HASHTAG,
   TELL_ABOUT_GROUP_TARGET,
@@ -30,6 +31,8 @@ import {
   generateMainKeyboard,
   generateWeekPosterKeyboard,
   generateDrawingsKeyboard,
+  generateAdminDrawingsKeyboard,
+  generateAdminDrawingMenuKeyboard,
 
   posterKeyboard,
   genresKeyboard,
@@ -37,7 +40,6 @@ import {
   textMaterialsKeyboard,
   forMusiciansKeyboard,
   adminKeyboard,
-  adminDrawingsKeyboard,
 } from './keyboards';
 import Database from './Database';
 import captions from './captions';
@@ -191,7 +193,7 @@ export default async (ctx: Context) => {
           if (drawingsKeyboard) {
             await respond(captions.no_drawing, { keyboard: drawingsKeyboard });
           } else {
-            await respond(captions.no_drawings);
+            await respond(captions.no_drawings, { keyboard: mainKeyboard });
           }
         }
       } else if (payload.command === 'for_musicians' || (payload.command === 'back' && payload.dest === BackButtonDest.FOR_MUSICIANS)) {
@@ -213,13 +215,37 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
         await respond(captions.choose_action, { keyboard: adminKeyboard });
       } else if (payload.command === 'admin/drawings') {
-        await respond(captions.choose_or_add_drawing, { keyboard: adminDrawingsKeyboard });
+        await respond(captions.choose_or_add_drawing, { keyboard: generateAdminDrawingsKeyboard() });
       } else if (payload.command === 'admin/drawings/add') {
         newUserState = {
           type: 'admin/drawings/add/set-name'
         };
 
         await respond(captions.enter_drawing_name);
+      } else if (payload.command === 'admin/drawings/drawing') {
+        const drawing = Database.findDrawingById(payload.drawingId);
+
+        if (drawing) {
+          await respond(`${drawing.name}\n\n${drawing.description}`, {
+            attachments: [`wall${drawing.postOwnerId}_${drawing.postId}`],
+            keyboard: generateAdminDrawingMenuKeyboard(drawing)
+          });
+        } else {
+          await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
+        }
+      } else if (payload.command === 'admin/drawings/drawing/delete') {
+        const drawing = Database.findDrawingById(payload.drawingId);
+
+        if (drawing) {
+          newUserState = {
+            type: 'admin/drawings/drawing/delete',
+            drawingId: payload.drawingId
+          };
+
+          await respond(captions.confirm_drawing_delete(drawing));
+        } else {
+          await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
+        }
       } else if (payload.command === 'refresh_keyboard') {
         await respond(captions.refresh_keyboard_response, { keyboard: mainKeyboard });
       }
@@ -258,11 +284,25 @@ export default async (ctx: Context) => {
             postOwnerId: wallAttachment.wall.to_id
           });
 
-          await respond(captions.drawing_added);
+          await respond(captions.drawing_added, { keyboard: generateAdminDrawingsKeyboard() });
         } else {
           newUserState = userState;
 
           await respond(captions.send_drawing_post);
+        }
+      } else if (userState.type === 'admin/drawings/drawing/delete') {
+        if (confirmPositiveAnswers.includes(text.toLowerCase())) {
+          await Database.deleteDrawing(userState.drawingId);
+
+          await respond(captions.drawing_deleted, { keyboard: generateAdminDrawingsKeyboard() });
+        } else {
+          const drawing = Database.findDrawingById(userState.drawingId);
+
+          if (drawing) {
+            await respond(captions.choose_action, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
+          } else {
+            await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
+          }
         }
       }
     } else {

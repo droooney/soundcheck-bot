@@ -1,6 +1,6 @@
 import moment = require('moment-timezone');
 
-import { BackButtonDest, ButtonColor, ButtonPayload, Keyboard, KeyboardButton } from './types';
+import { BackButtonDest, ButtonColor, ButtonPayload, Drawing, Keyboard, KeyboardButton } from './types';
 import { genreNames, GENRES_BUTTONS } from './constants';
 import Database from './Database';
 import { getWeekString } from './helpers';
@@ -10,7 +10,8 @@ export const backButtonText: Record<BackButtonDest, string> = {
   [BackButtonDest.MAIN]: captions.main_menu,
   [BackButtonDest.POSTER]: captions.poster,
   [BackButtonDest.FOR_MUSICIANS]: captions.for_musicians,
-  [BackButtonDest.ADMIN]: captions.admin_section
+  [BackButtonDest.ADMIN]: captions.admin_section,
+  [BackButtonDest.ADMIN_DRAWINGS]: captions.drawings,
 };
 
 export function generateMainKeyboard(isManager: boolean): Keyboard {
@@ -135,16 +136,36 @@ export const adminKeyboard: Keyboard = {
   ]
 };
 
-export const adminDrawingsKeyboard: Keyboard = {
-  one_time: false,
-  buttons: [
-    [
-      generateButton(captions.add_drawing, { command: 'admin/drawings/add' }, ButtonColor.POSITIVE)
-    ],
-    [generateBackButton(BackButtonDest.ADMIN)],
-    [generateBackButton()],
-  ]
-};
+export function generateAdminDrawingsKeyboard(): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      ...Database.drawings.map(({ id, name }) => [
+        generateButton(name, { command: 'admin/drawings/drawing', drawingId: id })
+      ]),
+      [
+        generateButton(captions.add_drawing, { command: 'admin/drawings/add' }, ButtonColor.POSITIVE),
+      ],
+      [generateBackButton(BackButtonDest.ADMIN)],
+      [generateBackButton()],
+    ]
+  };
+}
+
+export function generateAdminDrawingMenuKeyboard(drawing: Drawing): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      [generateButton(captions.edit_drawing_name, { command: 'admin/drawings/drawing/edit_name', drawingId: drawing.id })],
+      [generateButton(captions.edit_drawing_description, { command: 'admin/drawings/drawing/edit_description', drawingId: drawing.id })],
+      [generateButton(captions.edit_drawing_post, { command: 'admin/drawings/drawing/edit_post', drawingId: drawing.id })],
+      [generateButton(captions.delete_drawing, { command: 'admin/drawings/drawing/delete', drawingId: drawing.id }, ButtonColor.NEGATIVE)],
+      [generateBackButton(BackButtonDest.ADMIN_DRAWINGS)],
+      [generateBackButton(BackButtonDest.ADMIN)],
+      [generateBackButton()],
+    ]
+  };
+}
 
 export function generateDrawingsKeyboard(): Keyboard | null {
   const buttons = Database.drawings.map(({ id, name }) => [generateButton(name, { command: 'drawings/drawing', drawingId: id })]);

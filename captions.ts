@@ -1,4 +1,4 @@
-import { Genre } from './types';
+import { Drawing, Genre } from './types';
 import { genreNames, RELEASE_HASHTAG, TELL_ABOUT_GROUP_HASHTAG } from './constants';
 
 export default {
@@ -52,13 +52,13 @@ export default {
 
   // for musicians
   for_musicians_response: `Если хотите сообщить о новом релизе, напишите сообщение с хэштегом ${RELEASE_HASHTAG}, \
-прикрепив пост или аудиозапись. Если хотите рассказать о своей группе, пишите историю группы, \
+прикрепив ссылку, пост или аудиозапись. Если хотите рассказать о своей группе, пишите историю группы, \
 упомянув хэштег ${TELL_ABOUT_GROUP_HASHTAG}. Также у нас имеются различные услуги для музыкантов.`,
   tell_about_group: 'Рассказать о группе',
   tell_about_release: 'Сообщить о релизе',
   services: 'Услуги',
   tell_about_group_response: `Пишите историю группы, упомянув хэштег ${TELL_ABOUT_GROUP_HASHTAG}`,
-  tell_about_release_response: `Напишите сообщение с хэштегом ${RELEASE_HASHTAG}, прикрепив пост или аудиозапись`,
+  tell_about_release_response: `Напишите сообщение с хэштегом ${RELEASE_HASHTAG}, прикрепив ссылку, пост или аудиозапись`,
   choose_service: 'Выберите услугу',
   stickers_design: 'Дизайн стикеров',
   soundcheck_ads: 'Реклама в Soundcheck',
@@ -67,12 +67,20 @@ export default {
 
   // admin
   you_re_not_a_manager: 'Вы не являетесь администратором',
+
+  // admin drawings
   add_drawing: 'Добавить розыгрыш',
   choose_or_add_drawing: 'Выберите или добавьте розыгрыш',
   enter_drawing_name: 'Введине название',
   enter_drawing_description: 'Введине описание',
   send_drawing_post: 'Отправьте запись с розыгрышем',
   drawing_added: 'Розыгрыш успешно добавлен',
+  edit_drawing_name: 'Изменить название',
+  edit_drawing_description: 'Изменить описание',
+  edit_drawing_post: 'Изменить пост',
+  delete_drawing: 'Удалить розыгрыш',
+  confirm_drawing_delete: (drawing: Drawing) => `Подтвердите удаление розыгрыша "${drawing.name}"`,
+  drawing_deleted: 'Розыгрыш удален',
 
   // rest
   group_history_message: 'Рассказ о группе',
