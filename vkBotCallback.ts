@@ -5,6 +5,7 @@ import { Context } from 'koa';
 import {
   SendVkMessageOptions,
 
+  getHolidays,
   getConcerts,
   getConcertsByDays,
   getConcertsByDaysString,
@@ -14,7 +15,7 @@ import {
   getWeeklyConcerts,
   sendVKMessage,
 } from './helpers';
-import { BackButtonDest, Body, ButtonColor, ButtonPayload, Genre, KeyboardButton, UserState } from './types';
+import { BackButtonDest, Body, ButtonColor, ButtonPayload, Genre, UserState } from './types';
 import {
   genreNames,
   genreMatches,
@@ -89,20 +90,26 @@ export default async (ctx: Context) => {
           }
 
           const concertsByDays = getConcertsByDays(upcomingConcerts);
-          const buttons: KeyboardButton[] = [];
+          const days: number[] = [];
 
           _.forEach(concertsByDays, (_, day) => {
-            if (buttons.length === 28) {
+            if (days.length === 28) {
               return false;
             }
 
-            const dayOfTheWeek = moment(+day).weekday();
+            days.push(+day);
+          });
 
-            buttons.push(generateButton(
-              getDayString(moment(+day)),
+          const holidays = await getHolidays(moment(days[0]), moment(_.last(days)));
+          const buttons = days.map((day) => {
+            const dayMoment = moment(+day);
+            const dayOfTheWeek = dayMoment.weekday();
+
+            return generateButton(
+              getDayString(dayMoment),
               { command: 'poster/type/day', dayStart: +day },
-              dayOfTheWeek > 4 ? ButtonColor.POSITIVE : ButtonColor.PRIMARY
-            ));
+              dayOfTheWeek > 4 || holidays.some((holiday) => holiday.isSame(dayMoment, 'day')) ? ButtonColor.POSITIVE : ButtonColor.PRIMARY
+            );
           });
 
           await respond('Выберите день', {

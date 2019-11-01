@@ -220,8 +220,9 @@ export interface Keyboard {
 }
 
 export interface DateObject {
-  dateTime: string;
-  timeZone: string;
+  date?: string;
+  dateTime?: string;
+  timeZone?: string;
 }
 
 export interface Event {

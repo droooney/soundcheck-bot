@@ -60,12 +60,12 @@ export function trySendGoogleRequest<T>(method: string, query: object = {}): Pro
   });
 }
 
-export async function getEvents(dateStart?: moment.Moment, dateEnd?: moment.Moment): Promise<Event[]> {
+export async function getEvents(calendarId: string, dateStart?: moment.Moment, dateEnd?: moment.Moment): Promise<Event[]> {
   const events: Event[] = [];
   let pageToken: string | undefined;
 
   while (true) {
-    const { data } = await sendGoogleRequest<EventsResponse>('/calendars/soundcheck.ekb@gmail.com/events', {
+    const { data } = await sendGoogleRequest<EventsResponse>(`/calendars/${encodeURIComponent(calendarId)}/events`, {
       maxResults: 2500,
       pageToken,
       orderBy: 'startTime',
@@ -90,8 +90,15 @@ export async function getEvents(dateStart?: moment.Moment, dateEnd?: moment.Mome
   return events;
 }
 
+export async function getHolidays(dateStart: moment.Moment, dateEnd: moment.Moment): Promise<moment.Moment[]> {
+  dateStart = dateStart.clone().startOf('day');
+  dateEnd = dateEnd.clone().endOf('day').add(1, 'ms');
+
+  return (await getEvents('ru.russian#holiday@group.v.calendar.google.com', dateStart, dateEnd)).map(({ start }) => moment(start.date));
+}
+
 export async function getConcerts(dateStart?: moment.Moment, dateEnd?: moment.Moment): Promise<Concert[]> {
-  return (await getEvents(dateStart, dateEnd)).map(getConcertFromEvent).filter(({ ready }) => ready);
+  return (await getEvents('soundcheck.ekb@gmail.com', dateStart, dateEnd)).map(getConcertFromEvent).filter(({ ready }) => ready);
 }
 
 export function getConcertsByDays(concerts: Concert[]): Record<string, Concert[]> {
