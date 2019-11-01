@@ -15,7 +15,7 @@ import {
   getWeeklyConcerts,
   sendVKMessage,
 } from './helpers';
-import { BackButtonDest, Body, ButtonColor, ButtonPayload, Genre, UserState } from './types';
+import { BackButtonDest, Body, ButtonColor, ButtonPayload, UserState } from './types';
 import {
   genreNames,
   genreMatches,
@@ -23,7 +23,6 @@ import {
   RELEASE_HASHTAG,
   TELL_ABOUT_GROUP_TARGET,
   RELEASES_TARGET,
-  COLLABORATION_TARGET,
 } from './constants';
 import {
   generateButton,
@@ -41,6 +40,7 @@ import {
   adminDrawingsKeyboard,
 } from './keyboards';
 import Database from './Database';
+import captions from './captions';
 
 export default async (ctx: Context) => {
   const body: Body = ctx.request.body;
@@ -68,23 +68,23 @@ export default async (ctx: Context) => {
 
     message: if (payload) {
       if ((payload.command.startsWith('admin') || (payload.command === 'back' && payload.dest.startsWith('admin'))) && !isManager) {
-        await respond('Вы не являетесь администратором', { keyboard: mainKeyboard });
+        await respond(captions.you_re_not_a_manager, { keyboard: mainKeyboard });
 
         break message;
       }
 
       if (payload.command === 'start') {
-        await respond('Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?', { keyboard: mainKeyboard });
+        await respond(captions.welcome_text, { keyboard: mainKeyboard });
       } else if (payload.command === 'back' && payload.dest === BackButtonDest.MAIN) {
-        await respond('Выберите действие', { keyboard: mainKeyboard });
+        await respond(captions.choose_action, { keyboard: mainKeyboard });
       } else if (payload.command === 'poster' || (payload.command === 'back' && payload.dest === BackButtonDest.POSTER)) {
-        await respond('Выберите тип афиши', { keyboard: posterKeyboard });
+        await respond(captions.choose_poster_type, { keyboard: posterKeyboard });
       } else if (payload.command === 'poster/type') {
         if (payload.type === 'day') {
           const upcomingConcerts = await getConcerts(moment().startOf('day'));
 
           if (!upcomingConcerts.length) {
-            await respond('В ближайшее время концертов нет');
+            await respond(captions.no_concerts_by_day);
 
             break message;
           }
@@ -112,7 +112,7 @@ export default async (ctx: Context) => {
             );
           });
 
-          await respond('Выберите день', {
+          await respond(captions.choose_day, {
             keyboard: {
               one_time: false,
               buttons: [
@@ -123,9 +123,9 @@ export default async (ctx: Context) => {
             }
           });
         } else if (payload.type === 'week') {
-          await respond('Выберите неделю', { keyboard: generateWeekPosterKeyboard() });
+          await respond(captions.choose_week, { keyboard: generateWeekPosterKeyboard() });
         } else if (payload.type === 'genres') {
-          await respond('Выберите жанр', { keyboard: genresKeyboard });
+          await respond(captions.choose_genre, { keyboard: genresKeyboard });
         }
       } else if (payload.command === 'poster/type/day') {
         const concerts = await getDailyConcerts(moment(payload.dayStart));
@@ -133,7 +133,7 @@ export default async (ctx: Context) => {
         await respond(
           concerts.length
             ? getConcertsString(concerts)
-            : 'В этот день концертов нет'
+            : captions.no_concerts_at_day
         );
       } else if (payload.command === 'poster/type/week') {
         const today = +moment().startOf('day');
@@ -143,7 +143,7 @@ export default async (ctx: Context) => {
         await respond(
           concerts.length
             ? getConcertsByDaysString(groups)
-            : 'На эту неделю концертов нет'
+            : captions.no_concerts_at_week
         );
       } else if (payload.command === 'poster/type/genre') {
         const genre = payload.genre;
@@ -155,29 +155,27 @@ export default async (ctx: Context) => {
         await respond(
           genreConcerts.length
             ? getConcertsByDaysString(getConcertsByDays(genreConcerts))
-            : genre === Genre.ABOUT_MUSIC
-              ? 'В ближайшее время событий на тему музыки нет'
-              : `В ближайшее время концертов в жанре "${genreNames[genre]}" нет`
+            : captions.no_concerts_in_genre(genre)
         );
       } else if (payload.command === 'playlist') {
-        await respond('Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections');
+        await respond(captions.playlists_response);
       } else if (payload.command === 'releases') {
-        await respond('Смотри релизы тут: https://vk.com/soundcheck_ural/new_release');
+        await respond(captions.releases_response);
       } else if (payload.command === 'text_materials') {
-        await respond('У нас есть широкий выбор текстовых материалов: интервью, репортажи, истории групп', {
+        await respond(captions.text_materials_response, {
           keyboard: textMaterialsKeyboard
         });
       } else if (payload.command === 'text_materials/longread') {
-        await respond('Смотри лонгриды тут: https://vk.com/@soundcheck_ural');
+        await respond(captions.longreads_response);
       } else if (payload.command === 'text_materials/group_history') {
-        await respond('Смотри истории групп тут: https://vk.com/soundcheck_ural/music_history');
+        await respond(captions.group_history_response);
       } else if (payload.command === 'drawings') {
         const drawingsKeyboard = generateDrawingsKeyboard();
 
         if (drawingsKeyboard) {
-          await respond('Выберите розыгрыш', { keyboard: drawingsKeyboard });
+          await respond(captions.choose_drawing, { keyboard: drawingsKeyboard });
         } else {
-          await respond('В данный момент розыгрышей нет');
+          await respond(captions.no_drawings);
         }
       } else if (payload.command === 'drawings/drawing') {
         const drawingId = payload.drawingId;
@@ -191,21 +189,19 @@ export default async (ctx: Context) => {
           const drawingsKeyboard = generateDrawingsKeyboard();
 
           if (drawingsKeyboard) {
-            await respond('Такого розыгрыша не существует, выберите другой', { keyboard: drawingsKeyboard });
+            await respond(captions.no_drawing, { keyboard: drawingsKeyboard });
           } else {
-            await respond('В данный момент розыгрышей нет');
+            await respond(captions.no_drawings);
           }
         }
       } else if (payload.command === 'for_musicians' || (payload.command === 'back' && payload.dest === BackButtonDest.FOR_MUSICIANS)) {
-        await respond(`Если хотите сообщить о новом релизе, напишите сообщение с хэштегом ${RELEASE_HASHTAG}, \
-прикрепив пост или аудиозапись. Если хотите рассказать о своей группе, пишите историю группы, \
-упомянув хэштег ${TELL_ABOUT_GROUP_HASHTAG}. Также у нас имеются различные услуги для музыкантов.`, { keyboard: forMusiciansKeyboard });
+        await respond(captions.for_musicians_response, { keyboard: forMusiciansKeyboard });
       } else if (payload.command === 'for_musicians/tell_about_group') {
-        await respond(`Пишите историю группы, упомянув хэштег ${TELL_ABOUT_GROUP_HASHTAG}`);
+        await respond(captions.tell_about_group_response);
       } else if (payload.command === 'for_musicians/tell_about_release') {
-        await respond(`Напишите сообщение с хэштегом ${RELEASE_HASHTAG}, прикрепив пост или аудиозапись`);
+        await respond(captions.tell_about_release_response);
       } else if (payload.command === 'for_musicians/services') {
-        await respond('Выберите услугу', { keyboard: servicesKeyboard });
+        await respond(captions.choose_service, { keyboard: servicesKeyboard });
       } else if (payload.command === 'for_musicians/services/service') {
         if (payload.service.type === 'market') {
           await respond('', {
@@ -213,25 +209,25 @@ export default async (ctx: Context) => {
           });
         }
       } else if (payload.command === 'collaboration') {
-        await respond(`Пишите Андрею: https://vk.com/im?sel=${COLLABORATION_TARGET}`);
+        await respond(captions.collaboration_response);
       } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
-        await respond('Выберите действие', { keyboard: adminKeyboard });
+        await respond(captions.choose_action, { keyboard: adminKeyboard });
       } else if (payload.command === 'admin/drawings') {
-        await respond('Выберите действие', { keyboard: adminDrawingsKeyboard });
+        await respond(captions.choose_or_add_drawing, { keyboard: adminDrawingsKeyboard });
       } else if (payload.command === 'admin/drawings/add') {
         newUserState = {
           type: 'admin/drawings/add/set-name'
         };
 
-        await respond('Введине название');
+        await respond(captions.enter_drawing_name);
       } else if (payload.command === 'refresh_keyboard') {
-        await respond('Клавиатура обновлена', { keyboard: mainKeyboard });
+        await respond(captions.refresh_keyboard_response, { keyboard: mainKeyboard });
       }
     } else if (userState) {
       const text = body.object.text;
 
       if (userState.type.startsWith('admin') && !isManager) {
-        await respond('Вы не являетесь администратором', { keyboard: mainKeyboard });
+        await respond(captions.you_re_not_a_manager, { keyboard: mainKeyboard });
 
         break message;
       }
@@ -242,7 +238,7 @@ export default async (ctx: Context) => {
           name: text
         };
 
-        await respond('Введите описание');
+        await respond(captions.enter_drawing_description);
       } else if (userState.type === 'admin/drawings/add/set-description') {
         newUserState = {
           type: 'admin/drawings/add/set-postId',
@@ -250,7 +246,7 @@ export default async (ctx: Context) => {
           description: text
         };
 
-        await respond('Отправьте запись с розыгрышем');
+        await respond(captions.send_drawing_post);
       } else if (userState.type === 'admin/drawings/add/set-postId') {
         const wallAttachment = body.object.attachments.find(({ type }) => type === 'wall');
 
@@ -262,11 +258,11 @@ export default async (ctx: Context) => {
             postOwnerId: wallAttachment.wall.to_id
           });
 
-          await respond('Розыгрыш успешно добавлен');
+          await respond(captions.drawing_added);
         } else {
           newUserState = userState;
 
-          await respond('Отправьте запись с розыгрышем');
+          await respond(captions.send_drawing_post);
         }
       }
     } else {
@@ -274,15 +270,15 @@ export default async (ctx: Context) => {
 
       if (text.includes(TELL_ABOUT_GROUP_HASHTAG)) {
         await Promise.all([
-          respond('Рассказ о группе принят'),
-          sendVKMessage(TELL_ABOUT_GROUP_TARGET, 'Рассказ о группе', {
+          respond(captions.tell_about_group_message_response),
+          sendVKMessage(TELL_ABOUT_GROUP_TARGET, captions.group_history_message, {
             forwardMessages: [body.object.id]
           })
         ]);
       } else if (text.includes(RELEASE_HASHTAG)) {
         await Promise.all([
-          respond('Релиз принят'),
-          sendVKMessage(RELEASES_TARGET, 'Релиз', {
+          respond(captions.tell_about_release_message_response),
+          sendVKMessage(RELEASES_TARGET, captions.release_message, {
             forwardMessages: [body.object.id]
           })
         ]);

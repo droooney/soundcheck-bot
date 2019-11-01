@@ -4,12 +4,13 @@ import { BackButtonDest, ButtonColor, ButtonPayload, Keyboard, KeyboardButton } 
 import { genreNames, GENRES_BUTTONS } from './constants';
 import Database from './Database';
 import { getWeekString } from './helpers';
+import captions from './captions';
 
 export const backButtonText: Record<BackButtonDest, string> = {
-  [BackButtonDest.MAIN]: 'Главное меню',
-  [BackButtonDest.POSTER]: 'Афиша',
-  [BackButtonDest.FOR_MUSICIANS]: 'Для музыкантов',
-  [BackButtonDest.ADMIN]: 'Админка'
+  [BackButtonDest.MAIN]: captions.main_menu,
+  [BackButtonDest.POSTER]: captions.poster,
+  [BackButtonDest.FOR_MUSICIANS]: captions.for_musicians,
+  [BackButtonDest.ADMIN]: captions.admin_section
 };
 
 export function generateMainKeyboard(isManager: boolean): Keyboard {
@@ -17,25 +18,25 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
     one_time: false,
     buttons: [
       [
-        generateButton('Афиша', { command: 'poster' }),
-        generateButton('Плейлисты', { command: 'playlist' }),
-        generateButton('Релизы', { command: 'releases' }),
+        generateButton(captions.poster, { command: 'poster' }),
+        generateButton(captions.playlists, { command: 'playlist' }),
+        generateButton(captions.releases, { command: 'releases' }),
       ],
       [
-        generateButton('Текстовые материалы', { command: 'text_materials' }),
-        generateButton('Розыгрыши', { command: 'drawings' }),
+        generateButton(captions.text_materials, { command: 'text_materials' }),
+        generateButton(captions.drawings, { command: 'drawings' }),
       ],
       [
-        generateButton('Для музыкантов', { command: 'for_musicians' }),
-        generateButton('Сотрудничество', { command: 'collaboration' }),
+        generateButton(captions.for_musicians, { command: 'for_musicians' }),
+        generateButton(captions.collaboration, { command: 'collaboration' }),
       ],
       ...(
         isManager
-          ? [[generateButton('Админка', { command: 'admin' }, ButtonColor.POSITIVE)]]
+          ? [[generateButton(captions.admin_section, { command: 'admin' }, ButtonColor.POSITIVE)]]
           : []
       ),
       [
-        generateButton('🔄 Обновить клавиатуру', { command: 'refresh_keyboard' }, ButtonColor.POSITIVE),
+        generateButton(captions.refresh_keyboard, { command: 'refresh_keyboard' }, ButtonColor.POSITIVE),
       ],
     ]
   };
@@ -45,9 +46,9 @@ export const posterKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton('День', { command: 'poster/type', type: 'day' }),
-      generateButton('Неделя', { command: 'poster/type', type: 'week' }),
-      generateButton('По жанрам', { command: 'poster/type', type: 'genres' })
+      generateButton(captions.day, { command: 'poster/type', type: 'day' }),
+      generateButton(captions.week, { command: 'poster/type', type: 'week' }),
+      generateButton(captions.by_genres, { command: 'poster/type', type: 'genres' })
     ],
     [generateBackButton()],
   ]
@@ -66,7 +67,7 @@ export function generateWeekPosterKeyboard(): Keyboard {
     one_time: false,
     buttons: [
       ...weeks.map((week, index) => [
-        generateButton(index === 0 ? 'Эта неделя' : getWeekString(week), { command: 'poster/type/week', weekStart: +week })
+        generateButton(index === 0 ? captions.this_week : getWeekString(week), { command: 'poster/type/week', weekStart: +week })
       ]),
       [generateBackButton(BackButtonDest.POSTER)],
       [generateBackButton()],
@@ -89,11 +90,11 @@ export const servicesKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton('Дизайн стикеров', {
+      generateButton(captions.stickers_design, {
         command: 'for_musicians/services/service',
         service: { type: 'market', id: 'market-177574047_3113786' }
       }),
-      generateButton('Реклама в Soundcheck', {
+      generateButton(captions.soundcheck_ads, {
         command: 'for_musicians/services/service',
         service: { type: 'market', id: 'market-177574047_2685381' }
       }),
@@ -107,8 +108,8 @@ export const textMaterialsKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton('Лонгриды', { command: 'text_materials/longread' }),
-      generateButton('Истории групп', { command: 'text_materials/group_history' }),
+      generateButton(captions.longreads, { command: 'text_materials/longread' }),
+      generateButton(captions.group_history, { command: 'text_materials/group_history' }),
     ],
     [generateBackButton()],
   ]
@@ -117,9 +118,9 @@ export const textMaterialsKeyboard: Keyboard = {
 export const forMusiciansKeyboard: Keyboard = {
   one_time: false,
   buttons: [
-    [generateButton('Рассказать о группе', { command: 'for_musicians/tell_about_group' })],
-    [generateButton('Сообщить о релизе', { command: 'for_musicians/tell_about_release' })],
-    [generateButton('Услуги', { command: 'for_musicians/services' })],
+    [generateButton(captions.tell_about_group, { command: 'for_musicians/tell_about_group' })],
+    [generateButton(captions.tell_about_release, { command: 'for_musicians/tell_about_release' })],
+    [generateButton(captions.services, { command: 'for_musicians/services' })],
     [generateBackButton()],
   ]
 };
@@ -128,7 +129,7 @@ export const adminKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton('Розыгрыши', { command: 'admin/drawings' })
+      generateButton(captions.drawings, { command: 'admin/drawings' })
     ],
     [generateBackButton()],
   ]
@@ -138,7 +139,7 @@ export const adminDrawingsKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton('Добавить розыгрыш', { command: 'admin/drawings/add' }, ButtonColor.POSITIVE)
+      generateButton(captions.add_drawing, { command: 'admin/drawings/add' }, ButtonColor.POSITIVE)
     ],
     [generateBackButton(BackButtonDest.ADMIN)],
     [generateBackButton()],
