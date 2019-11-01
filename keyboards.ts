@@ -1,5 +1,6 @@
 import { BackButtonDest, ButtonColor, ButtonPayload, Keyboard, KeyboardButton } from './types';
 import { genreNames, GENRES_BUTTONS } from './constants';
+import Database from './Database';
 
 export const backButtonText: Record<BackButtonDest, string> = {
   [BackButtonDest.MAIN]: 'Главное меню',
@@ -107,6 +108,22 @@ export const adminDrawingsKeyboard: Keyboard = {
     [generateBackButton()],
   ]
 };
+
+export function generateDrawingsKeyboard(): Keyboard | null {
+  const buttons = Database.drawings.map(({ id, name }) => [generateButton(name, { command: 'drawings/drawing', drawingId: id })]);
+
+  if (!buttons.length) {
+    return null;
+  }
+
+  return {
+    one_time: false,
+    buttons: [
+      ...buttons,
+      [generateBackButton()],
+    ]
+  };
+}
 
 export function generateButton(text: string, payload: ButtonPayload, color: ButtonColor = ButtonColor.PRIMARY): KeyboardButton {
   return {

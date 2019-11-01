@@ -13,7 +13,7 @@ import {
   getDayString,
   getWeeklyConcerts,
   getWeekString,
-  sendVKMessage
+  sendVKMessage,
 } from './helpers';
 import { BackButtonDest, Body, ButtonColor, ButtonPayload, Genre, KeyboardButton, UserState } from './types';
 import {
@@ -29,6 +29,7 @@ import {
   generateButton,
   generateBackButton,
   generateMainKeyboard,
+  generateDrawingsKeyboard,
 
   genresKeyboard,
   servicesKeyboard,
@@ -70,7 +71,7 @@ export default async (ctx: Context) => {
         break message;
       }
 
-      command: if (payload.command === 'start') {
+      if (payload.command === 'start') {
         await respond('Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?', { keyboard: mainKeyboard });
       } else if (payload.command === 'back' && payload.dest === BackButtonDest.MAIN) {
         await respond('Выберите действие', { keyboard: mainKeyboard });
@@ -95,7 +96,7 @@ export default async (ctx: Context) => {
           if (!upcomingConcerts.length) {
             await respond('В ближайшее время концертов нет');
 
-            break command;
+            break message;
           }
 
           const concertsByDays = getConcertsByDays(upcomingConcerts);
@@ -194,30 +195,30 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'text_materials/group_history') {
         await respond('Смотри истории групп тут: https://vk.com/soundcheck_ural/music_history');
       } else if (payload.command === 'drawings') {
-        const buttons = Database.drawings.map(({ id, name }) => [generateButton(name, { command: 'drawings/drawing', drawingId: id })]);
+        const drawingsKeyboard = generateDrawingsKeyboard();
 
-        await respond('Смотри релизы тут: https://vk.com/soundcheck_ural/new_release', {
-          keyboard: {
-            one_time: false,
-            buttons: [
-              ...buttons,
-              [generateBackButton()],
-            ]
-          }
-        });
+        if (drawingsKeyboard) {
+          await respond('Выберите розыгрыш', { keyboard: drawingsKeyboard });
+        } else {
+          await respond('В данный момент розыгрышей нет');
+        }
       } else if (payload.command === 'drawings/drawing') {
         const drawingId = payload.drawingId;
         const drawing = Database.drawings.find(({ id }) => id === drawingId);
 
-        if (!drawing) {
-          await respond('Такого розыгрыша не существует');
+        if (drawing) {
+          await respond(`${drawing.name}\n\n${drawing.description}`, {
+            attachments: [`wall${drawing.postOwnerId}_${drawing.postId}`]
+          });
+        } else {
+          const drawingsKeyboard = generateDrawingsKeyboard();
 
-          break command;
+          if (drawingsKeyboard) {
+            await respond('Такого розыгрыша не существует, выберите другой', { keyboard: drawingsKeyboard });
+          } else {
+            await respond('В данный момент розыгрышей нет');
+          }
         }
-
-        await respond(`${drawing.name}\n\n${drawing.description}`, {
-          attachments: [`wall${drawing.postOwnerId}_${drawing.postId}`]
-        });
       } else if (payload.command === 'for_musicians' || (payload.command === 'back' && payload.dest === BackButtonDest.FOR_MUSICIANS)) {
         await respond(`Если хотите сообщить о новом релизе, напишите сообщение с хэштегом ${RELEASE_HASHTAG}, \
 прикрепив пост или аудиозапись. Если хотите рассказать о своей группе, пишите историю группы, \
