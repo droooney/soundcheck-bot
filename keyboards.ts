@@ -1,6 +1,9 @@
+import moment = require('moment-timezone');
+
 import { BackButtonDest, ButtonColor, ButtonPayload, Keyboard, KeyboardButton } from './types';
 import { genreNames, GENRES_BUTTONS } from './constants';
 import Database from './Database';
+import { getWeekString } from './helpers';
 
 export const backButtonText: Record<BackButtonDest, string> = {
   [BackButtonDest.MAIN]: 'Главное меню',
@@ -34,6 +37,39 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
       [
         generateButton('🔄 Обновить клавиатуру', { command: 'refresh_keyboard' }, ButtonColor.POSITIVE),
       ],
+    ]
+  };
+}
+
+export const posterKeyboard: Keyboard = {
+  one_time: false,
+  buttons: [
+    [
+      generateButton('День', { command: 'poster/type', type: 'day' }),
+      generateButton('Неделя', { command: 'poster/type', type: 'week' }),
+      generateButton('По жанрам', { command: 'poster/type', type: 'genres' })
+    ],
+    [generateBackButton()],
+  ]
+};
+
+export function generateWeekPosterKeyboard(): Keyboard {
+  const thisWeek = moment().startOf('week');
+  const weeks = [
+    thisWeek,
+    thisWeek.clone().add(1, 'week'),
+    thisWeek.clone().add(2, 'week'),
+    thisWeek.clone().add(3, 'week')
+  ];
+
+  return {
+    one_time: false,
+    buttons: [
+      ...weeks.map((week, index) => [
+        generateButton(index === 0 ? 'Эта неделя' : getWeekString(week), { command: 'poster/type/week', weekStart: +week })
+      ]),
+      [generateBackButton(BackButtonDest.POSTER)],
+      [generateBackButton()],
     ]
   };
 }

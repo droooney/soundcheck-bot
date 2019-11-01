@@ -12,7 +12,6 @@ import {
   getDailyConcerts,
   getDayString,
   getWeeklyConcerts,
-  getWeekString,
   sendVKMessage,
 } from './helpers';
 import { BackButtonDest, Body, ButtonColor, ButtonPayload, Genre, KeyboardButton, UserState } from './types';
@@ -29,8 +28,10 @@ import {
   generateButton,
   generateBackButton,
   generateMainKeyboard,
+  generateWeekPosterKeyboard,
   generateDrawingsKeyboard,
 
+  posterKeyboard,
   genresKeyboard,
   servicesKeyboard,
   textMaterialsKeyboard,
@@ -76,19 +77,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'back' && payload.dest === BackButtonDest.MAIN) {
         await respond('Выберите действие', { keyboard: mainKeyboard });
       } else if (payload.command === 'poster' || (payload.command === 'back' && payload.dest === BackButtonDest.POSTER)) {
-        await respond('Выберите тип афиши', {
-          keyboard: {
-            one_time: false,
-            buttons: [
-              [
-                generateButton('День', { command: 'poster/type', type: 'day' }),
-                generateButton('Неделя', { command: 'poster/type', type: 'week' }),
-                generateButton('По жанрам', { command: 'poster/type', type: 'genres' })
-              ],
-              [generateBackButton()],
-            ]
-          }
-        });
+        await respond('Выберите тип афиши', { keyboard: posterKeyboard });
       } else if (payload.command === 'poster/type') {
         if (payload.type === 'day') {
           const upcomingConcerts = await getConcerts(moment().startOf('day'));
@@ -127,26 +116,7 @@ export default async (ctx: Context) => {
             }
           });
         } else if (payload.type === 'week') {
-          const thisWeek = moment().startOf('week');
-          const weeks = [
-            thisWeek,
-            thisWeek.clone().add(1, 'week'),
-            thisWeek.clone().add(2, 'week'),
-            thisWeek.clone().add(3, 'week')
-          ];
-
-          await respond('Выберите неделю', {
-            keyboard: {
-              one_time: false,
-              buttons: [
-                ...weeks.map((week, index) => [
-                  generateButton(index === 0 ? 'Эта неделя' : getWeekString(week), { command: 'poster/type/week', weekStart: +week })
-                ]),
-                [generateBackButton(BackButtonDest.POSTER)],
-                [generateBackButton()],
-              ]
-            }
-          });
+          await respond('Выберите неделю', { keyboard: generateWeekPosterKeyboard() });
         } else if (payload.type === 'genres') {
           await respond('Выберите жанр', { keyboard: genresKeyboard });
         }
