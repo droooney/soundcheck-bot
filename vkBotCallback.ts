@@ -8,7 +8,7 @@ import {
   getHolidays,
   getConcerts,
   getConcertsByDays,
-  getConcertsByDaysString,
+  getConcertsByDaysStrings,
   getConcertsString,
   getDailyConcerts,
   getDayString,
@@ -140,13 +140,19 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'poster/type/week') {
         const today = +moment().startOf('day');
         const concerts = (await getWeeklyConcerts(moment(payload.weekStart))).filter(({ startTime }) => +startTime >= today);
-        const groups = getConcertsByDays(concerts);
 
-        await respond(
-          concerts.length
-            ? getConcertsByDaysString(groups)
-            : captions.no_concerts_at_week
-        );
+        if (!concerts.length) {
+          await respond(captions.no_concerts_at_week);
+
+          break message;
+        }
+
+        const groups = getConcertsByDays(concerts);
+        const concertsStrings = getConcertsByDaysStrings(groups);
+
+        for (const concertsString of concertsStrings) {
+          await respond(concertsString);
+        }
       } else if (payload.command === 'poster/type/genre') {
         const genre = payload.genre;
         const allConcerts = await getConcerts(moment().startOf('day'));
@@ -154,11 +160,18 @@ export default async (ctx: Context) => {
           genres.some((g) => g.toLowerCase() === genreNames[genre].toLowerCase() || genreMatches[genre].includes(g.toLowerCase()))
         ));
 
-        await respond(
-          genreConcerts.length
-            ? getConcertsByDaysString(getConcertsByDays(genreConcerts))
-            : captions.no_concerts_in_genre(genre)
-        );
+        if (!genreConcerts.length) {
+          await respond(captions.no_concerts_in_genre(genre));
+
+          break message;
+        }
+
+        const groups = getConcertsByDays(genreConcerts);
+        const concertsStrings = getConcertsByDaysStrings(groups);
+
+        for (const concertsString of concertsStrings) {
+          await respond(concertsString);
+        }
       } else if (payload.command === 'playlist') {
         await respond(captions.playlists_response);
       } else if (payload.command === 'releases') {

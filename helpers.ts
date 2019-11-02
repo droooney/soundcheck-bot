@@ -185,14 +185,39 @@ export function getConcertsString(concerts: Concert[]): string {
   return concerts.map(getConcertString).join('\n\n');
 }
 
-export function getConcertsByDaysString(groups: Record<string, Concert[]>): string {
-  return _.map(groups, (concerts, startTime) => (
-    `——————————————
+export function getConcertsGroupString(concerts: Concert[], startTime: string): string {
+  return `——————————————
 📌 ${capitalizeWords(moment(+startTime).format('DD MMMM - dddd'))}
 ——————————————
 
-${getConcertsString(concerts)}`
-  )).join('\n\n');
+${getConcertsString(concerts)}`;
+}
+
+export function getConcertsByDaysString(groups: Record<string, Concert[]>): string {
+  return _.map(groups, getConcertsGroupString).join('\n\n');
+}
+
+export function getConcertsByDaysStrings(groups: Record<string, Concert[]>): string[] {
+  const strings: string[] = [];
+
+  _.forEach(groups, (group, startTime) => {
+    const currentString = _.last(strings);
+    const groupString = getConcertsGroupString(group, startTime);
+
+    if (currentString === undefined) {
+      strings.push(groupString);
+    } else {
+      const newString = `${currentString}\n\n${groupString}`;
+
+      if (newString.length > 4096) {
+        strings.push(groupString);
+      } else {
+        strings[strings.length - 1] = newString;
+      }
+    }
+  });
+
+  return strings;
 }
 
 export function capitalizeWords(string: string): string {

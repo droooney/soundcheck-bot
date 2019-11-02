@@ -40,7 +40,7 @@ export const GENRES_BUTTONS = [
   [Genre.POP, Genre.FOLK, Genre.ABOUT_MUSIC]
 ];
 
-export const confirmPositiveAnswers = ['yes', 'да', '+'];
+export const confirmPositiveAnswers = ['yes', 'да', '+', 'ok', 'ок'];
 
 export const SOUNDCHECK_ID = 164134127;
 export const TELL_ABOUT_GROUP_HASHTAG = '#tell_about_group';
