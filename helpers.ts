@@ -120,7 +120,7 @@ export interface SendVkMessageOptions {
 
 export async function sendVKMessage(dest: number | string, message: string, options: SendVkMessageOptions = {}) {
   await sendVKRequest('messages.send', {
-    peer_id: dest,
+    user_ids: dest,
     random_id: Math.floor(Math.random() * 2 ** 32),
     message,
     keyboard: JSON.stringify(options.keyboard),

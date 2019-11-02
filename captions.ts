@@ -63,7 +63,7 @@ export default {
   stickers_design: 'Дизайн стикеров',
   soundcheck_ads: 'Реклама в Soundcheck',
   tell_about_group_message_response: 'Рассказ о группе принят',
-  tell_about_release_message_response: 'Рассказ о группе',
+  tell_about_release_message_response: 'Релиз принят',
 
   // admin
   you_re_not_a_manager: 'Вы не являетесь администратором',

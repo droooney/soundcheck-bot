@@ -4,11 +4,13 @@ import Application = require('koa');
 import BodyParser = require('koa-bodyparser');
 import Router = require('koa-router');
 import moment = require('moment-timezone');
+import * as _ from 'lodash';
 
 import Database from './Database';
-import { refreshGoogleAccessToken, sendNextPosterMessage } from './helpers';
+import { refreshGoogleAccessToken, sendNextPosterMessage, sendVKMessage, sendVKRequest } from './helpers';
 import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
+import { ConversationsResponse } from './types';
 
 util.inspect.defaultOptions.depth = 10;
 
@@ -49,6 +51,23 @@ async function main() {
     refreshGoogleAccessToken(),
     Database.prepare()
   ]);
+
+  const {
+    data: {
+      response: {
+        items: conversations
+      }
+    }
+  } = await sendVKRequest<ConversationsResponse>('messages.getConversations', { count: 200 });
+  const userIds = conversations.map(({ conversation }) => conversation.peer.id);
+
+  if (false) {
+    const chunks = _.chunk(userIds, 50);
+
+    for (const chunk of chunks) {
+      await sendVKMessage(chunk.join(','), 'test');
+    }
+  }
 
   await new Promise((resolve) => {
     server.listen(process.env.PORT || 5778, () => {

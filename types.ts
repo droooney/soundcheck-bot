@@ -40,6 +40,18 @@ export interface ManagersResponse {
   };
 }
 
+export interface ConversationsResponse {
+  response: {
+    count: number;
+    items: {
+      conversation: {
+        peer: { id: number; };
+      };
+      last_message: Message;
+    }[];
+  };
+}
+
 export interface WallAttachment {
   type: 'wall';
   wall: {
