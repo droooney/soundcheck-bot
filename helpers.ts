@@ -209,7 +209,7 @@ export function getConcertsByDaysStrings(groups: Record<string, Concert[]>): str
     } else {
       const newString = `${currentString}\n\n${groupString}`;
 
-      if (newString.length > 4096) {
+      if (newString.length > 1000) {
         strings.push(groupString);
       } else {
         strings[strings.length - 1] = newString;
