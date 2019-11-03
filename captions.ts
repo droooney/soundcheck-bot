@@ -77,9 +77,9 @@ export default {
 
   // subscriptions
   subscriptions_response: (user: User) => user.subscriptions.length
-    ? 'Для того, чтобы подписаться на категорию, нажмите на соответствующую кнопку'
-    : `Вы уже подписаны на следующие категории: ${user.subscriptions.map((subscription) => `"${subscriptionNames[subscription]}"`).join(', ')}. \
-Для того, чтобы подписаться или отписаться от категории, нажмите на соответствующую кнопку`,
+    ? `Вы уже подписаны на следующие категории: ${user.subscriptions.map((subscription) => `"${subscriptionNames[subscription]}"`).join(', ')}. \
+Для того, чтобы подписаться или отписаться от категории, нажмите на соответствующую кнопку`
+    : 'Для того, чтобы подписаться на категорию, нажмите на соответствующую кнопку',
   subscribe: 'Подписаться',
   you_re_already_subscribed: 'Вы уже подписаны',
   subscribe_response: (subscription: Subscription) => `Вы подписались на категорию "${subscriptionNames[subscription]}"`,
