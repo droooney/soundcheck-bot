@@ -9,6 +9,13 @@ export interface Message {
   attachments: Attachment[];
 }
 
+export interface Post {
+  id: number;
+  owner_id: number;
+  text: string;
+  attachments: Attachment[];
+}
+
 export interface BaseBody {
   group_id: number;
 }
@@ -40,7 +47,12 @@ export interface UserLeaveBody extends BaseBody {
   };
 }
 
-export type Body = ConfirmationBody | NewMessageBody | ChangeManagerBody | UserLeaveBody;
+export interface NewPostBody extends BaseBody {
+  type: 'wall_post_new';
+  object: Post;
+}
+
+export type Body = ConfirmationBody | NewMessageBody | ChangeManagerBody | UserLeaveBody | NewPostBody;
 
 export interface ManagersResponse {
   response: {
@@ -69,7 +81,16 @@ export interface WallAttachment {
   };
 }
 
-export type Attachment = WallAttachment;
+export interface PhotoAttachment {
+  type: 'photo';
+  photo: {
+    id: number;
+    owner_id: number;
+    text: string;
+  };
+}
+
+export type Attachment = WallAttachment | PhotoAttachment;
 
 export interface StartButtonPayload {
   command: 'start';

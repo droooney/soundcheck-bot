@@ -16,10 +16,21 @@ import {
   getWeeklyConcerts,
   sendVKMessage,
 } from './helpers';
-import { BackButtonDest, Body, ButtonColor, ButtonPayload, UserState } from './types';
+import {
+  BackButtonDest,
+  Body,
+  ButtonColor,
+  ButtonPayload,
+  PhotoAttachment,
+  Subscription,
+  UserState,
+  WallAttachment,
+} from './types';
 import {
   genreNames,
   genreMatches,
+  // subscriptionNames,
+  subscriptionHashtags,
   confirmPositiveAnswers,
   targets,
 } from './constants';
@@ -351,7 +362,7 @@ export default async (ctx: Context) => {
 
         await respond(captions.send_drawing_post);
       } else if (userState.type === 'admin/drawings/add/set_post') {
-        const wallAttachment = body.object.attachments.find(({ type }) => type === 'wall');
+        const wallAttachment = body.object.attachments.find(({ type }) => type === 'wall') as WallAttachment | undefined;;
 
         if (wallAttachment) {
           await Database.addDrawing({
@@ -379,7 +390,7 @@ export default async (ctx: Context) => {
         const drawing = Database.getDrawingById(userState.drawingId);
 
         if (drawing) {
-          const wallAttachment = body.object.attachments.find(({ type }) => type === 'wall');
+          const wallAttachment = body.object.attachments.find(({ type }) => type === 'wall') as WallAttachment | undefined;
 
           if (wallAttachment) {
             await Database.editDrawing(drawing, 'postId', `${wallAttachment.wall.to_id}_${wallAttachment.wall.id}`);
@@ -433,6 +444,20 @@ export default async (ctx: Context) => {
     ctx.body = 'ok';
   } else if (body.type === 'group_leave') {
     ctx.body = 'ok';
+  } else if (body.type === 'wall_post_new') {
+    const photoAttachment = body.object.attachments.find(({ type }) => type === 'photo') as PhotoAttachment | undefined;
+
+    if (photoAttachment) {
+      const hashtags = photoAttachment.photo.text
+        .split(/\s+/)
+        .map((hashtag) => hashtag.trim())
+        .filter(Boolean);
+      const subscriptions = _.filter(Subscription, (subscription) => (
+        subscriptionHashtags[subscription].some((hashtag) => hashtags.includes(hashtag))
+      ));
+
+      console.log(subscriptions);
+    }
   } else {
     await fs.writeJSON(`${__dirname}/body.json`, body, { encoding: 'utf8', spaces: 4 });
 
