@@ -53,6 +53,16 @@ export const subscriptionNames: Record<Subscription, string> = {
   [Subscription.SERVICES]: captions.services,
 };
 
+export const subscriptionHashtags: Record<Subscription, string[]> = {
+  [Subscription.POSTER]: ['#afisha_week@soundcheck_ural', '#afisha_today@soundcheck_ural', '#anons@soundcheck_ural'],
+  [Subscription.PLAYLISTS]: ['#music_selections@soundcheck_ural'],
+  [Subscription.RELEASES]: ['#new_release@soundcheck_ural'],
+  [Subscription.TEXT_MATERIALS]: [],
+  [Subscription.AUDIO_MATERIALS]: ['#audio@soundcheck_ural'],
+  [Subscription.DRAWINGS]: [],
+  [Subscription.SERVICES]: ['#service@soundcheck_ural'],
+};
+
 export const SOUNDCHECK_ID = 164134127;
 export const targets = {
   tellAboutGroup: 175810060,

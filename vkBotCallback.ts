@@ -1,3 +1,4 @@
+import * as fs from 'fs-extra';
 import * as _ from 'lodash';
 import moment = require('moment-timezone');
 import { Context } from 'koa';
@@ -247,6 +248,8 @@ export default async (ctx: Context) => {
             attachments: [payload.service.id]
           });
         }
+      } else if (payload.command === 'subscriptions') {
+
       } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
         await respond(captions.choose_action, { keyboard: adminKeyboard });
       } else if (payload.command === 'admin/drawings' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN_DRAWINGS)) {
@@ -431,6 +434,8 @@ export default async (ctx: Context) => {
   } else if (body.type === 'group_leave') {
     ctx.body = 'ok';
   } else {
+    await fs.writeJSON(`${__dirname}/body.json`, body, { encoding: 'utf8' });
+
     ctx.body = 'ok';
   }
 }
