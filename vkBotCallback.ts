@@ -35,7 +35,7 @@ import {
   genresKeyboard,
   servicesKeyboard,
   textMaterialsKeyboard,
-  forMusiciansKeyboard,
+  writeToSoundcheckKeyboard,
   adminKeyboard,
 } from './keyboards';
 import Database from './Database';
@@ -205,23 +205,23 @@ export default async (ctx: Context) => {
         await respond(captions.longreads_response);
       } else if (payload.command === 'text_materials/group_history') {
         await respond(captions.group_history_response);
-      } else if (payload.command === 'for_musicians') {
-        await respond(captions.for_musicians_response, { keyboard: forMusiciansKeyboard });
-      } else if (payload.command === 'for_musicians/tell_about_group') {
+      } else if (payload.command === 'write_to_soundcheck') {
+        await respond(captions.write_to_soundcheck_response, { keyboard: writeToSoundcheckKeyboard });
+      } else if (payload.command === 'write_to_soundcheck/tell_about_group') {
         newUserState = {
-          type: 'for_musicians/tell_about_group'
+          type: 'write_to_soundcheck/tell_about_group'
         };
 
         await respond(captions.tell_about_group_response);
-      } else if (payload.command === 'for_musicians/tell_about_release') {
+      } else if (payload.command === 'write_to_soundcheck/tell_about_release') {
         newUserState = {
-          type: 'for_musicians/tell_about_release'
+          type: 'write_to_soundcheck/tell_about_release'
         };
 
         await respond(captions.tell_about_release_response);
-      } else if (payload.command === 'collaboration') {
+      } else if (payload.command === 'write_to_soundcheck/collaboration') {
         newUserState = {
-          type: 'collaboration'
+          type: 'write_to_soundcheck/collaboration'
         };
 
         await respond(captions.collaboration_response);
@@ -279,21 +279,21 @@ export default async (ctx: Context) => {
         break message;
       }
 
-      if (userState.type === 'for_musicians/tell_about_group') {
+      if (userState.type === 'write_to_soundcheck/tell_about_group') {
         await Promise.all([
           respond(captions.tell_about_group_message_response),
           sendVKMessage(targets.tellAboutGroup, captions.group_history_message, {
             forwardMessages: [body.object.id]
           })
         ]);
-      } else if (userState.type === 'for_musicians/tell_about_release') {
+      } else if (userState.type === 'write_to_soundcheck/tell_about_release') {
         await Promise.all([
           respond(captions.tell_about_release_message_response),
           sendVKMessage(targets.tellAboutRelease, captions.release_message, {
             forwardMessages: [body.object.id]
           })
         ]);
-      } else if (userState.type === 'collaboration') {
+      } else if (userState.type === 'write_to_soundcheck/collaboration') {
         await Promise.all([
           respond(captions.collaboration_message_response),
           sendVKMessage(targets.collaboration, captions.collaboration_message, {

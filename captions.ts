@@ -11,8 +11,7 @@ export default {
   drawings: 'Розыгрыши',
   text_materials: 'Статьи',
   audio_materials: 'Аудиоматериалы',
-  for_musicians: 'Для музыкантов',
-  collaboration: 'Сотрудничество',
+  write_to_soundcheck: 'Написать Soundcheck',
   services: 'Услуги',
   subscriptions: 'Рассылки',
   admin_section: 'Админка',
@@ -20,7 +19,6 @@ export default {
   choose_action: 'Выберите действие',
   playlists_response: 'Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections',
   releases_response: 'Смотри релизы тут: https://vk.com/soundcheck_ural/new_release',
-  collaboration_response: 'Напишите предложение о сотрудничестве и мы его рассмотрим',
   refresh_keyboard_response: 'Клавиатура обновлена',
 
   // poster
@@ -57,12 +55,14 @@ export default {
   digests: 'Дайджесты',
   podcasts: 'Подкасты',
 
-  // for musicians
-  for_musicians_response: 'Раздел для музыкантов',
+  // write to soundcheck
+  write_to_soundcheck_response: 'По поводу?',
   tell_about_group: 'Рассказать о группе',
   tell_about_release: 'Сообщить о релизе',
+  collaboration: 'Сотрудничество',
   tell_about_group_response: 'Напишите о себе пару слов, прикрепляйте ссылки на соцсети',
   tell_about_release_response: 'Прикрепляйте пост, аудиозапись или ссылку и Ваш релиз будет рассмотрен',
+  collaboration_response: 'Напишите предложение о сотрудничестве и мы его рассмотрим',
   tell_about_group_message_response: 'Спасибо за то что рассказали о себе',
   tell_about_release_message_response: 'Релиз принят',
   collaboration_message_response: 'Предложение о сотрудничестве принято',

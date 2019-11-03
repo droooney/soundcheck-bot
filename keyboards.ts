@@ -28,8 +28,7 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
         generateButton(captions.audio_materials, { command: 'audio_materials' }),
       ],
       [
-        generateButton(captions.for_musicians, { command: 'for_musicians' }),
-        generateButton(captions.collaboration, { command: 'collaboration' }),
+        generateButton(captions.write_to_soundcheck, { command: 'write_to_soundcheck' }),
       ],
       [
         generateButton(captions.services, { command: 'services' }),
@@ -130,11 +129,12 @@ export const audioMaterialsKeyboard: Keyboard = {
   ]
 };
 
-export const forMusiciansKeyboard: Keyboard = {
+export const writeToSoundcheckKeyboard: Keyboard = {
   one_time: false,
   buttons: [
-    [generateButton(captions.tell_about_group, { command: 'for_musicians/tell_about_group' })],
-    [generateButton(captions.tell_about_release, { command: 'for_musicians/tell_about_release' })],
+    [generateButton(captions.tell_about_group, { command: 'write_to_soundcheck/tell_about_group' })],
+    [generateButton(captions.tell_about_release, { command: 'write_to_soundcheck/tell_about_release' })],
+    [generateButton(captions.collaboration, { command: 'write_to_soundcheck/collaboration' })],
     [generateBackButton()],
   ]
 };

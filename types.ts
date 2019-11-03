@@ -136,20 +136,20 @@ export interface DrawingButtonPayload {
   drawingId: string;
 }
 
-export interface ForMusiciansButtonPayload {
-  command: 'for_musicians';
+export interface WriteToSoundcheckButtonPayload {
+  command: 'write_to_soundcheck';
 }
 
 export interface TellAboutGroupButtonPayload {
-  command: 'for_musicians/tell_about_group';
+  command: 'write_to_soundcheck/tell_about_group';
 }
 
 export interface TellAboutReleaseButtonPayload {
-  command: 'for_musicians/tell_about_release';
+  command: 'write_to_soundcheck/tell_about_release';
 }
 
 export interface CollaborationButtonPayload {
-  command: 'collaboration';
+  command: 'write_to_soundcheck/collaboration';
 }
 
 export interface ServicesButtonPayload {
@@ -219,7 +219,7 @@ export type ButtonPayload = (
   | PodcastsButtonPayload
   | DrawingsButtonPayload
   | DrawingButtonPayload
-  | ForMusiciansButtonPayload
+  | WriteToSoundcheckButtonPayload
   | TellAboutGroupButtonPayload
   | TellAboutReleaseButtonPayload
   | CollaborationButtonPayload
@@ -333,15 +333,15 @@ export interface Drawing {
 export type DrawingParams = Omit<Drawing, 'id'>;
 
 export interface TellAboutGroupUserState {
-  type: 'for_musicians/tell_about_group';
+  type: 'write_to_soundcheck/tell_about_group';
 }
 
 export interface TellAboutReleaseUserState {
-  type: 'for_musicians/tell_about_release';
+  type: 'write_to_soundcheck/tell_about_release';
 }
 
 export interface CollaborationUserState {
-  type: 'collaboration';
+  type: 'write_to_soundcheck/collaboration';
 }
 
 export interface AdminAddDrawingSetNameUserState {
