@@ -27,24 +27,6 @@ export default class Database {
       await fs.writeJSON(Database.drawingsFile, []);
       await fs.ensureDir(Database.usersDir);
     },
-
-    // add lastMessageDate for all users
-    async () => {
-      const users = await fs.readdir(Database.usersDir);
-
-      await Promise.all(
-        users.map(async (pathname) => {
-          const match = pathname.match(/^(\d+)\.json$/);
-
-          if (match) {
-            await fs.writeJSON(`${Database.usersDir}/${pathname}`, {
-              ...await fs.readJSON(`${Database.usersDir}/${pathname}`, { encoding: 'utf8' }),
-              lastMessageDate: 0,
-            }, { encoding: 'utf8' });
-          }
-        })
-      );
-    }
   ];
   static preparations: Preparation[] = [
     // prepare drawings
@@ -81,7 +63,7 @@ export default class Database {
       });
 
       Database.managers = managers.map(({ id }) => id);
-    }
+    },
   ];
   static locks: Record<string, Promise<any>> = {};
 
