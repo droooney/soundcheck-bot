@@ -13,7 +13,7 @@ export interface Post {
   id: number;
   owner_id: number;
   text: string;
-  attachments: Attachment[];
+  attachments?: Attachment[];
 }
 
 export interface BaseBody {

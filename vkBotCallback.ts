@@ -444,7 +444,7 @@ export default async (ctx: Context) => {
   } else if (body.type === 'group_leave') {
     ctx.body = 'ok';
   } else if (body.type === 'wall_post_new') {
-    const photoAttachment = body.object.attachments.find(({ type }) => type === 'photo') as PhotoAttachment | undefined;
+    const photoAttachment = (body.object.attachments || []).find(({ type }) => type === 'photo') as PhotoAttachment | undefined;
 
     if (photoAttachment) {
       const hashtags = photoAttachment.photo.text
