@@ -105,11 +105,17 @@ export function getConcertsByDays(concerts: Concert[]): Record<string, Concert[]
   return _.groupBy(concerts, (concert) => +concert.startTime.clone().startOf('day'));
 }
 
-export function sendVKRequest<T>(method: string, query: object = {}): Promise<AxiosResponse<T>> {
-  return axios.post(`https://api.vk.com/method/${method}`, qs.stringify({
+export async function sendVKRequest<T>(method: string, query: object = {}): Promise<AxiosResponse<T>> {
+  const response = await axios.post(`https://api.vk.com/method/${method}`, qs.stringify({
     ...defaultVKQuery,
     ...query,
   }));
+
+  if (response.data.error) {
+    throw new Error(response.data.error.error_msg);
+  }
+
+  return response;
 }
 
 export interface SendVkMessageOptions {

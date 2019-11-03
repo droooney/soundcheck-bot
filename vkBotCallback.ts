@@ -45,7 +45,8 @@ import captions from './captions';
 export default async (ctx: Context) => {
   const body: Body = ctx.request.body;
 
-  console.log('bot event', body);
+  // console.log('bot event', body);
+  console.log('new event', moment().format('hh:mm:ss.SSS'));
 
   if (body.type === 'confirmation') {
     ctx.body = 'afcb8751';
@@ -398,6 +399,8 @@ export default async (ctx: Context) => {
           }
         }
       }
+    } else {
+      throw new Error('123');
     }
 
     await Database.setUserState(user, newUserState);
