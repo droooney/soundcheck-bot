@@ -195,6 +195,12 @@ export interface SubscriptionsButtonPayload {
   command: 'subscriptions';
 }
 
+export interface SubscriptionButtonPayload {
+  command: 'subscriptions/subscription';
+  subscription: Subscription;
+  subscribed: boolean;
+}
+
 export interface AdminButtonPayload {
   command: 'admin';
 }
@@ -256,6 +262,7 @@ export type ButtonPayload = (
   | ServicesButtonPayload
   | ServiceButtonPayload
   | SubscriptionsButtonPayload
+  | SubscriptionButtonPayload
   | AdminButtonPayload
   | AdminDrawingsButtonPayload
   | AdminDrawingButtonPayload

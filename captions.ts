@@ -1,5 +1,5 @@
-import { Drawing, Genre } from './types';
-import { genreNames } from './constants';
+import { Drawing, Genre, Subscription, User } from './types';
+import { genreNames, subscriptionNames } from './constants';
 
 export default {
   // main menu
@@ -76,8 +76,14 @@ export default {
   soundcheck_ads: 'Реклама в Soundcheck',
 
   // subscriptions
+  subscriptions_response: (user: User) => user.subscriptions.length
+    ? 'Для того, чтобы подписаться на категорию, нажмите на соответствующую кнопку'
+    : `Вы уже подписаны на следующие категории: ${user.subscriptions.map((subscription) => `"${subscriptionNames[subscription]}"`).join(', ')}. \
+Для того, чтобы подписаться или отписаться от категории, нажмите на соответствующую кнопку`,
   subscribe: 'Подписаться',
   you_re_already_subscribed: 'Вы уже подписаны',
+  subscribe_response: (subscription: Subscription) => `Вы подписались на категорию "${subscriptionNames[subscription]}"`,
+  unsubscribe_response: (subscription: Subscription) => `Вы отписались от категории "${subscriptionNames[subscription]}"`,
 
   // admin
   you_re_not_a_manager: 'Вы не являетесь администратором',

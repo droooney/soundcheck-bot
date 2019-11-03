@@ -1,7 +1,7 @@
 import moment = require('moment-timezone');
 
-import { BackButtonDest, ButtonColor, ButtonPayload, Drawing, Keyboard, KeyboardButton } from './types';
-import { genreNames, GENRES_BUTTONS } from './constants';
+import { BackButtonDest, ButtonColor, ButtonPayload, Drawing, Keyboard, KeyboardButton, User } from './types';
+import { genreNames, genresButtons, subscriptionNames, subscriptionButtons } from './constants';
 import Database from './Database';
 import { getWeekString } from './helpers';
 import captions from './captions';
@@ -82,7 +82,7 @@ export function generateWeekPosterKeyboard(): Keyboard {
 export const genresKeyboard: Keyboard = {
   one_time: false,
   buttons: [
-    ...GENRES_BUTTONS.map((buttons) => (
+    ...genresButtons.map((buttons) => (
       buttons.map((genre) => generateButton(genreNames[genre], { command: 'poster/type/genre', genre }))
     )),
     [generateBackButton(BackButtonDest.POSTER)],
@@ -138,6 +138,24 @@ export const writeToSoundcheckKeyboard: Keyboard = {
     [generateBackButton()],
   ]
 };
+
+export function generateSubscriptionsKeyboard(user: User): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      ...subscriptionButtons.map((buttons) => (
+        buttons.map((subscription) => (
+          generateButton(subscriptionNames[subscription], {
+            command: 'subscriptions/subscription',
+            subscription,
+            subscribed: user.subscriptions.includes(subscription)
+          }, user.subscriptions.includes(subscription) ? ButtonColor.SECONDARY : ButtonColor.PRIMARY)
+        ))
+      )),
+      [generateBackButton()],
+    ]
+  };
+}
 
 export const adminKeyboard: Keyboard = {
   one_time: false,

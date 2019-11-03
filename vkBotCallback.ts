@@ -39,6 +39,7 @@ import {
   generateMainKeyboard,
   generateWeekPosterKeyboard,
   generateDrawingsKeyboard,
+  generateSubscriptionsKeyboard,
   generateAdminDrawingsKeyboard,
   generateAdminDrawingMenuKeyboard,
 
@@ -259,7 +260,17 @@ export default async (ctx: Context) => {
           });
         }
       } else if (payload.command === 'subscriptions') {
+        await respond(captions.subscriptions_response(user), { keyboard: generateSubscriptionsKeyboard(user) });
+      } else if (payload.command === 'subscriptions/subscription') {
+        if (payload.subscribed) {
+          await Database.unsubscribeUser(user, payload.subscription);
 
+          await respond(captions.unsubscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(user) });
+        } else {
+          await Database.subscribeUser(user, payload.subscription);
+
+          await respond(captions.subscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(user) });
+        }
       } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
         await respond(captions.choose_action, { keyboard: adminKeyboard });
       } else if (payload.command === 'admin/drawings' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN_DRAWINGS)) {

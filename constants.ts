@@ -35,10 +35,10 @@ export const genreMatches: Record<Genre, string[]> = {
   [Genre.ABOUT_MUSIC]: ['лекция', 'выставка', 'кино']
 };
 
-export const GENRES_BUTTONS = [
+export const genresButtons = [
   [Genre.ROCK, Genre.INDIE, Genre.HIP_HOP],
   [Genre.ELECTRONIC, Genre.COVERS, Genre.JAZZ],
-  [Genre.POP, Genre.FOLK, Genre.ABOUT_MUSIC]
+  [Genre.POP, Genre.FOLK, Genre.ABOUT_MUSIC],
 ];
 
 export const confirmPositiveAnswers = ['yes', 'да', '+', 'ok', 'ок'];
@@ -52,6 +52,12 @@ export const subscriptionNames: Record<Subscription, string> = {
   [Subscription.DRAWINGS]: captions.drawings,
   [Subscription.SERVICES]: captions.services,
 };
+
+export const subscriptionButtons = [
+  [Subscription.POSTER, Subscription.PLAYLISTS, Subscription.RELEASES],
+  [Subscription.TEXT_MATERIALS, Subscription.AUDIO_MATERIALS],
+  [Subscription.DRAWINGS, Subscription.SERVICES],
+];
 
 export const subscriptionHashtags: Record<Subscription, string[]> = {
   [Subscription.POSTER]: ['#afisha_week@soundcheck_ural', '#afisha_today@soundcheck_ural', '#anons@soundcheck_ural'],
