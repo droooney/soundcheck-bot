@@ -1,15 +1,21 @@
 import * as fs from 'fs-extra';
 
-import { Drawing, DrawingParams, ManagersResponse, UserState } from './types';
+import { Drawing, DrawingParams, ManagersResponse, Subscription, User, UserState } from './types';
 import { sendVKRequest } from './helpers';
 import { SOUNDCHECK_ID } from './constants';
 
 export type Preparation = () => void;
 
+const defaultUser: User = {
+  id: 0,
+  state: null,
+  subscriptions: []
+};
+
 export default class Database {
   static dbDir = `${__dirname}/db`;
   static drawingsFile = `${Database.dbDir}/drawings.json`;
-  static userStatesDir = `${Database.dbDir}/user-states`;
+  static usersDir = `${Database.dbDir}/users`;
   static preparations: Preparation[] = [
     // prepare db directory
     async () => {
@@ -25,18 +31,18 @@ export default class Database {
       Database.drawings = await fs.readJSON(Database.drawingsFile, { encoding: 'utf8' });
     },
 
-    // prepare user states
+    // prepare users
     async () => {
-      await fs.ensureDir(Database.userStatesDir);
+      await fs.ensureDir(Database.usersDir);
 
-      const users = await fs.readdir(Database.userStatesDir);
+      const users = await fs.readdir(Database.usersDir);
 
       await Promise.all(
         users.map(async (pathname) => {
           const match = pathname.match(/^(\d+)\.json$/);
 
           if (match) {
-            Database.userStates[match[1] as any] = await fs.readJSON(`${Database.userStatesDir}/${pathname}`, { encoding: 'utf8' });
+            Database.users[match[1] as any] = await fs.readJSON(`${Database.usersDir}/${pathname}`, { encoding: 'utf8' });
           }
         })
       );
@@ -61,7 +67,7 @@ export default class Database {
   static locks: Record<string, Promise<any>> = {};
 
   static drawings: Drawing[] = [];
-  static userStates: Partial<Record<number, UserState>> = {};
+  static users: Partial<Record<number, User>> = {};
   static managers: number[] = [];
 
   static async prepare() {
@@ -125,9 +131,26 @@ export default class Database {
     }
   }
 
-  static async setUserState(userId: number, state: UserState) {
-    Database.userStates[userId] = state;
+  static getUser(userId: number): User {
+    return Database.users[userId] = Database.users[userId] || { ...defaultUser, id: userId };
+  }
 
-    await Database.writeToDb(`${Database.userStatesDir}/${userId}.json`, state);
+  static async setUserState(user: User, state: UserState) {
+    user.state = state;
+
+    await Database.writeToDb(`${Database.usersDir}/${user.id}.json`, user);
+  }
+
+  static async subscribeUser(user: User, subscription: Subscription) {
+    user.subscriptions = user.subscriptions.filter((sub) => sub !== subscription);
+    user.subscriptions.push(subscription);
+
+    await Database.writeToDb(`${Database.usersDir}/${user.id}.json`, user);
+  }
+
+  static async unsubscribeUser(user: User, subscription: Subscription) {
+    user.subscriptions = user.subscriptions.filter((sub) => sub !== subscription);
+
+    await Database.writeToDb(`${Database.usersDir}/${user.id}.json`, user);
   }
 }

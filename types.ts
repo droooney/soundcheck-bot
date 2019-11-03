@@ -111,6 +111,18 @@ export interface GroupHistoryButtonPayload {
   command: 'text_materials/group_history';
 }
 
+export interface AudioMaterialsButtonPayload {
+  command: 'audio_materials';
+}
+
+export interface DigestsButtonPayload {
+  command: 'audio_materials/digests';
+}
+
+export interface PodcastsButtonPayload {
+  command: 'audio_materials/podcasts';
+}
+
 export interface ReleasesButtonPayload {
   command: 'releases';
 }
@@ -136,17 +148,21 @@ export interface TellAboutReleaseButtonPayload {
   command: 'for_musicians/tell_about_release';
 }
 
+export interface CollaborationButtonPayload {
+  command: 'collaboration';
+}
+
 export interface ServicesButtonPayload {
-  command: 'for_musicians/services';
+  command: 'services';
 }
 
 export interface ServiceButtonPayload {
-  command: 'for_musicians/services/service';
+  command: 'services/service';
   service: Service;
 }
 
-export interface CollaborationButtonPayload {
-  command: 'collaboration';
+export interface SubscriptionsButtonPayload {
+  command: 'subscriptions';
 }
 
 export interface AdminButtonPayload {
@@ -168,11 +184,6 @@ export interface AdminDrawingsAddButtonPayload {
 
 export interface AdminEditDrawingNameButtonPayload {
   command: 'admin/drawings/drawing/edit_name';
-  drawingId: string;
-}
-
-export interface AdminEditDrawingDescriptionButtonPayload {
-  command: 'admin/drawings/drawing/edit_description';
   drawingId: string;
 }
 
@@ -203,20 +214,23 @@ export type ButtonPayload = (
   | TextMaterialsButtonPayload
   | LongreadButtonPayload
   | GroupHistoryButtonPayload
+  | AudioMaterialsButtonPayload
+  | DigestsButtonPayload
+  | PodcastsButtonPayload
   | DrawingsButtonPayload
   | DrawingButtonPayload
   | ForMusiciansButtonPayload
   | TellAboutGroupButtonPayload
   | TellAboutReleaseButtonPayload
+  | CollaborationButtonPayload
   | ServicesButtonPayload
   | ServiceButtonPayload
-  | CollaborationButtonPayload
+  | SubscriptionsButtonPayload
   | AdminButtonPayload
   | AdminDrawingsButtonPayload
   | AdminDrawingButtonPayload
   | AdminDrawingsAddButtonPayload
   | AdminEditDrawingNameButtonPayload
-  | AdminEditDrawingDescriptionButtonPayload
   | AdminEditDrawingPostButtonPayload
   | AdminDeleteDrawingButtonPayload
   | RefreshKeyboardButtonPayload
@@ -225,7 +239,6 @@ export type ButtonPayload = (
 export enum BackButtonDest {
   MAIN = 'main',
   POSTER = 'poster',
-  FOR_MUSICIANS = 'for_musicians',
   ADMIN = 'admin',
   ADMIN_DRAWINGS = 'admin/drawings',
 }
@@ -313,26 +326,31 @@ export type Service = MarketService;
 export interface Drawing {
   id: string;
   name: string;
-  description: string;
   postId: number;
   postOwnerId: number;
 }
 
 export type DrawingParams = Omit<Drawing, 'id'>;
 
-export interface AdminAddDrawingSetNameUserState {
-  type: 'admin/drawings/add/set-name';
+export interface TellAboutGroupUserState {
+  type: 'for_musicians/tell_about_group';
 }
 
-export interface AdminAddDrawingSetDescriptionUserState {
-  type: 'admin/drawings/add/set-description';
-  name: string;
+export interface TellAboutReleaseUserState {
+  type: 'for_musicians/tell_about_release';
+}
+
+export interface CollaborationUserState {
+  type: 'collaboration';
+}
+
+export interface AdminAddDrawingSetNameUserState {
+  type: 'admin/drawings/add/set-name';
 }
 
 export interface AdminAddDrawingSetPostIdUserState {
   type: 'admin/drawings/add/set-postId';
   name: string;
-  description: string;
 }
 
 export interface AdminDeleteDrawingUserState {
@@ -340,9 +358,28 @@ export interface AdminDeleteDrawingUserState {
   drawingId: string;
 }
 
-export type UserState = null | (
-  AdminAddDrawingSetNameUserState
-  | AdminAddDrawingSetDescriptionUserState
+export type UserState = (
+  null
+  | TellAboutGroupUserState
+  | TellAboutReleaseUserState
+  | CollaborationUserState
+  | AdminAddDrawingSetNameUserState
   | AdminAddDrawingSetPostIdUserState
   | AdminDeleteDrawingUserState
 );
+
+export enum Subscription {
+  POSTER = 'POSTER',
+  PLAYLISTS = 'PLAYLISTS',
+  RELEASES = 'RELEASES',
+  TEXT_MATERIALS = 'TEXT_MATERIALS',
+  AUDIO_MATERIALS = 'AUDIO_MATERIALS',
+  DRAWINGS = 'DRAWINGS',
+  SERVICES = 'SERVICES',
+}
+
+export interface User {
+  id: number;
+  state: UserState;
+  subscriptions: Subscription[];
+}

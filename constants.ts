@@ -1,4 +1,5 @@
-import { Genre } from './types';
+import { Genre, Subscription } from './types';
+import captions from './captions';
 
 export const defaultVKQuery = {
   v: '5.101',
@@ -42,9 +43,20 @@ export const GENRES_BUTTONS = [
 
 export const confirmPositiveAnswers = ['yes', 'да', '+', 'ok', 'ок'];
 
+export const subscriptionNames: Record<Subscription, string> = {
+  [Subscription.POSTER]: captions.poster,
+  [Subscription.PLAYLISTS]: captions.playlists,
+  [Subscription.RELEASES]: captions.releases,
+  [Subscription.TEXT_MATERIALS]: captions.text_materials,
+  [Subscription.AUDIO_MATERIALS]: captions.audio_materials,
+  [Subscription.DRAWINGS]: captions.drawings,
+  [Subscription.SERVICES]: captions.services,
+};
+
 export const SOUNDCHECK_ID = 164134127;
-export const TELL_ABOUT_GROUP_HASHTAG = '#tell_about_group';
-export const RELEASE_HASHTAG = '#release';
-export const TELL_ABOUT_GROUP_TARGET = 175810060;
-export const RELEASES_TARGET = 175810060;
-export const NOTIFY_ABOUT_POSTER_TARGET = 175810060;
+export const targets = {
+  tellAboutGroup: 175810060,
+  tellAboutRelease: 175810060,
+  collaboration: 175810060,
+  poster: 175810060,
+};

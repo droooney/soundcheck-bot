@@ -20,10 +20,7 @@ import {
   genreNames,
   genreMatches,
   confirmPositiveAnswers,
-  TELL_ABOUT_GROUP_HASHTAG,
-  RELEASE_HASHTAG,
-  TELL_ABOUT_GROUP_TARGET,
-  RELEASES_TARGET,
+  targets,
 } from './constants';
 import {
   generateButton,
@@ -58,7 +55,8 @@ export default async (ctx: Context) => {
     const respond = async (message: string, options: SendVkMessageOptions = {}) => {
       await sendVKMessage(userId, message, options);
     };
-    const userState = Database.userStates[userId];
+    const user = Database.getUser(userId);
+    const userState = user.state;
     let newUserState: UserState = null;
     let payload: ButtonPayload | null = null;
 
@@ -176,14 +174,6 @@ export default async (ctx: Context) => {
         await respond(captions.playlists_response);
       } else if (payload.command === 'releases') {
         await respond(captions.releases_response);
-      } else if (payload.command === 'text_materials') {
-        await respond(captions.text_materials_response, {
-          keyboard: textMaterialsKeyboard
-        });
-      } else if (payload.command === 'text_materials/longread') {
-        await respond(captions.longreads_response);
-      } else if (payload.command === 'text_materials/group_history') {
-        await respond(captions.group_history_response);
       } else if (payload.command === 'drawings') {
         const drawingsKeyboard = generateDrawingsKeyboard();
 
@@ -197,7 +187,7 @@ export default async (ctx: Context) => {
         const drawing = Database.drawings.find(({ id }) => id === drawingId);
 
         if (drawing) {
-          await respond(`${drawing.name}\n\n${drawing.description}`, {
+          await respond(drawing.name, {
             attachments: [`wall${drawing.postOwnerId}_${drawing.postId}`]
           });
         } else {
@@ -209,25 +199,43 @@ export default async (ctx: Context) => {
             await respond(captions.no_drawings, { keyboard: mainKeyboard });
           }
         }
-      } else if (payload.command === 'for_musicians' || (payload.command === 'back' && payload.dest === BackButtonDest.FOR_MUSICIANS)) {
+      } else if (payload.command === 'text_materials') {
+        await respond(captions.text_materials_response, { keyboard: textMaterialsKeyboard });
+      } else if (payload.command === 'text_materials/longread') {
+        await respond(captions.longreads_response);
+      } else if (payload.command === 'text_materials/group_history') {
+        await respond(captions.group_history_response);
+      } else if (payload.command === 'for_musicians') {
         await respond(captions.for_musicians_response, { keyboard: forMusiciansKeyboard });
       } else if (payload.command === 'for_musicians/tell_about_group') {
+        newUserState = {
+          type: 'for_musicians/tell_about_group'
+        };
+
         await respond(captions.tell_about_group_response);
       } else if (payload.command === 'for_musicians/tell_about_release') {
+        newUserState = {
+          type: 'for_musicians/tell_about_release'
+        };
+
         await respond(captions.tell_about_release_response);
-      } else if (payload.command === 'for_musicians/services') {
+      } else if (payload.command === 'collaboration') {
+        newUserState = {
+          type: 'collaboration'
+        };
+
+        await respond(captions.collaboration_response);
+      } else if (payload.command === 'services') {
         await respond(captions.choose_service, { keyboard: servicesKeyboard });
-      } else if (payload.command === 'for_musicians/services/service') {
+      } else if (payload.command === 'services/service') {
         if (payload.service.type === 'market') {
           await respond('', {
             attachments: [payload.service.id]
           });
         }
-      } else if (payload.command === 'collaboration') {
-        await respond(captions.collaboration_response);
       } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
         await respond(captions.choose_action, { keyboard: adminKeyboard });
-      } else if (payload.command === 'admin/drawings') {
+      } else if (payload.command === 'admin/drawings' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN_DRAWINGS)) {
         await respond(captions.choose_or_add_drawing, { keyboard: generateAdminDrawingsKeyboard() });
       } else if (payload.command === 'admin/drawings/add') {
         newUserState = {
@@ -239,7 +247,7 @@ export default async (ctx: Context) => {
         const drawing = Database.findDrawingById(payload.drawingId);
 
         if (drawing) {
-          await respond(`${drawing.name}\n\n${drawing.description}`, {
+          await respond(drawing.name, {
             attachments: [`wall${drawing.postOwnerId}_${drawing.postId}`],
             keyboard: generateAdminDrawingMenuKeyboard(drawing)
           });
@@ -271,28 +279,40 @@ export default async (ctx: Context) => {
         break message;
       }
 
-      if (userState.type === 'admin/drawings/add/set-name') {
+      if (userState.type === 'for_musicians/tell_about_group') {
+        await Promise.all([
+          respond(captions.tell_about_group_message_response),
+          sendVKMessage(targets.tellAboutGroup, captions.group_history_message, {
+            forwardMessages: [body.object.id]
+          })
+        ]);
+      } else if (userState.type === 'for_musicians/tell_about_release') {
+        await Promise.all([
+          respond(captions.tell_about_release_message_response),
+          sendVKMessage(targets.tellAboutRelease, captions.release_message, {
+            forwardMessages: [body.object.id]
+          })
+        ]);
+      } else if (userState.type === 'collaboration') {
+        await Promise.all([
+          respond(captions.collaboration_message_response),
+          sendVKMessage(targets.collaboration, captions.collaboration_message, {
+            forwardMessages: [body.object.id]
+          })
+        ]);
+      } else if (userState.type === 'admin/drawings/add/set-name') {
         newUserState = {
-          type: 'admin/drawings/add/set-description',
+          type: 'admin/drawings/add/set-postId',
           name: text
         };
 
         await respond(captions.enter_drawing_description);
-      } else if (userState.type === 'admin/drawings/add/set-description') {
-        newUserState = {
-          type: 'admin/drawings/add/set-postId',
-          name: userState.name,
-          description: text
-        };
-
-        await respond(captions.send_drawing_post);
       } else if (userState.type === 'admin/drawings/add/set-postId') {
         const wallAttachment = body.object.attachments.find(({ type }) => type === 'wall');
 
         if (wallAttachment) {
           await Database.addDrawing({
             name: userState.name,
-            description: userState.description,
             postId: wallAttachment.wall.id,
             postOwnerId: wallAttachment.wall.to_id
           });
@@ -318,27 +338,9 @@ export default async (ctx: Context) => {
           }
         }
       }
-    } else {
-      const text = body.object.text;
-
-      if (text.includes(TELL_ABOUT_GROUP_HASHTAG)) {
-        await Promise.all([
-          respond(captions.tell_about_group_message_response),
-          sendVKMessage(TELL_ABOUT_GROUP_TARGET, captions.group_history_message, {
-            forwardMessages: [body.object.id]
-          })
-        ]);
-      } else if (text.includes(RELEASE_HASHTAG)) {
-        await Promise.all([
-          respond(captions.tell_about_release_message_response),
-          sendVKMessage(RELEASES_TARGET, captions.release_message, {
-            forwardMessages: [body.object.id]
-          })
-        ]);
-      }
     }
 
-    await Database.setUserState(userId, newUserState);
+    await Database.setUserState(user, newUserState);
 
     ctx.body = 'ok';
   } else if (body.type === 'group_officers_edit') {

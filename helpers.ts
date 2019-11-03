@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import moment = require('moment-timezone');
 
 import { Concert, Event, EventsResponse, Keyboard } from './types';
-import { defaultVKQuery, NOTIFY_ABOUT_POSTER_TARGET } from './constants';
+import { defaultVKQuery, targets } from './constants';
 
 const {
   private_key,
@@ -291,7 +291,7 @@ export async function sendPosterMessage(posterDay: moment.Moment) {
   const posterText = await getPosterText(posterDay);
 
   if (posterText) {
-    await sendVKMessage(NOTIFY_ABOUT_POSTER_TARGET, `Афиша на ${
+    await sendVKMessage(targets.poster, `Афиша на ${
       posterDay.weekday() === 0 ? getWeekString(posterDay) : getDayString(posterDay)
     }: https://all-chess.org/soundcheck-bot5778/api/concerts?date=${posterDay.format('YYYY-MM-DD')}`);
   }

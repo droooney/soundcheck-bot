@@ -9,7 +9,6 @@ import captions from './captions';
 export const backButtonText: Record<BackButtonDest, string> = {
   [BackButtonDest.MAIN]: captions.main_menu,
   [BackButtonDest.POSTER]: captions.poster,
-  [BackButtonDest.FOR_MUSICIANS]: captions.for_musicians,
   [BackButtonDest.ADMIN]: captions.admin_section,
   [BackButtonDest.ADMIN_DRAWINGS]: captions.drawings,
 };
@@ -21,15 +20,22 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
       [
         generateButton(captions.poster, { command: 'poster' }),
         generateButton(captions.playlists, { command: 'playlist' }),
+      ],
+      [
         generateButton(captions.releases, { command: 'releases' }),
+        generateButton(captions.drawings, { command: 'drawings' }),
       ],
       [
         generateButton(captions.text_materials, { command: 'text_materials' }),
-        generateButton(captions.drawings, { command: 'drawings' }),
+        generateButton(captions.audio_materials, { command: 'audio_materials' }),
       ],
       [
         generateButton(captions.for_musicians, { command: 'for_musicians' }),
         generateButton(captions.collaboration, { command: 'collaboration' }),
+      ],
+      [
+        generateButton(captions.services, { command: 'services' }),
+        generateButton(captions.subscriptions, { command: 'subscriptions' }),
       ],
       ...(
         isManager
@@ -92,15 +98,14 @@ export const servicesKeyboard: Keyboard = {
   buttons: [
     [
       generateButton(captions.stickers_design, {
-        command: 'for_musicians/services/service',
+        command: 'services/service',
         service: { type: 'market', id: 'market-177574047_3113786' }
       }),
       generateButton(captions.soundcheck_ads, {
-        command: 'for_musicians/services/service',
+        command: 'services/service',
         service: { type: 'market', id: 'market-177574047_2685381' }
       }),
     ],
-    [generateBackButton(BackButtonDest.FOR_MUSICIANS)],
     [generateBackButton()],
   ]
 };
@@ -116,12 +121,22 @@ export const textMaterialsKeyboard: Keyboard = {
   ]
 };
 
+export const audioMaterialsKeyboard: Keyboard = {
+  one_time: false,
+  buttons: [
+    [
+      generateButton(captions.digests, { command: 'audio_materials/digests' }),
+      // generateButton(captions.podcasts, { command: 'audio_materials/podcasts' }),
+    ],
+    [generateBackButton()],
+  ]
+};
+
 export const forMusiciansKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [generateButton(captions.tell_about_group, { command: 'for_musicians/tell_about_group' })],
     [generateButton(captions.tell_about_release, { command: 'for_musicians/tell_about_release' })],
-    [generateButton(captions.services, { command: 'for_musicians/services' })],
     [generateBackButton()],
   ]
 };
@@ -157,7 +172,6 @@ export function generateAdminDrawingMenuKeyboard(drawing: Drawing): Keyboard {
     one_time: false,
     buttons: [
       [generateButton(captions.edit_drawing_name, { command: 'admin/drawings/drawing/edit_name', drawingId: drawing.id })],
-      [generateButton(captions.edit_drawing_description, { command: 'admin/drawings/drawing/edit_description', drawingId: drawing.id })],
       [generateButton(captions.edit_drawing_post, { command: 'admin/drawings/drawing/edit_post', drawingId: drawing.id })],
       [generateButton(captions.delete_drawing, { command: 'admin/drawings/drawing/delete', drawingId: drawing.id }, ButtonColor.NEGATIVE)],
       [generateBackButton(BackButtonDest.ADMIN_DRAWINGS)],
