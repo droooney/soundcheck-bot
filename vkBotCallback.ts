@@ -434,7 +434,7 @@ export default async (ctx: Context) => {
   } else if (body.type === 'group_leave') {
     ctx.body = 'ok';
   } else {
-    await fs.writeJSON(`${__dirname}/body.json`, body, { encoding: 'utf8' });
+    await fs.writeJSON(`${__dirname}/body.json`, body, { encoding: 'utf8', spaces: 4 });
 
     ctx.body = 'ok';
   }
