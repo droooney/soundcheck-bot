@@ -52,8 +52,11 @@ export default {
   group_history_response: 'Смотри истории групп тут: https://vk.com/soundcheck_ural/music_history',
 
   // audio_materials
+  audio_materials_response: 'Выберите тип аудиоматериалов',
   digests: 'Дайджесты',
   podcasts: 'Подкасты',
+  digests_response: 'Смотри дайджесты тут:',
+  podcasts_response: 'Смотри подкасты тут:',
 
   // write to soundcheck
   write_to_soundcheck_response: 'По поводу?',
@@ -83,13 +86,13 @@ export default {
   add_drawing: 'Добавить розыгрыш',
   choose_or_add_drawing: 'Выберите или добавьте розыгрыш',
   enter_drawing_name: 'Введине название',
-  enter_drawing_description: 'Введине описание',
   send_drawing_post: 'Отправьте запись с розыгрышем',
   drawing_added: 'Розыгрыш успешно добавлен',
   edit_drawing_name: 'Изменить название',
   edit_drawing_post: 'Изменить пост',
   delete_drawing: 'Удалить розыгрыш',
   confirm_drawing_delete: (drawing: Drawing) => `Подтвердите удаление розыгрыша "${drawing.name}"`,
+  drawing_edited: 'Розыгрыш сохранен',
   drawing_deleted: 'Розыгрыш удален',
 
   // rest

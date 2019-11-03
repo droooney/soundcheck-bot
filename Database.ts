@@ -6,6 +6,8 @@ import { SOUNDCHECK_ID } from './constants';
 
 export type Preparation = () => void;
 
+export type Migration = () => void;
+
 const defaultUser: User = {
   id: 0,
   state: null,
@@ -14,27 +16,24 @@ const defaultUser: User = {
 
 export default class Database {
   static dbDir = `${__dirname}/db`;
+  static versionFile = `${Database.dbDir}/version`;
   static drawingsFile = `${Database.dbDir}/drawings.json`;
   static usersDir = `${Database.dbDir}/users`;
-  static preparations: Preparation[] = [
-    // prepare db directory
+  static migrations: Migration[] = [
     async () => {
       await fs.ensureDir(Database.dbDir);
-    },
-
+      await fs.writeJSON(Database.drawingsFile, []);
+      await fs.ensureDir(Database.usersDir);
+    }
+  ];
+  static preparations: Preparation[] = [
     // prepare drawings
     async () => {
-      if (!await fs.pathExists(Database.drawingsFile)) {
-        await fs.writeJSON(Database.drawingsFile, []);
-      }
-
       Database.drawings = await fs.readJSON(Database.drawingsFile, { encoding: 'utf8' });
     },
 
     // prepare users
     async () => {
-      await fs.ensureDir(Database.usersDir);
-
       const users = await fs.readdir(Database.usersDir);
 
       await Promise.all(
@@ -70,6 +69,18 @@ export default class Database {
   static users: Partial<Record<number, User>> = {};
   static managers: number[] = [];
 
+  static async migrate() {
+    await fs.ensureFile(Database.versionFile);
+
+    const currentVersion = +await fs.readFile(Database.versionFile, 'utf8');
+
+    for (const migration of Database.migrations.slice(currentVersion)) {
+      await migration();
+    }
+
+    await fs.writeFile(Database.versionFile, Database.migrations.length, { encoding: 'utf8' });
+  }
+
   static async prepare() {
     for (const preparation of Database.preparations) {
       await preparation();
@@ -83,6 +94,14 @@ export default class Database {
       await prevLock;
       await fs.writeJSON(file, data, { encoding: 'utf8' });
     })());
+  }
+
+  static getDrawingById(id: string): Drawing | null {
+    return Database.drawings.find((drawing) => drawing.id === id) || null;
+  }
+
+  static async saveDrawings() {
+    await Database.writeToDb(Database.drawingsFile, Database.drawings);
   }
 
   static async addDrawing(drawingParams: DrawingParams): Promise<Drawing> {
@@ -101,56 +120,47 @@ export default class Database {
 
     Database.drawings.push(drawing);
 
-    await Database.writeToDb(Database.drawingsFile, Database.drawings);
+    await Database.saveDrawings();
 
     return drawing;
   }
 
-  static findDrawingById(id: string): Drawing | null {
-    return Database.drawings.find((drawing) => drawing.id === id) || null;
-  }
+  static async editDrawing<K extends keyof DrawingParams>(drawing: Drawing, key: K, value: DrawingParams[K]) {
+    drawing[key] = value;
 
-  static async editDrawing<K extends keyof DrawingParams>(id: string, key: K, value: DrawingParams[K]) {
-    const drawing = Database.findDrawingById(id);
-
-    if (drawing) {
-      // @ts-ignore
-      drawing[key] = value;
-
-      await Database.writeToDb(Database.drawingsFile, Database.drawings);
-    }
+    await Database.saveDrawings();
   }
 
   static async deleteDrawing(id: string) {
-    const drawing = Database.findDrawingById(id);
+    Database.drawings = Database.drawings.filter((drawing) => drawing.id !== id);
 
-    if (drawing) {
-      Database.drawings = Database.drawings.filter((drawing) => drawing.id !== id);
-
-      await Database.writeToDb(Database.drawingsFile, Database.drawings);
-    }
+    await Database.saveDrawings();
   }
 
-  static getUser(userId: number): User {
+  static getUserById(userId: number): User {
     return Database.users[userId] = Database.users[userId] || { ...defaultUser, id: userId };
+  }
+
+  static async saveUser(user: User) {
+    await Database.writeToDb(`${Database.usersDir}/${user.id}.json`, user);
   }
 
   static async setUserState(user: User, state: UserState) {
     user.state = state;
 
-    await Database.writeToDb(`${Database.usersDir}/${user.id}.json`, user);
+    await Database.saveUser(user);
   }
 
   static async subscribeUser(user: User, subscription: Subscription) {
     user.subscriptions = user.subscriptions.filter((sub) => sub !== subscription);
     user.subscriptions.push(subscription);
 
-    await Database.writeToDb(`${Database.usersDir}/${user.id}.json`, user);
+    await Database.saveUser(user);
   }
 
   static async unsubscribeUser(user: User, subscription: Subscription) {
     user.subscriptions = user.subscriptions.filter((sub) => sub !== subscription);
 
-    await Database.writeToDb(`${Database.usersDir}/${user.id}.json`, user);
+    await Database.saveUser(user);
   }
 }

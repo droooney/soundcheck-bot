@@ -35,6 +35,7 @@ import {
   genresKeyboard,
   servicesKeyboard,
   textMaterialsKeyboard,
+  audioMaterialsKeyboard,
   writeToSoundcheckKeyboard,
   adminKeyboard,
 } from './keyboards';
@@ -55,7 +56,7 @@ export default async (ctx: Context) => {
     const respond = async (message: string, options: SendVkMessageOptions = {}) => {
       await sendVKMessage(userId, message, options);
     };
-    const user = Database.getUser(userId);
+    const user = Database.getUserById(userId);
     const userState = user.state;
     let newUserState: UserState = null;
     let payload: ButtonPayload | null = null;
@@ -188,7 +189,7 @@ export default async (ctx: Context) => {
 
         if (drawing) {
           await respond(drawing.name, {
-            attachments: [`wall${drawing.postOwnerId}_${drawing.postId}`]
+            attachments: [`wall${drawing.postId}`]
           });
         } else {
           const drawingsKeyboard = generateDrawingsKeyboard();
@@ -205,6 +206,12 @@ export default async (ctx: Context) => {
         await respond(captions.longreads_response);
       } else if (payload.command === 'text_materials/group_history') {
         await respond(captions.group_history_response);
+      } else if (payload.command === 'audio_materials') {
+        await respond(captions.audio_materials_response, { keyboard: audioMaterialsKeyboard });
+      } else if (payload.command === 'audio_materials/digests') {
+        await respond(captions.digests_response);
+      } else if (payload.command === 'audio_materials/podcasts') {
+        await respond(captions.podcasts_response);
       } else if (payload.command === 'write_to_soundcheck') {
         await respond(captions.write_to_soundcheck_response, { keyboard: writeToSoundcheckKeyboard });
       } else if (payload.command === 'write_to_soundcheck/tell_about_group') {
@@ -239,23 +246,49 @@ export default async (ctx: Context) => {
         await respond(captions.choose_or_add_drawing, { keyboard: generateAdminDrawingsKeyboard() });
       } else if (payload.command === 'admin/drawings/add') {
         newUserState = {
-          type: 'admin/drawings/add/set-name'
+          type: 'admin/drawings/add/set_name'
         };
 
         await respond(captions.enter_drawing_name);
       } else if (payload.command === 'admin/drawings/drawing') {
-        const drawing = Database.findDrawingById(payload.drawingId);
+        const drawing = Database.getDrawingById(payload.drawingId);
 
         if (drawing) {
           await respond(drawing.name, {
-            attachments: [`wall${drawing.postOwnerId}_${drawing.postId}`],
+            attachments: [`wall${drawing.postId}`],
             keyboard: generateAdminDrawingMenuKeyboard(drawing)
           });
         } else {
           await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
         }
+      } else if (payload.command === 'admin/drawings/drawing/edit_name') {
+        const drawing = Database.getDrawingById(payload.drawingId);
+
+        if (drawing) {
+          newUserState = {
+            type: 'admin/drawings/drawing/edit_name',
+            drawingId: payload.drawingId
+          };
+
+          await respond(captions.enter_drawing_name);
+        } else {
+          await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
+        }
+      } else if (payload.command === 'admin/drawings/drawing/edit_post') {
+        const drawing = Database.getDrawingById(payload.drawingId);
+
+        if (drawing) {
+          newUserState = {
+            type: 'admin/drawings/drawing/edit_post',
+            drawingId: payload.drawingId
+          };
+
+          await respond(captions.send_drawing_post);
+        } else {
+          await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
+        }
       } else if (payload.command === 'admin/drawings/drawing/delete') {
-        const drawing = Database.findDrawingById(payload.drawingId);
+        const drawing = Database.getDrawingById(payload.drawingId);
 
         if (drawing) {
           newUserState = {
@@ -300,21 +333,20 @@ export default async (ctx: Context) => {
             forwardMessages: [body.object.id]
           })
         ]);
-      } else if (userState.type === 'admin/drawings/add/set-name') {
+      } else if (userState.type === 'admin/drawings/add/set_name') {
         newUserState = {
-          type: 'admin/drawings/add/set-postId',
+          type: 'admin/drawings/add/set_post',
           name: text
         };
 
-        await respond(captions.enter_drawing_description);
-      } else if (userState.type === 'admin/drawings/add/set-postId') {
+        await respond(captions.send_drawing_post);
+      } else if (userState.type === 'admin/drawings/add/set_post') {
         const wallAttachment = body.object.attachments.find(({ type }) => type === 'wall');
 
         if (wallAttachment) {
           await Database.addDrawing({
             name: userState.name,
-            postId: wallAttachment.wall.id,
-            postOwnerId: wallAttachment.wall.to_id
+            postId: `${wallAttachment.wall.to_id}_${wallAttachment.wall.id}`
           });
 
           await respond(captions.drawing_added, { keyboard: generateAdminDrawingsKeyboard() });
@@ -323,13 +355,41 @@ export default async (ctx: Context) => {
 
           await respond(captions.send_drawing_post);
         }
+      } else if (userState.type === 'admin/drawings/drawing/edit_name') {
+        const drawing = Database.getDrawingById(userState.drawingId);
+
+        if (drawing) {
+          await Database.editDrawing(drawing, 'name', text);
+
+          await respond(captions.drawing_edited, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
+        } else {
+          await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
+        }
+      } else if (userState.type === 'admin/drawings/drawing/edit_post') {
+        const drawing = Database.getDrawingById(userState.drawingId);
+
+        if (drawing) {
+          const wallAttachment = body.object.attachments.find(({ type }) => type === 'wall');
+
+          if (wallAttachment) {
+            await Database.editDrawing(drawing, 'postId', `${wallAttachment.wall.to_id}_${wallAttachment.wall.id}`);
+
+            await respond(captions.drawing_edited, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
+          } else {
+            newUserState = userState;
+
+            await respond(captions.send_drawing_post);
+          }
+        } else {
+          await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
+        }
       } else if (userState.type === 'admin/drawings/drawing/delete') {
         if (confirmPositiveAnswers.includes(text.toLowerCase())) {
           await Database.deleteDrawing(userState.drawingId);
 
           await respond(captions.drawing_deleted, { keyboard: generateAdminDrawingsKeyboard() });
         } else {
-          const drawing = Database.findDrawingById(userState.drawingId);
+          const drawing = Database.getDrawingById(userState.drawingId);
 
           if (drawing) {
             await respond(captions.choose_action, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });

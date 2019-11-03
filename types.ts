@@ -326,8 +326,7 @@ export type Service = MarketService;
 export interface Drawing {
   id: string;
   name: string;
-  postId: number;
-  postOwnerId: number;
+  postId: string;
 }
 
 export type DrawingParams = Omit<Drawing, 'id'>;
@@ -345,12 +344,22 @@ export interface CollaborationUserState {
 }
 
 export interface AdminAddDrawingSetNameUserState {
-  type: 'admin/drawings/add/set-name';
+  type: 'admin/drawings/add/set_name';
 }
 
-export interface AdminAddDrawingSetPostIdUserState {
-  type: 'admin/drawings/add/set-postId';
+export interface AdminAddDrawingSetPostUserState {
+  type: 'admin/drawings/add/set_post';
   name: string;
+}
+
+export interface AdminEditDrawingNameUserState {
+  type: 'admin/drawings/drawing/edit_name';
+  drawingId: string;
+}
+
+export interface AdminEditDrawingPostUserState {
+  type: 'admin/drawings/drawing/edit_post';
+  drawingId: string;
 }
 
 export interface AdminDeleteDrawingUserState {
@@ -364,7 +373,9 @@ export type UserState = (
   | TellAboutReleaseUserState
   | CollaborationUserState
   | AdminAddDrawingSetNameUserState
-  | AdminAddDrawingSetPostIdUserState
+  | AdminAddDrawingSetPostUserState
+  | AdminEditDrawingNameUserState
+  | AdminEditDrawingPostUserState
   | AdminDeleteDrawingUserState
 );
 

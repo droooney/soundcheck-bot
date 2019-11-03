@@ -49,8 +49,10 @@ app.use(router.allowedMethods());
 async function main() {
   await Promise.all([
     refreshGoogleAccessToken(),
-    Database.prepare()
+    Database.migrate()
   ]);
+
+  await Database.prepare();
 
   const {
     data: {
