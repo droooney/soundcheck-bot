@@ -47,7 +47,7 @@ export default async (ctx: Context) => {
 
   console.log('bot event', moment().format('YYYY-MM-DD HH:mm:ss.SSS'), body);
 
-  if (body.type === 'confirmation') {
+  eventHandler: if (body.type === 'confirmation') {
     ctx.body = 'afcb8751';
   } else if (body.type === 'message_new') {
     const userId = body.object.peer_id;
@@ -58,7 +58,7 @@ export default async (ctx: Context) => {
     };
     const user = Database.getUserById(userId);
     const userState = user.state;
-    let newLastMessageDate = body.object.date * 1000;
+    const newLastMessageDate = body.object.date * 1000;
     let newUserState: UserState = null;
     let payload: ButtonPayload | null = null;
 
@@ -68,14 +68,13 @@ export default async (ctx: Context) => {
       } catch (err) {}
     }
 
+    if (user.lastMessageDate > newLastMessageDate) {
+      ctx.body = 'ok';
+
+      break eventHandler;
+    }
+
     message: if (payload) {
-      if (user.lastMessageDate > newLastMessageDate) {
-        newLastMessageDate = user.lastMessageDate;
-        newUserState = userState;
-
-        break message;
-      }
-
       if ((payload.command.startsWith('admin') || (payload.command === 'back' && payload.dest.startsWith('admin'))) && !isManager) {
         await respond(captions.you_re_not_a_manager, { keyboard: mainKeyboard });
 
@@ -313,13 +312,6 @@ export default async (ctx: Context) => {
       }
     } else if (userState) {
       const text = body.object.text;
-
-      if (user.lastMessageDate > newLastMessageDate) {
-        newLastMessageDate = user.lastMessageDate;
-        newUserState = userState;
-
-        break message;
-      }
 
       if (userState.type.startsWith('admin') && !isManager) {
         await respond(captions.you_re_not_a_manager, { keyboard: mainKeyboard });
