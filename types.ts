@@ -2,6 +2,7 @@ import { Moment } from 'moment';
 
 export interface Message {
   id: number;
+  date: number;
   peer_id: number;
   text: string;
   payload?: string;
@@ -31,7 +32,15 @@ export interface ChangeManagerBody extends BaseBody {
   };
 }
 
-export type Body = ConfirmationBody | NewMessageBody | ChangeManagerBody;
+export interface UserLeaveBody extends BaseBody {
+  type: 'group_leave';
+  object: {
+    user_id: number;
+    self: 0 | 1;
+  };
+}
+
+export type Body = ConfirmationBody | NewMessageBody | ChangeManagerBody | UserLeaveBody;
 
 export interface ManagersResponse {
   response: {
@@ -391,6 +400,7 @@ export enum Subscription {
 
 export interface User {
   id: number;
+  lastMessageDate: number;
   state: UserState;
   subscriptions: Subscription[];
 }

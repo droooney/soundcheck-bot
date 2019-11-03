@@ -58,6 +58,7 @@ export default async (ctx: Context) => {
     };
     const user = Database.getUserById(userId);
     const userState = user.state;
+    let newLastMessageDate = body.object.date * 1000;
     let newUserState: UserState = null;
     let payload: ButtonPayload | null = null;
 
@@ -68,6 +69,13 @@ export default async (ctx: Context) => {
     }
 
     message: if (payload) {
+      if (user.lastMessageDate > newLastMessageDate) {
+        newLastMessageDate = user.lastMessageDate;
+        newUserState = userState;
+
+        break message;
+      }
+
       if ((payload.command.startsWith('admin') || (payload.command === 'back' && payload.dest.startsWith('admin'))) && !isManager) {
         await respond(captions.you_re_not_a_manager, { keyboard: mainKeyboard });
 
@@ -306,6 +314,13 @@ export default async (ctx: Context) => {
     } else if (userState) {
       const text = body.object.text;
 
+      if (user.lastMessageDate > newLastMessageDate) {
+        newLastMessageDate = user.lastMessageDate;
+        newUserState = userState;
+
+        break message;
+      }
+
       if (userState.type.startsWith('admin') && !isManager) {
         await respond(captions.you_re_not_a_manager, { keyboard: mainKeyboard });
 
@@ -398,9 +413,14 @@ export default async (ctx: Context) => {
           }
         }
       }
+    } else if (body.object.text === '!error!') {
+      throw new Error('123');
     }
 
-    await Database.setUserState(user, newUserState);
+    await Database.editUser(user, {
+      lastMessageDate: newLastMessageDate,
+      state: newUserState
+    });
 
     ctx.body = 'ok';
   } else if (body.type === 'group_officers_edit') {
@@ -414,6 +434,10 @@ export default async (ctx: Context) => {
     if (level_new > 1) {
       Database.managers.push(user_id);
     }
+
+    ctx.body = 'ok';
+  } else if (body.type === 'group_leave') {
+    ctx.body = 'ok';
   } else {
     ctx.body = 'ok';
   }

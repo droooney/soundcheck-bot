@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra';
 
-import { Drawing, DrawingParams, ManagersResponse, Subscription, User, UserState } from './types';
+import { Drawing, DrawingParams, ManagersResponse, Subscription, User } from './types';
 import { sendVKRequest } from './helpers';
 import { SOUNDCHECK_ID } from './constants';
 
@@ -10,6 +10,7 @@ export type Migration = () => void;
 
 const defaultUser: User = {
   id: 0,
+  lastMessageDate: 0,
   state: null,
   subscriptions: []
 };
@@ -20,10 +21,29 @@ export default class Database {
   static drawingsFile = `${Database.dbDir}/drawings.json`;
   static usersDir = `${Database.dbDir}/users`;
   static migrations: Migration[] = [
+    // initial migration
     async () => {
       await fs.ensureDir(Database.dbDir);
       await fs.writeJSON(Database.drawingsFile, []);
       await fs.ensureDir(Database.usersDir);
+    },
+
+    // add lastMessageDate for all users
+    async () => {
+      const users = await fs.readdir(Database.usersDir);
+
+      await Promise.all(
+        users.map(async (pathname) => {
+          const match = pathname.match(/^(\d+)\.json$/);
+
+          if (match) {
+            await fs.writeJSON(`${Database.usersDir}/${pathname}`, {
+              ...await fs.readJSON(`${Database.usersDir}/${pathname}`, { encoding: 'utf8' }),
+              lastMessageDate: 0,
+            }, { encoding: 'utf8' });
+          }
+        })
+      );
     }
   ];
   static preparations: Preparation[] = [
@@ -145,8 +165,8 @@ export default class Database {
     await Database.writeToDb(`${Database.usersDir}/${user.id}.json`, user);
   }
 
-  static async setUserState(user: User, state: UserState) {
-    user.state = state;
+  static async editUser<K extends keyof User>(user: User, changes: Pick<User, K>) {
+    Object.assign(user, changes);
 
     await Database.saveUser(user);
   }
