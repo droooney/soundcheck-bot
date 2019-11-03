@@ -20,12 +20,10 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
       [
         generateButton(captions.poster, { command: 'poster' }),
         generateButton(captions.playlists, { command: 'playlist' }),
-      ],
-      [
         generateButton(captions.releases, { command: 'releases' }),
-        generateButton(captions.drawings, { command: 'drawings' }),
       ],
       [
+        generateButton(captions.drawings, { command: 'drawings' }),
         generateButton(captions.text_materials, { command: 'text_materials' }),
         generateButton(captions.audio_materials, { command: 'audio_materials' }),
       ],
