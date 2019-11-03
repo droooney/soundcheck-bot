@@ -1,4 +1,3 @@
-import * as fs from 'fs-extra';
 import * as _ from 'lodash';
 import moment = require('moment-timezone');
 import { Context } from 'koa';
@@ -459,8 +458,6 @@ export default async (ctx: Context) => {
       console.log(subscriptions);
     }
   } else {
-    await fs.writeJSON(`${__dirname}/body.json`, body, { encoding: 'utf8', spaces: 4 });
-
     ctx.body = 'ok';
   }
 }
