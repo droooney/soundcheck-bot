@@ -1,4 +1,3 @@
-import * as util from 'util';
 import * as http from 'http';
 import Application = require('koa');
 import BodyParser = require('koa-bodyparser');
@@ -17,8 +16,6 @@ import {
 import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
 import { ConversationsResponse } from './types';
-
-util.inspect.defaultOptions.depth = 10;
 
 moment.tz.setDefault('Asia/Yekaterinburg');
 moment.locale('ru-RU');
