@@ -496,9 +496,9 @@ export default async (ctx: Context) => {
       }
 
       await Database.deleteSubscriptionFile(postId);
-
-      ctx.body = 'ok';
     }
+
+    ctx.body = 'ok';
   } else {
     ctx.body = 'ok';
   }
