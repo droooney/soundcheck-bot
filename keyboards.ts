@@ -144,13 +144,17 @@ export function generateSubscriptionsKeyboard(user: User): Keyboard {
     one_time: false,
     buttons: [
       ...subscriptionButtons.map((buttons) => (
-        buttons.map((subscription) => (
-          generateButton(subscriptionNames[subscription], {
-            command: 'subscriptions/subscription',
-            subscription,
-            subscribed: user.subscriptions.includes(subscription)
-          }, user.subscriptions.includes(subscription) ? ButtonColor.SECONDARY : ButtonColor.PRIMARY)
-        ))
+        buttons.map((subscription) => {
+          const subscribed = user.subscriptions.includes(subscription);
+
+          return (
+            generateButton(`${subscribed ? `✓ ` : ''}${subscriptionNames[subscription]}`, {
+              command: 'subscriptions/subscription',
+              subscription,
+              subscribed
+            }, subscribed ? ButtonColor.SECONDARY : ButtonColor.PRIMARY)
+          );
+        })
       )),
       [generateBackButton()],
     ]
