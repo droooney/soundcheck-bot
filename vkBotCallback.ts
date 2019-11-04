@@ -29,7 +29,7 @@ import {
 import {
   genreNames,
   genreMatches,
-  // subscriptionNames,
+  subscriptionNames,
   subscriptionHashtags,
   confirmPositiveAnswers,
   targets,
@@ -332,6 +332,14 @@ export default async (ctx: Context) => {
         } else {
           await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
         }
+      } else if (payload.command === 'admin/subscriptions') {
+        const subscriptions = _.mapValues(Subscription, (subscription) => (
+          _.filter(Database.users, (user) => !!user && user.subscriptions.includes(subscription)).length
+        ));
+
+        await respond(
+          _.map(subscriptions, (count, subscription: Subscription) => `${subscriptionNames[subscription]}: ${count}`).join('\n')
+        );
       } else if (payload.command === 'refresh_keyboard') {
         await respond(captions.refresh_keyboard_response, { keyboard: mainKeyboard });
       }
@@ -430,8 +438,6 @@ export default async (ctx: Context) => {
           }
         }
       }
-    } else if (body.object.text === '!error!') {
-      throw new Error('123');
     }
 
     await Database.editUser(user, {

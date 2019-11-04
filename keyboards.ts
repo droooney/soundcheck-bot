@@ -161,7 +161,8 @@ export const adminKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton(captions.drawings, { command: 'admin/drawings' })
+      generateButton(captions.drawings, { command: 'admin/drawings' }),
+      generateButton(captions.subscriptions, { command: 'admin/subscriptions' }),
     ],
     [generateBackButton()],
   ]
