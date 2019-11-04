@@ -38,13 +38,13 @@ import {
   generateButton,
   generateBackButton,
   generateMainKeyboard,
+  generatePosterKeyboard,
   generateWeekPosterKeyboard,
   generateDrawingsKeyboard,
   generateSubscriptionsKeyboard,
   generateAdminDrawingsKeyboard,
   generateAdminDrawingMenuKeyboard,
 
-  posterKeyboard,
   genresKeyboard,
   servicesKeyboard,
   textMaterialsKeyboard,
@@ -100,7 +100,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'back' && payload.dest === BackButtonDest.MAIN) {
         await respond(captions.choose_action, { keyboard: mainKeyboard });
       } else if (payload.command === 'poster' || (payload.command === 'back' && payload.dest === BackButtonDest.POSTER)) {
-        await respond(captions.choose_poster_type, { keyboard: posterKeyboard });
+        await respond(captions.choose_poster_type, { keyboard: generatePosterKeyboard(user) });
       } else if (payload.command === 'poster/type') {
         if (payload.type === 'day') {
           const upcomingConcerts = await getConcerts(moment().startOf('day'));
@@ -191,6 +191,16 @@ export default async (ctx: Context) => {
 
         for (const concertsString of concertsStrings) {
           await respond(concertsString);
+        }
+      } else if (payload.command === 'poster/subscribe') {
+        if (payload.subscribed) {
+          await Database.unsubscribeUser(user, Subscription.POSTER);
+
+          await respond(captions.unsubscribe_response(Subscription.POSTER), { keyboard: generatePosterKeyboard(user) });
+        } else {
+          await Database.subscribeUser(user, Subscription.POSTER);
+
+          await respond(captions.subscribe_response(Subscription.POSTER), { keyboard: generatePosterKeyboard(user) });
         }
       } else if (payload.command === 'playlist') {
         await respond(captions.playlists_response);

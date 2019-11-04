@@ -125,6 +125,11 @@ export interface PosterGenreButtonPayload {
   genre: Genre;
 }
 
+export interface SubscribeToPosterButtonPayload {
+  command: 'poster/subscribe';
+  subscribed: boolean;
+}
+
 export interface PlaylistButtonPayload {
   command: 'playlist';
 }
@@ -253,6 +258,7 @@ export type ButtonPayload = (
   | PosterDayButtonPayload
   | PosterWeekButtonPayload
   | PosterGenreButtonPayload
+  | SubscribeToPosterButtonPayload
   | PlaylistButtonPayload
   | ReleasesButtonPayload
   | TextMaterialsButtonPayload

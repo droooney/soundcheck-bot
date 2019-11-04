@@ -1,6 +1,15 @@
 import moment = require('moment-timezone');
 
-import { BackButtonDest, ButtonColor, ButtonPayload, Drawing, Keyboard, KeyboardButton, User } from './types';
+import {
+  BackButtonDest,
+  ButtonColor,
+  ButtonPayload,
+  Drawing,
+  Keyboard,
+  KeyboardButton,
+  Subscription,
+  User,
+} from './types';
 import { genreNames, genresButtons, subscriptionNames, subscriptionButtons } from './constants';
 import Database from './Database';
 import { getWeekString } from './helpers';
@@ -46,17 +55,20 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
   };
 }
 
-export const posterKeyboard: Keyboard = {
-  one_time: false,
-  buttons: [
-    [
-      generateButton(captions.day, { command: 'poster/type', type: 'day' }),
-      generateButton(captions.week, { command: 'poster/type', type: 'week' }),
-      generateButton(captions.by_genres, { command: 'poster/type', type: 'genres' })
-    ],
-    [generateBackButton()],
-  ]
-};
+export function generatePosterKeyboard(user: User): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      [
+        generateButton(captions.day, { command: 'poster/type', type: 'day' }),
+        generateButton(captions.week, { command: 'poster/type', type: 'week' }),
+        generateButton(captions.by_genres, { command: 'poster/type', type: 'genres' })
+      ],
+      [generateSubscribeButton(user, Subscription.POSTER, 'poster/subscribe')],
+      [generateBackButton()],
+    ]
+  };
+}
 
 export function generateWeekPosterKeyboard(): Keyboard {
   const thisWeek = moment().startOf('week');
@@ -242,4 +254,18 @@ export function generateButton(text: string, payload: ButtonPayload, color: Butt
 
 export function generateBackButton(dest: BackButtonDest = BackButtonDest.MAIN): KeyboardButton {
   return generateButton(`← ${backButtonText[dest]}`, { command: 'back', dest }, ButtonColor.SECONDARY);
+}
+
+export function generateSubscribeButton(
+  user: User,
+  subscription: Subscription,
+  command: 'poster/subscribe'
+): KeyboardButton {
+  const subscribed = user.subscriptions.includes(subscription);
+
+  return generateButton(
+    subscribed ? `✓ Вы уже подписаны` : 'Подписаться',
+    { command, subscribed },
+    subscribed ? ButtonColor.SECONDARY : ButtonColor.POSITIVE
+  );
 }
