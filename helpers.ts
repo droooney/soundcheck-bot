@@ -270,30 +270,30 @@ export async function getPosterText(posterTime: moment.Moment): Promise<string |
   return posterText;
 }
 
-export function sendNextPosterMessage() {
+export function createEverydayDaemon(time: string, daemon: () => void) {
+  const timeMoment = moment(time, 'HH:mm:ss');
+  const ms = +timeMoment - +timeMoment.clone().startOf('day');
   const now = moment();
-  const nextSendMessageTime = now
+  const nextDaemonRunTime = now
     .clone()
     .startOf('day')
-    .hours(23);
+    .add(ms, 'ms');
 
-  if (now.isSameOrAfter(nextSendMessageTime)) {
-    nextSendMessageTime.add(1, 'day');
+  if (now.isSameOrAfter(nextDaemonRunTime)) {
+    nextDaemonRunTime.add(1, 'day');
   }
 
-  const posterDay = nextSendMessageTime
-    .clone()
+  setTimeout(() => {
+    daemon();
+    createEverydayDaemon(time, daemon);
+  }, +nextDaemonRunTime - +now);
+}
+
+export async function sendPosterMessage() {
+  const posterDay = moment()
     .add(1, 'day')
     .startOf('day')
     .hours(12);
-
-  setTimeout(() => {
-    sendPosterMessage(posterDay);
-    sendNextPosterMessage();
-  }, +nextSendMessageTime - +now);
-}
-
-export async function sendPosterMessage(posterDay: moment.Moment) {
   const posterText = await getPosterText(posterDay);
 
   if (posterText) {

@@ -22,6 +22,7 @@ import {
   ButtonPayload,
   PhotoAttachment,
   Subscription,
+  User,
   UserState,
   WallAttachment,
 } from './types';
@@ -458,6 +459,7 @@ export default async (ctx: Context) => {
     const photoAttachment = (body.object.attachments || []).find(({ type }) => type === 'photo') as PhotoAttachment | undefined;
 
     if (photoAttachment) {
+      const postId = `${body.object.owner_id}_${body.object.id}`;
       const hashtags = photoAttachment.photo.text
         .split(/\s+/)
         .map((hashtag) => hashtag.trim())
@@ -465,8 +467,26 @@ export default async (ctx: Context) => {
       const subscriptions = _.filter(Subscription, (subscription) => (
         subscriptionHashtags[subscription].some((hashtag) => hashtags.includes(hashtag))
       ));
+      const subscribedUsers = _.chunk(
+        _.filter(Database.users, (user) => (
+          !!user
+          && user.subscriptions.some((subscription) => subscriptions.includes(subscription))
+          && !(Database.subscriptionPosts[postId] || []).includes(user.id)
+        )) as User[],
+        100
+      );
 
-      console.log(subscriptions);
+      for (const users of subscribedUsers) {
+        const userIds = users.map(({ id }) => id);
+
+        await sendVKMessage(userIds.join(','), '', {
+          attachments: [`wall${postId}`]
+        });
+
+        await Database.addSentSubscriptions(postId, userIds);
+      }
+
+      await Database.deleteSubscriptionFile(postId);
     }
   } else {
     ctx.body = 'ok';

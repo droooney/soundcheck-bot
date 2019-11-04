@@ -7,7 +7,13 @@ import moment = require('moment-timezone');
 import * as _ from 'lodash';
 
 import Database from './Database';
-import { refreshGoogleAccessToken, sendNextPosterMessage, sendVKMessage, sendVKRequest } from './helpers';
+import {
+  createEverydayDaemon,
+  refreshGoogleAccessToken,
+  sendPosterMessage,
+  sendVKMessage,
+  sendVKRequest,
+} from './helpers';
 import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
 import { ConversationsResponse } from './types';
@@ -54,16 +60,15 @@ async function main() {
 
   await Database.prepare();
 
-  const {
-    data: {
-      response: {
-        items: conversations
-      }
-    }
-  } = await sendVKRequest<ConversationsResponse>('messages.getConversations', { count: 200 });
-  const userIds = conversations.map(({ conversation }) => conversation.peer.id);
-
   if (false) {
+    const {
+      data: {
+        response: {
+          items: conversations
+        }
+      }
+    } = await sendVKRequest<ConversationsResponse>('messages.getConversations', { count: 200 });
+    const userIds = conversations.map(({ conversation }) => conversation.peer.id);
     const chunks = _.chunk(userIds, 50);
 
     for (const chunk of chunks) {
@@ -79,7 +84,7 @@ async function main() {
     });
   });
 
-  sendNextPosterMessage();
+  createEverydayDaemon('23:00:00', sendPosterMessage);
 }
 
 main();

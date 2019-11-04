@@ -20,12 +20,18 @@ export default class Database {
   static versionFile = `${Database.dbDir}/version`;
   static drawingsFile = `${Database.dbDir}/drawings.json`;
   static usersDir = `${Database.dbDir}/users`;
+  static subscriptionPostsDir = `${Database.dbDir}/subscription-posts`;
   static migrations: Migration[] = [
     // initial migration
     async () => {
       await fs.ensureDir(Database.dbDir);
       await fs.writeJSON(Database.drawingsFile, []);
       await fs.ensureDir(Database.usersDir);
+    },
+
+    // create subscription posts dir
+    async () => {
+      await fs.ensureDir(Database.subscriptionPostsDir);
     },
   ];
   static preparations: Preparation[] = [
@@ -64,11 +70,27 @@ export default class Database {
 
       Database.managers = managers.map(({ id }) => id);
     },
+
+    // prepare subscription posts
+    async () => {
+      const subscriptionPosts = await fs.readdir(Database.subscriptionPostsDir);
+
+      await Promise.all(
+        subscriptionPosts.map(async (pathname) => {
+          const match = pathname.match(/^(-?\d+_\d+)\.json$/);
+
+          if (match) {
+            Database.subscriptionPosts[match[1] as any] = await fs.readJSON(`${Database.subscriptionPostsDir}/${pathname}`, { encoding: 'utf8' });
+          }
+        })
+      );
+    },
   ];
   static locks: Record<string, Promise<any>> = {};
 
   static drawings: Drawing[] = [];
   static users: Partial<Record<number, User>> = {};
+  static subscriptionPosts: Partial<Record<string, number[]>> = {};
   static managers: number[] = [];
 
   static async migrate() {
@@ -164,5 +186,17 @@ export default class Database {
     user.subscriptions = user.subscriptions.filter((sub) => sub !== subscription);
 
     await Database.saveUser(user);
+  }
+
+  static async addSentSubscriptions(postId: string, userIds: number[]) {
+    const sentSubscriptions = Database.subscriptionPosts[postId] = Database.subscriptionPosts[postId] || [];
+
+    sentSubscriptions.push(...userIds);
+
+    await Database.writeToDb(`${Database.subscriptionPostsDir}/${postId}.json`, sentSubscriptions);
+  }
+
+  static async deleteSubscriptionFile(postId: string) {
+    await fs.remove(`${Database.subscriptionPostsDir}/${postId}.json`);
   }
 }
