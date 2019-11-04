@@ -87,6 +87,8 @@ export default {
 
   // admin
   you_re_not_a_manager: 'Вы не являетесь администратором',
+  stats: 'Статистика',
+  stats_response: 'Выберите раздел',
 
   // admin drawings
   add_drawing: 'Добавить розыгрыш',

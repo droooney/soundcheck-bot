@@ -51,6 +51,7 @@ import {
   audioMaterialsKeyboard,
   writeToSoundcheckKeyboard,
   adminKeyboard,
+  adminStatsKeyboard,
 } from './keyboards';
 import Database from './Database';
 import captions from './captions';
@@ -332,7 +333,9 @@ export default async (ctx: Context) => {
         } else {
           await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
         }
-      } else if (payload.command === 'admin/subscriptions') {
+      } else if (payload.command === 'admin/stats') {
+        await respond(captions.stats_response, { keyboard: adminStatsKeyboard });
+      } else if (payload.command === 'admin/stats/subscriptions') {
         const subscriptions = _.mapValues(Subscription, (subscription) => (
           _.filter(Database.users, (user) => !!user && user.subscriptions.includes(subscription)).length
         ));

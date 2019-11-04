@@ -162,8 +162,19 @@ export const adminKeyboard: Keyboard = {
   buttons: [
     [
       generateButton(captions.drawings, { command: 'admin/drawings' }),
-      generateButton(captions.subscriptions, { command: 'admin/subscriptions' }),
+      generateButton(captions.stats, { command: 'admin/stats' }),
     ],
+    [generateBackButton()],
+  ]
+};
+
+export const adminStatsKeyboard: Keyboard = {
+  one_time: false,
+  buttons: [
+    [
+      generateButton(captions.subscriptions, { command: 'admin/stats/subscriptions' }),
+    ],
+    [generateBackButton(BackButtonDest.ADMIN)],
     [generateBackButton()],
   ]
 };

@@ -233,8 +233,12 @@ export interface AdminDeleteDrawingButtonPayload {
   drawingId: string;
 }
 
-export interface AdminSubscriptionsButtonPayload {
-  command: 'admin/subscriptions';
+export interface AdminStatsButtonPayload {
+  command: 'admin/stats';
+}
+
+export interface AdminSubscriptionStatsButtonPayload {
+  command: 'admin/stats/subscriptions';
 }
 
 export interface RefreshKeyboardButtonPayload {
@@ -274,7 +278,8 @@ export type ButtonPayload = (
   | AdminEditDrawingNameButtonPayload
   | AdminEditDrawingPostButtonPayload
   | AdminDeleteDrawingButtonPayload
-  | AdminSubscriptionsButtonPayload
+  | AdminStatsButtonPayload
+  | AdminSubscriptionStatsButtonPayload
   | RefreshKeyboardButtonPayload
 );
 
