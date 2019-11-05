@@ -13,6 +13,7 @@ export default {
   audio_materials: 'Аудиоматериалы',
   write_to_soundcheck: 'Написать Soundcheck',
   services: 'Услуги',
+  for_musicians: 'Для музыкантов',
   subscriptions: 'Рассылки',
   admin_section: 'Админка',
   refresh_keyboard: '🔄 Обновить клавиатуру',

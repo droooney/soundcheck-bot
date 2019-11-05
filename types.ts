@@ -439,7 +439,8 @@ export enum Subscription {
   TEXT_MATERIALS = 'TEXT_MATERIALS',
   AUDIO_MATERIALS = 'AUDIO_MATERIALS',
   DRAWINGS = 'DRAWINGS',
-  SERVICES = 'SERVICES',
+  // SERVICES = 'SERVICES',
+  FOR_MUSICIANS = 'FOR_MUSICIANS',
 }
 
 export interface User {

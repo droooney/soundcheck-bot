@@ -50,13 +50,14 @@ export const subscriptionNames: Record<Subscription, string> = {
   [Subscription.TEXT_MATERIALS]: captions.text_materials,
   [Subscription.AUDIO_MATERIALS]: captions.audio_materials,
   [Subscription.DRAWINGS]: captions.drawings,
-  [Subscription.SERVICES]: captions.services,
+  // [Subscription.SERVICES]: captions.services,
+  [Subscription.FOR_MUSICIANS]: captions.for_musicians,
 };
 
 export const subscriptionButtons = [
   [Subscription.POSTER, Subscription.PLAYLISTS, Subscription.RELEASES],
   [Subscription.TEXT_MATERIALS, Subscription.AUDIO_MATERIALS],
-  [Subscription.DRAWINGS, Subscription.SERVICES],
+  [Subscription.DRAWINGS, Subscription.FOR_MUSICIANS],
 ];
 
 export const subscriptionHashtags: Record<Subscription, string[]> = {
@@ -65,8 +66,9 @@ export const subscriptionHashtags: Record<Subscription, string[]> = {
   [Subscription.RELEASES]: ['#new_release@soundcheck_ural'],
   [Subscription.TEXT_MATERIALS]: [],
   [Subscription.AUDIO_MATERIALS]: ['#audio@soundcheck_ural'],
-  [Subscription.DRAWINGS]: [],
-  [Subscription.SERVICES]: ['#service@soundcheck_ural'],
+  [Subscription.DRAWINGS]: ['#prize@soundcheck_ural'],
+  // [Subscription.SERVICES]: ['#service@soundcheck_ural'],
+  [Subscription.FOR_MUSICIANS]: ['#for_musicians@soundcheck_ural'],
 };
 
 export const SOUNDCHECK_ID = 164134127;
