@@ -60,6 +60,7 @@ export default async (ctx: Context) => {
   const body: Body = ctx.request.body;
   const dailyStats = Database.getTodayDailyStats();
   const requestTime = moment();
+  const latestClickTime = +requestTime.clone().subtract(1, 'minute');
 
   console.log('bot event', requestTime.format('YYYY-MM-DD HH:mm:ss.SSS'), body);
 
@@ -100,18 +101,8 @@ export default async (ctx: Context) => {
       if (
         !dailyStats.clicks.some((click) => (
           click.userId === userId
-          && click.date >= +requestTime.clone().subtract(1, 'minute')
-          && (
-            _.isEqual(click.payload, payload)
-            || (
-              click.payload.command === payload!.command
-              && click.payload.command === 'poster/type/day'
-            )
-            || (
-              click.payload.command === payload!.command
-              && click.payload.command === 'poster/type/week'
-            )
-          )
+          && click.date >= latestClickTime
+          && _.isEqual(click.payload, payload)
         ))
       ) {
         dailyStats.clicks.push({
