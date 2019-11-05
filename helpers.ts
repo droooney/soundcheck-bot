@@ -325,7 +325,7 @@ export function createEverydayDaemon(time: string, daemon: () => void) {
 }
 
 export async function sendPosterMessage() {
-  console.log('sending poster');
+  console.log('sending poster', moment().format('YYYY-MM-DD HH:mm:ss.SSS'));
 
   const posterDay = moment()
     .add(1, 'day')
