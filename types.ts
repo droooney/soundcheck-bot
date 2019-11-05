@@ -491,3 +491,22 @@ export interface Config {
   soundcheckId: number;
   targets: Record<Target, number[]>;
 }
+
+export interface DailyStats {
+  date: number;
+  groupLeaveUsers: number[];
+  clicks: {
+    userId: number;
+    date: number;
+    payload: ButtonPayload;
+  }[];
+  reposts: {
+    userId: number;
+    postId: string;
+  }[];
+}
+
+export interface SubscriptionPost {
+  postId: string;
+  sent: number[];
+}

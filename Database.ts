@@ -1,6 +1,7 @@
 import * as fs from 'fs-extra';
+import moment = require('moment-timezone');
 
-import { Drawing, DrawingParams, ManagersResponse, Subscription, User } from './types';
+import { DailyStats, Drawing, DrawingParams, ManagersResponse, Subscription, SubscriptionPost, User } from './types';
 import { sendVKRequest } from './helpers';
 import config from './config';
 
@@ -8,11 +9,23 @@ export type Preparation = () => void;
 
 export type Migration = () => void;
 
-const defaultUser: User = {
+export const defaultUser: User = {
   id: 0,
   lastMessageDate: 0,
   state: null,
-  subscriptions: []
+  subscriptions: [],
+};
+
+export const defaultSubscriptionPost: SubscriptionPost = {
+  postId: '',
+  sent: []
+};
+
+export const defaultDailyStats: DailyStats = {
+  date: 0,
+  groupLeaveUsers: [],
+  clicks: [],
+  reposts: [],
 };
 
 export default class Database {
@@ -21,6 +34,7 @@ export default class Database {
   static drawingsFile = `${Database.dbDir}/drawings.json`;
   static usersDir = `${Database.dbDir}/users`;
   static subscriptionPostsDir = `${Database.dbDir}/subscription-posts`;
+  static dailyStatsDir = `${Database.dbDir}/daily-stats`;
   static migrations: Migration[] = [
     // initial migration
     async () => {
@@ -36,19 +50,14 @@ export default class Database {
 
     // remove services subscription
     async () => {
-      const users = await fs.readdir(Database.usersDir);
+      await Database.iterateFolderFiles<User>(Database.usersDir, async (user) => {
+        await Database.unsubscribeUser(user, 'SERVICES' as any);
+      });
+    },
 
-      await Promise.all(
-        users.map(async (pathname) => {
-          const match = pathname.match(/^(\d+)\.json$/);
-
-          if (match) {
-            const user = await fs.readJSON(`${Database.usersDir}/${pathname}`, { encoding: 'utf8' });
-
-            await Database.unsubscribeUser(user, 'SERVICES' as any);
-          }
-        })
-      );
+    // create daily stats dir
+    async () => {
+      await fs.ensureDir(Database.dailyStatsDir);
     },
   ];
   static preparations: Preparation[] = [
@@ -59,17 +68,9 @@ export default class Database {
 
     // prepare users
     async () => {
-      const users = await fs.readdir(Database.usersDir);
-
-      await Promise.all(
-        users.map(async (pathname) => {
-          const match = pathname.match(/^(\d+)\.json$/);
-
-          if (match) {
-            Database.users[match[1] as any] = await fs.readJSON(`${Database.usersDir}/${pathname}`, { encoding: 'utf8' });
-          }
-        })
-      );
+      await Database.iterateFolderFiles<User>(Database.usersDir, (user) => {
+        Database.users[user.id] = user;
+      });
     },
 
     // prepare managers
@@ -90,24 +91,24 @@ export default class Database {
 
     // prepare subscription posts
     async () => {
-      const subscriptionPosts = await fs.readdir(Database.subscriptionPostsDir);
+      await Database.iterateFolderFiles<SubscriptionPost>(Database.subscriptionPostsDir, (subscriptionPost) => {
+        Database.subscriptionPosts[subscriptionPost.postId] = subscriptionPost;
+      });
+    },
 
-      await Promise.all(
-        subscriptionPosts.map(async (pathname) => {
-          const match = pathname.match(/^(-?\d+_\d+)\.json$/);
-
-          if (match) {
-            Database.subscriptionPosts[match[1] as any] = await fs.readJSON(`${Database.subscriptionPostsDir}/${pathname}`, { encoding: 'utf8' });
-          }
-        })
-      );
+    // prepare daily stats
+    async () => {
+      await Database.iterateFolderFiles<DailyStats>(Database.dailyStatsDir, (dailyStats) => {
+        Database.dailyStats[dailyStats.date] = dailyStats;
+      });
     },
   ];
   static locks: Record<string, Promise<any>> = {};
 
   static drawings: Drawing[] = [];
   static users: Partial<Record<number, User>> = {};
-  static subscriptionPosts: Partial<Record<string, number[]>> = {};
+  static subscriptionPosts: Partial<Record<string, SubscriptionPost>> = {};
+  static dailyStats: Partial<Record<number, DailyStats>> = {};
   static managers: number[] = [];
 
   static async migrate() {
@@ -126,6 +127,21 @@ export default class Database {
     for (const preparation of Database.preparations) {
       await preparation();
     }
+  }
+
+  static async iterateFolderFiles<T>(dir: string, callback: (value: T, filename: string) => void) {
+    const files = await fs.readdir(dir);
+
+    await Promise.all(
+      files.map(async (pathname) => {
+        const match = pathname.match(/^(\d+)\.json$/);
+        const filename = `${dir}/${pathname}`;
+
+        if (match) {
+          await callback(await fs.readJSON(filename, { encoding: 'utf8' }), filename);
+        }
+      })
+    );
   }
 
   static async writeToDb(file: string, data: any): Promise<void> {
@@ -206,14 +222,30 @@ export default class Database {
   }
 
   static async addSentSubscriptions(postId: string, userIds: number[]) {
-    const sentSubscriptions = Database.subscriptionPosts[postId] = Database.subscriptionPosts[postId] || [];
+    const subscriptionPost = Database.subscriptionPosts[postId] = Database.subscriptionPosts[postId] || { ...defaultSubscriptionPost, postId };
 
-    sentSubscriptions.push(...userIds);
+    subscriptionPost.sent.push(...userIds);
 
-    await Database.writeToDb(`${Database.subscriptionPostsDir}/${postId}.json`, sentSubscriptions);
+    await Database.writeToDb(`${Database.subscriptionPostsDir}/${postId}.json`, subscriptionPost);
   }
 
   static async deleteSubscriptionFile(postId: string) {
     await fs.remove(`${Database.subscriptionPostsDir}/${postId}.json`);
+  }
+
+  static getTodayDailyStats(): DailyStats {
+    const startOfDay = +moment().startOf('day');
+
+    return Database.dailyStats[+startOfDay] = Database.dailyStats[startOfDay] || { ...defaultDailyStats, date: startOfDay };
+  }
+
+  static async saveTodayDailyStats() {
+    const dailyStats = Database.getTodayDailyStats();
+
+    try {
+      await Database.writeToDb(`${Database.dailyStatsDir}/${dailyStats.date}.json`, dailyStats);
+    } catch (err) {
+      console.log('failed to save daily stats', err);
+    }
   }
 }

@@ -52,14 +52,16 @@ import {
   adminKeyboard,
   adminStatsKeyboard,
 } from './keyboards';
-import Database from './Database';
+import Database, { defaultSubscriptionPost } from './Database';
 import captions from './captions';
 import config from './config';
 
 export default async (ctx: Context) => {
   const body: Body = ctx.request.body;
+  const dailyStats = Database.getTodayDailyStats();
+  const requestTime = moment();
 
-  console.log('bot event', moment().format('YYYY-MM-DD HH:mm:ss.SSS'), body);
+  console.log('bot event', requestTime.format('YYYY-MM-DD HH:mm:ss.SSS'), body);
 
   eventHandler: if (body.type === 'confirmation') {
     ctx.body = 'afcb8751';
@@ -93,6 +95,30 @@ export default async (ctx: Context) => {
         await respond(captions.you_re_not_a_manager, { keyboard: mainKeyboard });
 
         break message;
+      }
+
+      if (
+        !dailyStats.clicks.some((click) => (
+          click.userId === userId
+          && click.date >= +requestTime.clone().subtract(1, 'minute')
+          && (
+            _.isEqual(click.payload, payload)
+            || (
+              click.payload.command === payload!.command
+              && click.payload.command === 'poster/type/day'
+            )
+            || (
+              click.payload.command === payload!.command
+              && click.payload.command === 'poster/type/week'
+            )
+          )
+        ))
+      ) {
+        dailyStats.clicks.push({
+          userId,
+          date: +requestTime,
+          payload
+        });
       }
 
       if (payload.command === 'start') {
@@ -529,7 +555,7 @@ export default async (ctx: Context) => {
         _.filter(Database.users, (user) => (
           !!user
           && user.subscriptions.some((subscription) => subscriptions.includes(subscription))
-          && !(Database.subscriptionPosts[postId] || []).includes(user.id)
+          && !(Database.subscriptionPosts[postId] || defaultSubscriptionPost).sent.includes(user.id)
         )) as User[],
         100
       );
@@ -551,4 +577,6 @@ export default async (ctx: Context) => {
   } else {
     ctx.body = 'ok';
   }
+
+  Database.saveTodayDailyStats();
 }
