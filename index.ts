@@ -17,6 +17,7 @@ import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
 import { ConversationsResponse } from './types';
 import { generateMainKeyboard } from './keyboards';
+import config from './config';
 
 moment.tz.setDefault('Asia/Yekaterinburg');
 moment.locale('ru-RU');
@@ -24,11 +25,11 @@ moment.locale('ru-RU');
 const app = new Application();
 const server = http.createServer(app.callback());
 const router = new Router({
-  prefix: '/soundcheck-bot5778'
+  prefix: `/soundcheck-bot${config.port}`
 });
 
 router.get('/api/concerts', getConcertsCallback);
-router.post('/9lyvg7xn27axayu5ybpy3o1og67', vkBotCallback);
+router.post(config.endpoint, vkBotCallback);
 
 app.use(async (ctx, next) => {
   console.log(ctx.method, ctx.type, ctx.url);
@@ -75,7 +76,7 @@ async function main() {
   }
 
   await new Promise((resolve) => {
-    server.listen(process.env.PORT || 5778, () => {
+    server.listen(config.port, () => {
       console.log('Listening...');
 
       resolve();

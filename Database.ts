@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 
 import { Drawing, DrawingParams, ManagersResponse, Subscription, User } from './types';
 import { sendVKRequest } from './helpers';
-import { SOUNDCHECK_ID } from './constants';
+import config from './config';
 
 export type Preparation = () => void;
 
@@ -81,7 +81,7 @@ export default class Database {
           }
         }
       } = await sendVKRequest<ManagersResponse>('groups.getMembers', {
-        group_id: SOUNDCHECK_ID,
+        group_id: config.soundcheckId,
         filter: 'managers'
       });
 

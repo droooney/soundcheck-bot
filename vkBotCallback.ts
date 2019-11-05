@@ -32,7 +32,6 @@ import {
   subscriptionNames,
   subscriptionHashtags,
   confirmPositiveAnswers,
-  targets,
 } from './constants';
 import {
   generateButton,
@@ -55,6 +54,7 @@ import {
 } from './keyboards';
 import Database from './Database';
 import captions from './captions';
+import config from './config';
 
 export default async (ctx: Context) => {
   const body: Body = ctx.request.body;
@@ -386,42 +386,42 @@ export default async (ctx: Context) => {
       if (userState.type === 'write_to_soundcheck/tell_about_group') {
         await Promise.all([
           respond(captions.tell_about_group_message_response),
-          sendVKMessage(targets.tellAboutGroup, captions.group_history_message, {
+          sendVKMessage(config.targets.tellAboutGroup, captions.group_history_message, {
             forwardMessages: [body.object.id]
           })
         ]);
       } else if (userState.type === 'write_to_soundcheck/tell_about_release') {
         await Promise.all([
           respond(captions.tell_about_release_message_response),
-          sendVKMessage(targets.tellAboutRelease, captions.release_message, {
+          sendVKMessage(config.targets.tellAboutRelease, captions.release_message, {
             forwardMessages: [body.object.id]
           })
         ]);
       } else if (userState.type === 'write_to_soundcheck/collaboration') {
         await Promise.all([
           respond(captions.collaboration_message_response),
-          sendVKMessage(targets.collaboration, captions.collaboration_message, {
+          sendVKMessage(config.targets.collaboration, captions.collaboration_message, {
             forwardMessages: [body.object.id]
           })
         ]);
       } else if (userState.type === 'write_to_soundcheck/tell_about_bug') {
         await Promise.all([
           respond(captions.tell_about_bug_message_response),
-          sendVKMessage(targets.tellAboutBug, captions.tell_about_bug_message, {
+          sendVKMessage(config.targets.tellAboutBug, captions.tell_about_bug_message, {
             forwardMessages: [body.object.id]
           })
         ]);
       } else if (userState.type === 'write_to_soundcheck/want_to_participate') {
         await Promise.all([
           respond(captions.want_to_participate_message_response),
-          sendVKMessage(targets.wantToParticipate, captions.want_to_participate_message, {
+          sendVKMessage(config.targets.wantToParticipate, captions.want_to_participate_message, {
             forwardMessages: [body.object.id]
           })
         ]);
       } else if (userState.type === 'write_to_soundcheck/other') {
         await Promise.all([
           respond(captions.write_to_soundcheck_other_message_response),
-          sendVKMessage(targets.other, captions.write_to_soundcheck_other_message, {
+          sendVKMessage(config.targets.other, captions.write_to_soundcheck_other_message, {
             forwardMessages: [body.object.id]
           })
         ]);

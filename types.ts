@@ -479,3 +479,15 @@ export interface User {
   state: UserState;
   subscriptions: Subscription[];
 }
+
+export type Target = (
+  'tellAboutGroup' | 'tellAboutRelease' | 'collaboration'
+  | 'tellAboutBug' | 'wantToParticipate' | 'other' | 'poster'
+);
+
+export interface Config {
+  port: number;
+  endpoint: string;
+  soundcheckId: number;
+  targets: Record<Target, number[]>;
+}
