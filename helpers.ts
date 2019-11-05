@@ -284,8 +284,7 @@ export function getPostId(message: Message): string | null {
       return null;
     }
 
-    const wallRegex = /^wall(-?\d+_\d+)$/;
-    const pathMatch = url.pathname.match(wallRegex);
+    const pathMatch = url.pathname.match(/^\/wall(-?\d+_\d+)$/);
 
     if (pathMatch) {
       return pathMatch[1];
@@ -297,7 +296,7 @@ export function getPostId(message: Message): string | null {
       return null;
     }
 
-    const wallMatch = wallQuery.match(wallRegex);
+    const wallMatch = wallQuery.match(/^wall(-?\d+_\d+)$/);
 
     return wallMatch && wallMatch[1];
   } catch (err) {
