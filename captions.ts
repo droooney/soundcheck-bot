@@ -67,7 +67,7 @@ export default {
   tell_about_release: 'Сообщить о релизе',
   collaboration: 'Сотрудничество',
   tell_about_bug: 'Сообщить об ошибке',
-  want_to_participate: 'Хочу участвовать в Soundcheck',
+  want_to_participate: 'Хочу в Soundcheck!',
   write_to_soundcheck_other: 'Другое',
   tell_about_group_response: 'Напишите о себе пару слов, прикрепляйте ссылки на соцсети',
   tell_about_release_response: 'Прикрепляйте пост, аудиозапись или ссылку и Ваш релиз будет рассмотрен',
