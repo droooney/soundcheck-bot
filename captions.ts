@@ -1,3 +1,5 @@
+import * as _ from 'lodash';
+
 import { Drawing, Genre, Subscription, User } from './types';
 import { genreNames, subscriptionNames } from './constants';
 
@@ -77,10 +79,14 @@ export default {
   soundcheck_ads: 'Реклама в Soundcheck',
 
   // subscriptions
-  subscriptions_response: (user: User) => user.subscriptions.length
-    ? `Вы уже подписаны на следующие категории: ${user.subscriptions.map((subscription) => `"${subscriptionNames[subscription]}"`).join(', ')}. \
+  subscriptions_response: (user: User) => {
+    const subscriptions = _.filter(Subscription, (subscription) => user.subscriptions.includes(subscription));
+
+    return subscriptions.length
+      ? `Вы уже подписаны на следующие категории: ${subscriptions.map((subscription) => `"${subscriptionNames[subscription]}"`).join(', ')}. \
 Для того, чтобы подписаться или отписаться от категории, нажмите на соответствующую кнопку`
-    : 'Для того, чтобы подписаться на категорию, нажмите на соответствующую кнопку',
+      : 'Для того, чтобы подписаться на категорию, нажмите на соответствующую кнопку';
+  },
   subscribe: 'Подписаться',
   you_re_already_subscribed: 'Вы уже подписаны',
   subscribe_response: (subscription: Subscription) => `Вы подписались на категорию "${subscriptionNames[subscription]}"`,
