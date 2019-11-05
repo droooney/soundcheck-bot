@@ -4,7 +4,7 @@ import * as jwt from 'jsonwebtoken';
 import * as _ from 'lodash';
 import moment = require('moment-timezone');
 
-import { Concert, Event, EventsResponse, Keyboard } from './types';
+import { Concert, Event, EventsResponse, Keyboard, Message, WallAttachment } from './types';
 import { defaultVKQuery, targets } from './constants';
 
 const {
@@ -268,6 +268,41 @@ export async function getPosterText(posterTime: moment.Moment): Promise<string |
   }
 
   return posterText;
+}
+
+export function getPostId(message: Message): string | null {
+  const wallAttachment = message.attachments.find(({ type }) => type === 'wall') as WallAttachment | undefined;
+
+  if (wallAttachment) {
+    return `${wallAttachment.wall.to_id}_${wallAttachment.wall.id}`;
+  }
+
+  try {
+    const url = new URL(message.text);
+
+    if (url.protocol !== 'https:' && url.hostname !== 'vk.com') {
+      return null;
+    }
+
+    const wallRegex = /^wall(-?\d+_\d+)$/;
+    const pathMatch = url.pathname.match(wallRegex);
+
+    if (pathMatch) {
+      return pathMatch[1];
+    }
+
+    const wallQuery = url.searchParams.get('w');
+
+    if (!wallQuery) {
+      return null;
+    }
+
+    const wallMatch = wallQuery.match(wallRegex);
+
+    return wallMatch && wallMatch[1];
+  } catch (err) {
+    return null;
+  }
 }
 
 export function createEverydayDaemon(time: string, daemon: () => void) {

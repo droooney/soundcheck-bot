@@ -12,6 +12,7 @@ import {
   getConcertsString,
   getDailyConcerts,
   getDayString,
+  getPostId,
   getWeeklyConcerts,
   sendVKMessage,
 } from './helpers';
@@ -24,7 +25,6 @@ import {
   Subscription,
   User,
   UserState,
-  WallAttachment,
 } from './types';
 import {
   genreNames,
@@ -394,12 +394,12 @@ export default async (ctx: Context) => {
 
         await respond(captions.send_drawing_post);
       } else if (userState.type === 'admin/drawings/add/set_post') {
-        const wallAttachment = body.object.attachments.find(({ type }) => type === 'wall') as WallAttachment | undefined;;
+        const postId = getPostId(body.object);
 
-        if (wallAttachment) {
+        if (postId) {
           await Database.addDrawing({
             name: userState.name,
-            postId: `${wallAttachment.wall.to_id}_${wallAttachment.wall.id}`
+            postId
           });
 
           await respond(captions.drawing_added, { keyboard: generateAdminDrawingsKeyboard() });
@@ -422,10 +422,10 @@ export default async (ctx: Context) => {
         const drawing = Database.getDrawingById(userState.drawingId);
 
         if (drawing) {
-          const wallAttachment = body.object.attachments.find(({ type }) => type === 'wall') as WallAttachment | undefined;
+          const postId = getPostId(body.object);
 
-          if (wallAttachment) {
-            await Database.editDrawing(drawing, 'postId', `${wallAttachment.wall.to_id}_${wallAttachment.wall.id}`);
+          if (postId) {
+            await Database.editDrawing(drawing, 'postId', postId);
 
             await respond(captions.drawing_edited, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
           } else {
