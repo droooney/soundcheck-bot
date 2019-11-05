@@ -81,7 +81,7 @@ async function main() {
     });
   });
 
-  createEverydayDaemon('16:42:00', sendPosterMessage);
+  createEverydayDaemon('16:43:30', sendPosterMessage);
 }
 
 main();
