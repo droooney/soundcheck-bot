@@ -33,6 +33,23 @@ export default class Database {
     async () => {
       await fs.ensureDir(Database.subscriptionPostsDir);
     },
+
+    // remove services subscription
+    async () => {
+      const users = await fs.readdir(Database.usersDir);
+
+      await Promise.all(
+        users.map(async (pathname) => {
+          const match = pathname.match(/^(\d+)\.json$/);
+
+          if (match) {
+            const user = await fs.readJSON(`${Database.usersDir}/${pathname}`, { encoding: 'utf8' });
+
+            await Database.unsubscribeUser(user, 'SERVICES' as any);
+          }
+        })
+      );
+    },
   ];
   static preparations: Preparation[] = [
     // prepare drawings
