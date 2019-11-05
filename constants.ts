@@ -73,8 +73,11 @@ export const subscriptionHashtags: Record<Subscription, string[]> = {
 
 export const SOUNDCHECK_ID = 164134127;
 export const targets = {
-  tellAboutGroup: 175810060,
-  tellAboutRelease: 175810060,
-  collaboration: 175810060,
-  poster: 175810060,
+  tellAboutGroup: [175810060],
+  tellAboutRelease: [175810060],
+  collaboration: [175810060],
+  tellAboutBug: [175810060],
+  wantToParticipate: [175810060],
+  other: [175810060],
+  poster: [175810060],
 };

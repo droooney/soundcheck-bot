@@ -16,6 +16,7 @@ import {
 import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
 import { ConversationsResponse } from './types';
+import { generateMainKeyboard } from './keyboards';
 
 moment.tz.setDefault('Asia/Yekaterinburg');
 moment.locale('ru-RU');
@@ -66,10 +67,10 @@ async function main() {
       }
     } = await sendVKRequest<ConversationsResponse>('messages.getConversations', { count: 200 });
     const userIds = conversations.map(({ conversation }) => conversation.peer.id);
-    const chunks = _.chunk(userIds, 50);
+    const chunks = _.chunk(userIds, 100);
 
     for (const chunk of chunks) {
-      await sendVKMessage(chunk.join(','), 'test');
+      await sendVKMessage(chunk, 'test', { keyboard: generateMainKeyboard(false) });
     }
   }
 

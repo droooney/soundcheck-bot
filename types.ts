@@ -187,6 +187,18 @@ export interface CollaborationButtonPayload {
   command: 'write_to_soundcheck/collaboration';
 }
 
+export interface TellAboutBugButtonPayload {
+  command: 'write_to_soundcheck/tell_about_bug';
+}
+
+export interface WantToParticipateInSoundcheckButtonPayload {
+  command: 'write_to_soundcheck/want_to_participate';
+}
+
+export interface WriteToSoundcheckOtherButtonPayload {
+  command: 'write_to_soundcheck/other';
+}
+
 export interface ServicesButtonPayload {
   command: 'services';
 }
@@ -273,6 +285,9 @@ export type ButtonPayload = (
   | TellAboutGroupButtonPayload
   | TellAboutReleaseButtonPayload
   | CollaborationButtonPayload
+  | TellAboutBugButtonPayload
+  | WantToParticipateInSoundcheckButtonPayload
+  | WriteToSoundcheckOtherButtonPayload
   | ServicesButtonPayload
   | ServiceButtonPayload
   | SubscriptionsButtonPayload
@@ -396,6 +411,18 @@ export interface CollaborationUserState {
   type: 'write_to_soundcheck/collaboration';
 }
 
+export interface TellAboutBugUserState {
+  type: 'write_to_soundcheck/tell_about_bug';
+}
+
+export interface WantToParticipateUserState {
+  type: 'write_to_soundcheck/want_to_participate';
+}
+
+export interface WriteToSoundcheckOtherUserState {
+  type: 'write_to_soundcheck/other';
+}
+
 export interface AdminAddDrawingSetNameUserState {
   type: 'admin/drawings/add/set_name';
 }
@@ -425,6 +452,9 @@ export type UserState = (
   | TellAboutGroupUserState
   | TellAboutReleaseUserState
   | CollaborationUserState
+  | TellAboutBugUserState
+  | WantToParticipateUserState
+  | WriteToSoundcheckOtherUserState
   | AdminAddDrawingSetNameUserState
   | AdminAddDrawingSetPostUserState
   | AdminEditDrawingNameUserState

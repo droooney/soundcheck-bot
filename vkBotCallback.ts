@@ -263,6 +263,24 @@ export default async (ctx: Context) => {
         };
 
         await respond(captions.collaboration_response);
+      } else if (payload.command === 'write_to_soundcheck/tell_about_bug') {
+        newUserState = {
+          type: 'write_to_soundcheck/tell_about_bug'
+        };
+
+        await respond(captions.tell_about_bug_response);
+      } else if (payload.command === 'write_to_soundcheck/want_to_participate') {
+        newUserState = {
+          type: 'write_to_soundcheck/want_to_participate'
+        };
+
+        await respond(captions.want_to_participate_response);
+      } else if (payload.command === 'write_to_soundcheck/other') {
+        newUserState = {
+          type: 'write_to_soundcheck/other'
+        };
+
+        await respond(captions.write_to_soundcheck_other_response);
       } else if (payload.command === 'services') {
         await respond(captions.choose_service, { keyboard: servicesKeyboard });
       } else if (payload.command === 'services/service') {
@@ -386,6 +404,27 @@ export default async (ctx: Context) => {
             forwardMessages: [body.object.id]
           })
         ]);
+      } else if (userState.type === 'write_to_soundcheck/tell_about_bug') {
+        await Promise.all([
+          respond(captions.tell_about_bug_message_response),
+          sendVKMessage(targets.tellAboutBug, captions.tell_about_bug_message, {
+            forwardMessages: [body.object.id]
+          })
+        ]);
+      } else if (userState.type === 'write_to_soundcheck/want_to_participate') {
+        await Promise.all([
+          respond(captions.want_to_participate_message_response),
+          sendVKMessage(targets.wantToParticipate, captions.want_to_participate_message, {
+            forwardMessages: [body.object.id]
+          })
+        ]);
+      } else if (userState.type === 'write_to_soundcheck/other') {
+        await Promise.all([
+          respond(captions.write_to_soundcheck_other_message_response),
+          sendVKMessage(targets.other, captions.write_to_soundcheck_other_message, {
+            forwardMessages: [body.object.id]
+          })
+        ]);
       } else if (userState.type === 'admin/drawings/add/set_name') {
         newUserState = {
           type: 'admin/drawings/add/set_post',
@@ -498,7 +537,7 @@ export default async (ctx: Context) => {
       for (const users of subscribedUsers) {
         const userIds = users.map(({ id }) => id);
 
-        await sendVKMessage(userIds.join(','), '', {
+        await sendVKMessage(userIds, '', {
           attachments: [`wall${postId}`]
         });
 

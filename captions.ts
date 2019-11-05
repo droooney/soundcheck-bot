@@ -13,7 +13,7 @@ export default {
   drawings: 'Розыгрыши',
   text_materials: 'Статьи',
   audio_materials: 'Аудиоматериалы',
-  write_to_soundcheck: 'Написать Soundcheck',
+  write_to_soundcheck: 'Написать нам',
   services: 'Услуги',
   for_musicians: 'Для музыкантов',
   subscriptions: 'Рассылки',
@@ -62,16 +62,25 @@ export default {
   podcasts_response: 'Смотри подкасты тут:',
 
   // write to soundcheck
-  write_to_soundcheck_response: 'По поводу?',
+  write_to_soundcheck_response: 'Выберите характер обращения',
   tell_about_group: 'Рассказать о группе',
   tell_about_release: 'Сообщить о релизе',
   collaboration: 'Сотрудничество',
+  tell_about_bug: 'Сообщить об ошибке',
+  want_to_participate: 'Хочу участвовать в Soundcheck',
+  write_to_soundcheck_other: 'Другое',
   tell_about_group_response: 'Напишите о себе пару слов, прикрепляйте ссылки на соцсети',
   tell_about_release_response: 'Прикрепляйте пост, аудиозапись или ссылку и Ваш релиз будет рассмотрен',
   collaboration_response: 'Напишите предложение о сотрудничестве и мы его рассмотрим',
+  tell_about_bug_response: 'Опишите ошибку',
+  want_to_participate_response: 'Расскажите о себе и чем бы Вы хотели заниматься в Soundcheck',
+  write_to_soundcheck_other_response: 'Напишите нам и Вам вскоре ответят',
   tell_about_group_message_response: 'Спасибо за то что рассказали о себе',
   tell_about_release_message_response: 'Релиз принят',
   collaboration_message_response: 'Предложение о сотрудничестве принято',
+  tell_about_bug_message_response: 'Спасибо за помощь!',
+  want_to_participate_message_response: 'Спасибо за заявку, в ближайшее время с Вами свяжутся',
+  write_to_soundcheck_other_message_response: 'Спасибо, Вам в ближайшее время ответят',
 
   // services
   choose_service: 'Выберите услугу',
@@ -114,4 +123,7 @@ export default {
   group_history_message: 'Рассказ о группе',
   release_message: 'Релиз',
   collaboration_message: 'Предложение о сотрудничестве',
+  tell_about_bug_message: 'Баг',
+  want_to_participate_message: 'Заявка в Soundcheck',
+  write_to_soundcheck_other_message: 'Сообщение',
 };

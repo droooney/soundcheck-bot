@@ -37,11 +37,9 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
         generateButton(captions.audio_materials, { command: 'audio_materials' }),
       ],
       [
-        generateButton(captions.write_to_soundcheck, { command: 'write_to_soundcheck' }),
-      ],
-      [
         generateButton(captions.services, { command: 'services' }),
         generateButton(captions.subscriptions, { command: 'subscriptions' }),
+        generateButton(captions.write_to_soundcheck, { command: 'write_to_soundcheck' }),
       ],
       ...(
         isManager
@@ -147,6 +145,9 @@ export const writeToSoundcheckKeyboard: Keyboard = {
     [generateButton(captions.tell_about_group, { command: 'write_to_soundcheck/tell_about_group' })],
     [generateButton(captions.tell_about_release, { command: 'write_to_soundcheck/tell_about_release' })],
     [generateButton(captions.collaboration, { command: 'write_to_soundcheck/collaboration' })],
+    [generateButton(captions.tell_about_bug, { command: 'write_to_soundcheck/tell_about_bug' })],
+    [generateButton(captions.want_to_participate, { command: 'write_to_soundcheck/want_to_participate' })],
+    [generateButton(captions.write_to_soundcheck_other, { command: 'write_to_soundcheck/other' })],
     [generateBackButton()],
   ]
 };

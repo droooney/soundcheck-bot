@@ -124,9 +124,9 @@ export interface SendVkMessageOptions {
   attachments?: string[];
 }
 
-export async function sendVKMessage(dest: number | string, message: string, options: SendVkMessageOptions = {}) {
+export async function sendVKMessage(dest: number | number[], message: string, options: SendVkMessageOptions = {}) {
   await sendVKRequest('messages.send', {
-    user_ids: dest,
+    user_ids: typeof dest === 'number' ? dest : dest.join(','),
     random_id: Math.floor(Math.random() * 2 ** 32),
     message,
     keyboard: JSON.stringify(options.keyboard),
