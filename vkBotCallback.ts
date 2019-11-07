@@ -551,6 +551,8 @@ export default async (ctx: Context) => {
         100
       );
 
+      console.log(subscriptions, subscribedUsers);
+
       for (const users of subscribedUsers) {
         const userIds = users.map(({ id }) => id);
 
