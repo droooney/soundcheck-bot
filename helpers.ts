@@ -320,13 +320,12 @@ export function createEverydayDaemon(time: string, daemon: () => void) {
 
   setTimeout(() => {
     daemon();
-    createEverydayDaemon(time, daemon);
+
+    setInterval(daemon, 24 * 60 * 60 * 1000);
   }, +nextDaemonRunTime - +now);
 }
 
 export async function sendPosterMessage() {
-  console.log('sending poster', moment().format('YYYY-MM-DD HH:mm:ss.SSS'));
-
   const posterDay = moment()
     .add(1, 'day')
     .startOf('day')
