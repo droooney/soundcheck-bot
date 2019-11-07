@@ -551,7 +551,10 @@ export default async (ctx: Context) => {
         100
       );
 
-      console.log(subscriptions, subscribedUsers);
+      console.log(
+        _.map(Database.users, (user) => user && { id: user.id, subs: user.subscriptions }),
+        subscriptions, subscribedUsers, hashtags
+      );
 
       for (const users of subscribedUsers) {
         const userIds = users.map(({ id }) => id);
