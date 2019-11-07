@@ -9,25 +9,6 @@ export type Preparation = () => void;
 
 export type Migration = () => void;
 
-export const defaultUser: User = {
-  id: 0,
-  lastMessageDate: 0,
-  state: null,
-  subscriptions: [],
-};
-
-export const defaultSubscriptionPost: SubscriptionPost = {
-  postId: '',
-  sent: []
-};
-
-export const defaultDailyStats: DailyStats = {
-  date: 0,
-  groupLeaveUsers: [],
-  clicks: [],
-  reposts: [],
-};
-
 export default class Database {
   static dbDir = `${__dirname}/db`;
   static versionFile = `${Database.dbDir}/version`;
@@ -195,7 +176,12 @@ export default class Database {
   }
 
   static getUserById(userId: number): User {
-    return Database.users[userId] = Database.users[userId] || { ...defaultUser, id: userId };
+    return Database.users[userId] = Database.users[userId] || {
+      id: userId,
+      lastMessageDate: 0,
+      state: null,
+      subscriptions: [],
+    };
   }
 
   static async saveUser(user: User) {
@@ -221,12 +207,17 @@ export default class Database {
     await Database.saveUser(user);
   }
 
-  static async addSentSubscriptions(postId: string, userIds: number[]) {
-    const subscriptionPost = Database.subscriptionPosts[postId] = Database.subscriptionPosts[postId] || { ...defaultSubscriptionPost, postId };
+  static getSubscriptionPostById(postId: string): SubscriptionPost {
+    return Database.subscriptionPosts[postId] = Database.subscriptionPosts[postId] || {
+      postId,
+      sent: []
+    };
+  }
 
+  static async addSentSubscriptions(subscriptionPost: SubscriptionPost, userIds: number[]) {
     subscriptionPost.sent.push(...userIds);
 
-    await Database.writeToDb(`${Database.subscriptionPostsDir}/${postId}.json`, subscriptionPost);
+    await Database.writeToDb(`${Database.subscriptionPostsDir}/${subscriptionPost.postId}.json`, subscriptionPost);
   }
 
   static async deleteSubscriptionFile(postId: string) {
@@ -236,7 +227,12 @@ export default class Database {
   static getTodayDailyStats(): DailyStats {
     const startOfDay = +moment().startOf('day');
 
-    return Database.dailyStats[+startOfDay] = Database.dailyStats[startOfDay] || { ...defaultDailyStats, date: startOfDay };
+    return Database.dailyStats[+startOfDay] = Database.dailyStats[startOfDay] || {
+      date: startOfDay,
+      groupLeaveUsers: [],
+      clicks: [],
+      reposts: [],
+    };
   }
 
   static async saveTodayDailyStats() {

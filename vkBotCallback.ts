@@ -52,7 +52,7 @@ import {
   adminKeyboard,
   adminStatsKeyboard,
 } from './keyboards';
-import Database, { defaultSubscriptionPost } from './Database';
+import Database from './Database';
 import captions from './captions';
 import config from './config';
 
@@ -535,6 +535,7 @@ export default async (ctx: Context) => {
 
     if (photoAttachment) {
       const postId = `${body.object.owner_id}_${body.object.id}`;
+      const subscriptionPost = Database.getSubscriptionPostById(postId);
       const hashtags = photoAttachment.photo.text
         .split(/\s+/)
         .map((hashtag) => hashtag.trim())
@@ -546,14 +547,9 @@ export default async (ctx: Context) => {
         _.filter(Database.users, (user) => (
           !!user
           && user.subscriptions.some((subscription) => subscriptions.includes(subscription))
-          && !(Database.subscriptionPosts[postId] || defaultSubscriptionPost).sent.includes(user.id)
+          && !subscriptionPost.sent.includes(user.id)
         )) as User[],
         100
-      );
-
-      console.log(
-        _.map(Database.users, (user) => user && { id: user.id, subs: user.subscriptions }),
-        subscriptions, subscribedUsers, hashtags
       );
 
       for (const users of subscribedUsers) {
@@ -563,7 +559,7 @@ export default async (ctx: Context) => {
           attachments: [`wall${postId}`]
         });
 
-        await Database.addSentSubscriptions(postId, userIds);
+        await Database.addSentSubscriptions(subscriptionPost, userIds);
       }
 
       await Database.deleteSubscriptionFile(postId);
