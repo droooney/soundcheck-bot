@@ -14,6 +14,7 @@ export interface Post {
   owner_id: number;
   text: string;
   attachments?: Attachment[];
+  copy_history?: Post[];
 }
 
 export interface BaseBody {
@@ -60,6 +61,11 @@ export interface NewPostBody extends BaseBody {
   object: Post;
 }
 
+export interface RepostBody {
+  type: 'wall_repost';
+  object: Post;
+}
+
 export type Body = (
   ConfirmationBody
   | NewMessageBody
@@ -67,6 +73,7 @@ export type Body = (
   | UserLeaveBody
   | UserJoinBody
   | NewPostBody
+  | RepostBody
 );
 
 export interface ManagersResponse {

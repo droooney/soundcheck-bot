@@ -595,6 +595,14 @@ export default async (ctx: Context) => {
     }
 
     ctx.body = 'ok';
+  } else if (body.type === 'wall_repost') {
+    console.log('123', body.object.copy_history);
+
+    if (body.object.copy_history && body.object.copy_history[0]) {
+      console.log('456', body.object.copy_history[0].copy_history);
+    }
+
+    ctx.body = 'ok';
   } else {
     ctx.body = 'ok';
   }
