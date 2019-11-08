@@ -4,7 +4,7 @@ import * as jwt from 'jsonwebtoken';
 import * as _ from 'lodash';
 import moment = require('moment-timezone');
 
-import { Concert, Event, EventsResponse, Keyboard, Message, WallAttachment } from './types';
+import { Concert, Event, EventsResponse, Keyboard, Message, Post, WallAttachment } from './types';
 import { defaultVKQuery } from './constants';
 import config from './config';
 
@@ -303,6 +303,24 @@ export function getPostId(message: Message): string | null {
   } catch (err) {
     return null;
   }
+}
+
+export function getRepostPostId(post: Post): string | null {
+  if (!post.copy_history) {
+    return post.owner_id === -config.soundcheckId
+      ? `${post.owner_id}_${post.id}`
+      : null;
+  }
+
+  for (const historyPost of post.copy_history) {
+    const postId = getRepostPostId(historyPost);
+
+    if (postId) {
+      return postId;
+    }
+  }
+
+  return null;
 }
 
 export function createEverydayDaemon(time: string, daemon: () => void) {

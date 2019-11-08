@@ -13,6 +13,7 @@ import {
   getDailyConcerts,
   getDayString,
   getPostId,
+  getRepostPostId,
   getWeeklyConcerts,
   sendVKMessage,
 } from './helpers';
@@ -596,10 +597,11 @@ export default async (ctx: Context) => {
 
     ctx.body = 'ok';
   } else if (body.type === 'wall_repost') {
-    console.log('123', body.object.copy_history);
+    const userId = body.object.owner_id;
+    const postId = getRepostPostId(body.object);
 
-    if (body.object.copy_history && body.object.copy_history[0]) {
-      console.log('456', body.object.copy_history[0].copy_history);
+    if (postId && dailyStats.reposts.every((repost) => repost.userId !== userId || repost.postId !== postId)) {
+      dailyStats.reposts.push({ userId, postId });
     }
 
     ctx.body = 'ok';
