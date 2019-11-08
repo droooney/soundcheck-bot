@@ -510,7 +510,7 @@ export interface Config {
 export interface DailyStats {
   date: number;
   groupLeaveUsers: { userId: number; self: boolean; }[];
-  groupJoinUsers: { userId: number; self: boolean; }[];
+  groupJoinUsers: number[];
   clicks: {
     userId: number;
     date: number;

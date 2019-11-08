@@ -530,7 +530,7 @@ export default async (ctx: Context) => {
     ctx.body = 'ok';
   } else if (body.type === 'group_leave') {
     const userId = body.object.user_id;
-    const joinedIndex = dailyStats.groupJoinUsers.findIndex((joined) => joined.userId === userId);
+    const joinedIndex = dailyStats.groupJoinUsers.findIndex((joined) => joined === userId);
 
     if (joinedIndex === -1) {
       if (dailyStats.groupLeaveUsers.every((left) => left.userId !== userId)) {
@@ -550,11 +550,8 @@ export default async (ctx: Context) => {
       const leftIndex = dailyStats.groupLeaveUsers.findIndex((left) => left.userId === userId);
 
       if (leftIndex === -1) {
-        if (dailyStats.groupJoinUsers.every((joined) => joined.userId !== userId)) {
-          dailyStats.groupJoinUsers.push({
-            userId,
-            self: body.object.join_type === 'join'
-          });
+        if (dailyStats.groupJoinUsers.every((joined) => joined !== userId)) {
+          dailyStats.groupJoinUsers.push(userId);
         }
       } else {
         dailyStats.groupLeaveUsers.splice(leftIndex, 1);
