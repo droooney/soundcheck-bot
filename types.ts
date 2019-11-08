@@ -47,12 +47,27 @@ export interface UserLeaveBody extends BaseBody {
   };
 }
 
+export interface UserJoinBody extends BaseBody {
+  type: 'group_join';
+  object: {
+    user_id: number;
+    join_type: 'join' | 'unsure' | 'accepted' | 'approved' | 'request';
+  };
+}
+
 export interface NewPostBody extends BaseBody {
   type: 'wall_post_new';
   object: Post;
 }
 
-export type Body = ConfirmationBody | NewMessageBody | ChangeManagerBody | UserLeaveBody | NewPostBody;
+export type Body = (
+  ConfirmationBody
+  | NewMessageBody
+  | ChangeManagerBody
+  | UserLeaveBody
+  | UserJoinBody
+  | NewPostBody
+);
 
 export interface ManagersResponse {
   response: {
@@ -494,7 +509,8 @@ export interface Config {
 
 export interface DailyStats {
   date: number;
-  groupLeaveUsers: number[];
+  groupLeaveUsers: { userId: number; self: boolean; }[];
+  groupJoinUsers: { userId: number; self: boolean; }[];
   clicks: {
     userId: number;
     date: number;

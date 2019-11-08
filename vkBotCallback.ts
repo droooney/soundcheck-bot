@@ -99,7 +99,7 @@ export default async (ctx: Context) => {
       }
 
       if (
-        !dailyStats.clicks.some((click) => (
+        !isManager && !dailyStats.clicks.some((click) => (
           click.userId === userId
           && click.date >= latestClickTime
           && _.isEqual(click.payload, payload)
@@ -529,6 +529,38 @@ export default async (ctx: Context) => {
 
     ctx.body = 'ok';
   } else if (body.type === 'group_leave') {
+    const userId = body.object.user_id;
+    const joinedIndex = dailyStats.groupJoinUsers.findIndex((joined) => joined.userId === userId);
+
+    if (joinedIndex === -1) {
+      if (dailyStats.groupLeaveUsers.every((left) => left.userId !== userId)) {
+        dailyStats.groupLeaveUsers.push({
+          userId,
+          self: !!body.object.self
+        });
+      }
+    } else {
+      dailyStats.groupJoinUsers.splice(joinedIndex, 1);
+    }
+
+    ctx.body = 'ok';
+  } else if (body.type === 'group_join') {
+    if (body.object.join_type === 'join' || body.object.join_type === 'accepted') {
+      const userId = body.object.user_id;
+      const leftIndex = dailyStats.groupLeaveUsers.findIndex((left) => left.userId === userId);
+
+      if (leftIndex === -1) {
+        if (dailyStats.groupJoinUsers.every((joined) => joined.userId !== userId)) {
+          dailyStats.groupJoinUsers.push({
+            userId,
+            self: body.object.join_type === 'join'
+          });
+        }
+      } else {
+        dailyStats.groupLeaveUsers.splice(leftIndex, 1);
+      }
+    }
+
     ctx.body = 'ok';
   } else if (body.type === 'wall_post_new') {
     const photoAttachment = (body.object.attachments || []).find(({ type }) => type === 'photo') as PhotoAttachment | undefined;
@@ -570,5 +602,5 @@ export default async (ctx: Context) => {
     ctx.body = 'ok';
   }
 
-  Database.saveTodayDailyStats();
+  Database.saveDailyStats(dailyStats);
 }

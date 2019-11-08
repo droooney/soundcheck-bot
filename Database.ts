@@ -40,6 +40,28 @@ export default class Database {
     async () => {
       await fs.ensureDir(Database.dailyStatsDir);
     },
+
+    // remove manager stats
+    async () => {
+      const managers = await Database.getManagers();
+
+      await Database.iterateFolderFiles<DailyStats>(Database.dailyStatsDir, async (dailyStats) => {
+        await Database.saveDailyStats({
+          ...dailyStats,
+          clicks: dailyStats.clicks.filter(({ userId }) => !managers.includes(userId))
+        });
+      });
+    },
+
+    // add groupJoinUsers
+    async () => {
+      await Database.iterateFolderFiles<DailyStats>(Database.dailyStatsDir, async (dailyStats) => {
+        await Database.saveDailyStats({
+          ...dailyStats,
+          groupJoinUsers: []
+        });
+      });
+    },
   ];
   static preparations: Preparation[] = [
     // prepare drawings
@@ -56,18 +78,7 @@ export default class Database {
 
     // prepare managers
     async () => {
-      const {
-        data: {
-          response: {
-            items: managers
-          }
-        }
-      } = await sendVKRequest<ManagersResponse>('groups.getMembers', {
-        group_id: config.soundcheckId,
-        filter: 'managers'
-      });
-
-      Database.managers = managers.map(({ id }) => id);
+      Database.managers = await Database.getManagers();
     },
 
     // prepare subscription posts
@@ -132,6 +143,21 @@ export default class Database {
       await prevLock;
       await fs.writeJSON(file, data, { encoding: 'utf8' });
     })());
+  }
+
+  static async getManagers(): Promise<number[]> {
+    const {
+      data: {
+        response: {
+          items: managers
+        }
+      }
+    } = await sendVKRequest<ManagersResponse>('groups.getMembers', {
+      group_id: config.soundcheckId,
+      filter: 'managers'
+    });
+
+    return managers.map(({ id }) => id);
   }
 
   static getDrawingById(id: string): Drawing | null {
@@ -230,14 +256,13 @@ export default class Database {
     return Database.dailyStats[+startOfDay] = Database.dailyStats[startOfDay] || {
       date: startOfDay,
       groupLeaveUsers: [],
+      groupJoinUsers: [],
       clicks: [],
       reposts: [],
     };
   }
 
-  static async saveTodayDailyStats() {
-    const dailyStats = Database.getTodayDailyStats();
-
+  static async saveDailyStats(dailyStats: DailyStats) {
     try {
       await Database.writeToDb(`${Database.dailyStatsDir}/${dailyStats.date}.json`, dailyStats);
     } catch (err) {
