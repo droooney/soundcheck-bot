@@ -422,7 +422,7 @@ export function getRepostStats(period: StatsPeriod): string {
   const allReposts = periodStats.reduce<Repost[]>((reposts, dailyStats) => [...reposts, ...dailyStats.reposts], []);
 
   if (!allReposts.length) {
-
+    return captions.no_reposts;
   }
 
   const groups = _.groupBy(allReposts, 'originalPostId');
