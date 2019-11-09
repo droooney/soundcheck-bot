@@ -10,6 +10,7 @@ import {
   createEverydayDaemon,
   refreshGoogleAccessToken,
   sendPosterMessage,
+  sendStatsMessage,
   sendVKMessage,
   sendVKRequest,
 } from './helpers';
@@ -84,6 +85,7 @@ async function main() {
   });
 
   createEverydayDaemon('23:00:00', sendPosterMessage);
+  createEverydayDaemon('05:00:00', sendStatsMessage);
 }
 
 main();

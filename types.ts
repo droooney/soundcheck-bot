@@ -298,6 +298,15 @@ export interface AdminGroupStatsPeriodButtonPayload {
   period: StatsPeriod;
 }
 
+export interface AdminRepostStatsButtonPayload {
+  command: 'admin/stats/reposts';
+}
+
+export interface AdminRepostStatsPeriodButtonPayload {
+  command: 'admin/stats/reposts/period';
+  period: StatsPeriod;
+}
+
 export interface RefreshKeyboardButtonPayload {
   command: 'refresh_keyboard';
 }
@@ -345,6 +354,8 @@ export type ButtonPayload = (
   | AdminClickStatsPeriodButtonPayload
   | AdminGroupStatsButtonPayload
   | AdminGroupStatsPeriodButtonPayload
+  | AdminRepostStatsButtonPayload
+  | AdminRepostStatsPeriodButtonPayload
   | RefreshKeyboardButtonPayload
 );
 
@@ -527,7 +538,7 @@ export interface User {
 
 export type Target = (
   'tellAboutGroup' | 'tellAboutRelease' | 'collaboration'
-  | 'tellAboutBug' | 'wantToParticipate' | 'other' | 'poster'
+  | 'tellAboutBug' | 'wantToParticipate' | 'other' | 'poster' | 'stats'
 );
 
 export interface Config {
@@ -535,6 +546,12 @@ export interface Config {
   endpoint: string;
   soundcheckId: number;
   targets: Record<Target, number[]>;
+}
+
+export interface Repost {
+  userId: number;
+  postId: string;
+  originalPostId: string;
 }
 
 export interface DailyStats {
@@ -546,10 +563,7 @@ export interface DailyStats {
     date: number;
     payload: ButtonPayload;
   }[];
-  reposts: {
-    userId: number;
-    postId: string;
-  }[];
+  reposts: Repost[];
 }
 
 export interface SubscriptionPost {

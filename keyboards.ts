@@ -197,7 +197,10 @@ export const adminStatsKeyboard: Keyboard = {
     [
       generateButton(captions.subscriptions, { command: 'admin/stats/subscriptions' }),
       generateButton(captions.clicks, { command: 'admin/stats/clicks' }),
+    ],
+    [
       generateButton(captions.group, { command: 'admin/stats/group' }),
+      generateButton(captions.reposts, { command: 'admin/stats/reposts' }),
     ],
     [generateBackButton(BackButtonDest.ADMIN)],
     [generateBackButton()],
@@ -223,6 +226,19 @@ export const adminGroupStatsKeyboard: Keyboard = {
     [
       generateButton(captions.today, { command: 'admin/stats/group/period', period: 'today' }),
       generateButton(captions.yesterday, { command: 'admin/stats/group/period', period: 'yesterday' }),
+    ],
+    [generateBackButton(BackButtonDest.ADMIN_STATS)],
+    [generateBackButton(BackButtonDest.ADMIN)],
+    [generateBackButton()],
+  ]
+};
+
+export const adminRepostStatsKeyboard: Keyboard = {
+  one_time: false,
+  buttons: [
+    [
+      generateButton(captions.today, { command: 'admin/stats/reposts/period', period: 'today' }),
+      generateButton(captions.yesterday, { command: 'admin/stats/reposts/period', period: 'yesterday' }),
     ],
     [generateBackButton(BackButtonDest.ADMIN_STATS)],
     [generateBackButton(BackButtonDest.ADMIN)],

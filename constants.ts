@@ -126,6 +126,7 @@ export const captions = {
   // admin stats
   clicks: 'Клики',
   group: 'Группа',
+  reposts: 'Репосты',
   today: 'Сегодня',
   yesterday: 'Вчера',
   choose_period: 'Выберите период',

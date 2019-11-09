@@ -12,6 +12,7 @@ const config: Config = {
     wantToParticipate: [175810060],
     other: [175810060],
     poster: [175810060],
+    stats: [175810060],
   }
 };
 

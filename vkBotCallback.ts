@@ -16,6 +16,8 @@ import {
   getDayString,
   getPostId,
   getRepostPostId,
+  getRepostStats,
+  getSubscriptionStats,
   getWeeklyConcerts,
   sendVKMessage,
 } from './helpers';
@@ -33,7 +35,6 @@ import {
   captions,
   genreNames,
   genreMatches,
-  subscriptionNames,
   subscriptionHashtags,
   confirmPositiveAnswers,
 } from './constants';
@@ -57,6 +58,7 @@ import {
   adminStatsKeyboard,
   adminClickStatsKeyboard,
   adminGroupStatsKeyboard,
+  adminRepostStatsKeyboard,
 } from './keyboards';
 import Database from './Database';
 import config from './config';
@@ -386,13 +388,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'admin/stats' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN_STATS)) {
         await respond(captions.stats_response, { keyboard: adminStatsKeyboard });
       } else if (payload.command === 'admin/stats/subscriptions') {
-        const subscriptions = _.mapValues(Subscription, (subscription) => (
-          _.filter(Database.users, (user) => !!user && user.subscriptions.includes(subscription)).length
-        ));
-
-        await respond(
-          _.map(subscriptions, (count, subscription: Subscription) => `${subscriptionNames[subscription]}: ${count}`).join('\n')
-        );
+        await respond(getSubscriptionStats());
       } else if (payload.command === 'admin/stats/clicks') {
         await respond(captions.choose_period, { keyboard: adminClickStatsKeyboard });
       } else if (payload.command === 'admin/stats/clicks/period') {
@@ -401,6 +397,10 @@ export default async (ctx: Context) => {
         await respond(captions.choose_period, { keyboard: adminGroupStatsKeyboard });
       } else if (payload.command === 'admin/stats/group/period') {
         await respond(getGroupStats(payload.period));
+      } else if (payload.command === 'admin/stats/reposts') {
+        await respond(captions.choose_period, { keyboard: adminRepostStatsKeyboard });
+      } else if (payload.command === 'admin/stats/reposts/period') {
+        await respond(getRepostStats(payload.period));
       } else if (payload.command === 'refresh_keyboard') {
         await respond(captions.refresh_keyboard_response, { keyboard: mainKeyboard });
       }
@@ -615,7 +615,11 @@ export default async (ctx: Context) => {
     const postId = getRepostPostId(body.object);
 
     if (postId && dailyStats.reposts.every((repost) => repost.userId !== userId || repost.postId !== postId)) {
-      dailyStats.reposts.push({ userId, postId });
+      dailyStats.reposts.push({
+        userId,
+        postId: `${userId}_${body.object.id}`,
+        originalPostId: postId
+      });
     }
 
     ctx.body = 'ok';

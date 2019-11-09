@@ -13,10 +13,12 @@ import {
   Keyboard,
   Message,
   Post,
+  Repost,
   StatsPeriod,
+  Subscription,
   WallAttachment,
 } from './types';
-import { captions, defaultVKQuery } from './constants';
+import { captions, defaultVKQuery, subscriptionNames } from './constants';
 import config from './config';
 import Database from './Database';
 
@@ -339,8 +341,20 @@ export function getUserLink(userId: number): string {
   return `https://vk.com/id${userId}`;
 }
 
+export function getPostLink(postId: string): string {
+  return `https://vk.com/wall${postId}`;
+}
+
 export function getSectionsString(sections: { header: string; rows: string[]; }[]): string {
   return sections.map(({ header, rows }) => [header, ...rows].join('\n')).join('\n\n');
+}
+
+export function getSubscriptionStats(): string {
+  const subscriptions = _.mapValues(Subscription, (subscription) => (
+    _.filter(Database.users, (user) => !!user && user.subscriptions.includes(subscription)).length
+  ));
+
+  return _.map(subscriptions, (count, subscription: Subscription) => `${subscriptionNames[subscription]}: ${count}`).join('\n');
 }
 
 export function getClickStats(period: StatsPeriod): string {
@@ -403,6 +417,28 @@ export function getGroupStats(period: StatsPeriod): string {
   ]);
 }
 
+export function getRepostStats(period: StatsPeriod): string {
+  const periodStats = Database.getPeriodDailyStats(period);
+  const allReposts = periodStats.reduce<Repost[]>((reposts, dailyStats) => [...reposts, ...dailyStats.reposts], []);
+  const groups = _.groupBy(allReposts, 'originalPostId');
+
+  return getSectionsString(
+    _.map(groups, (reposts, postId) => ({
+      header: `Пост: ${getPostLink(postId)}`,
+      rows: reposts.map(({ postId }) => getPostLink(postId))
+    }))
+  );
+}
+
+export function getAllStats(period: StatsPeriod): string {
+  return getSectionsString([
+    { header: captions.subscriptions, rows: [getSubscriptionStats()] },
+    { header: captions.clicks, rows: [getClickStats(period)] },
+    { header: captions.group, rows: [getGroupStats(period)] },
+    { header: captions.reposts, rows: [getRepostStats(period)] },
+  ].map(({ header, rows }) => ({ header: `——————————————\n${header.toUpperCase()}\n——————————————\n`, rows })));
+}
+
 export function createEverydayDaemon(time: string, daemon: () => void) {
   const timeMoment = moment(time, 'HH:mm:ss');
   const ms = +timeMoment - +timeMoment.clone().startOf('day');
@@ -435,4 +471,8 @@ export async function sendPosterMessage() {
       posterDay.weekday() === 0 ? getWeekString(posterDay) : getDayString(posterDay)
     }: https://all-chess.org/soundcheck-bot${config.port}/api/concerts?date=${posterDay.format('YYYY-MM-DD')}`);
   }
+}
+
+export async function sendStatsMessage() {
+  await sendVKMessage(config.targets.stats, getAllStats('yesterday'));
 }
