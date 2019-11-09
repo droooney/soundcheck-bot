@@ -264,7 +264,7 @@ export default class Database {
 
   static getPeriodDailyStats(period: 'today' | 'yesterday'): DailyStats[] {
     const stats: DailyStats[] = [];
-    const start = moment();
+    const start = moment().startOf('day');
     const end = start.clone();
 
     if (period === 'yesterday') {
