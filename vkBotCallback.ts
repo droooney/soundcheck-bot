@@ -400,7 +400,9 @@ export default async (ctx: Context) => {
         const buttonStats: { payload: Partial<ButtonPayload> | 'any'; caption: string; }[] = [
           { payload: { command: 'poster' }, caption: captions.poster },
           { payload: { command: 'poster/type', type: 'day' }, caption: captions.poster_day },
+          { payload: { command: 'poster/type/day' }, caption: captions.poster_choose_day },
           { payload: { command: 'poster/type', type: 'week' }, caption: captions.poster_week },
+          { payload: { command: 'poster/type/week' }, caption: captions.poster_choose_week },
           { payload: { command: 'poster/type', type: 'genres' }, caption: captions.poster_genre },
           ..._.map(Genre, (genre) => (
             { payload: { command: 'poster/type/genre' as 'poster/type/genre', genre }, caption: captions.poster_genre_type(genre) }
@@ -600,6 +602,8 @@ export default async (ctx: Context) => {
     } else {
       dailyStats.groupJoinUsers.splice(joinedIndex, 1);
     }
+
+    // todo: send message
 
     ctx.body = 'ok';
   } else if (body.type === 'group_join') {
