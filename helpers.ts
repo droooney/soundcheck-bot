@@ -420,6 +420,11 @@ export function getGroupStats(period: StatsPeriod): string {
 export function getRepostStats(period: StatsPeriod): string {
   const periodStats = Database.getPeriodDailyStats(period);
   const allReposts = periodStats.reduce<Repost[]>((reposts, dailyStats) => [...reposts, ...dailyStats.reposts], []);
+
+  if (!allReposts.length) {
+
+  }
+
   const groups = _.groupBy(allReposts, 'originalPostId');
 
   return getSectionsString(

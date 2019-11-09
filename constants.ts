@@ -132,6 +132,7 @@ export const captions = {
   choose_period: 'Выберите период',
   clicks_all: 'Всего',
   no_clicks: 'Кликов не было',
+  no_reposts: 'Репостов не было',
   poster_day: 'Афиша (день)',
   poster_choose_day: 'Афиша (выбор дня)',
   poster_week: 'Афиша (неделя)',
