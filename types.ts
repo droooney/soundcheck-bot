@@ -286,7 +286,7 @@ export interface AdminClickStatsButtonPayload {
 
 export interface AdminClickStatsPeriodButtonPayload {
   command: 'admin/stats/clicks/period';
-  period: 'today' | 'yesterday';
+  period: StatsPeriod;
 }
 
 export interface AdminGroupStatsButtonPayload {
@@ -295,7 +295,7 @@ export interface AdminGroupStatsButtonPayload {
 
 export interface AdminGroupStatsPeriodButtonPayload {
   command: 'admin/stats/group/period';
-  period: 'today' | 'yesterday';
+  period: StatsPeriod;
 }
 
 export interface RefreshKeyboardButtonPayload {
@@ -556,3 +556,5 @@ export interface SubscriptionPost {
   postId: string;
   sent: number[];
 }
+
+export type StatsPeriod = 'today' | 'yesterday';

@@ -4,9 +4,21 @@ import * as jwt from 'jsonwebtoken';
 import * as _ from 'lodash';
 import moment = require('moment-timezone');
 
-import { Concert, Event, EventsResponse, Keyboard, Message, Post, WallAttachment } from './types';
-import { defaultVKQuery } from './constants';
+import {
+  ButtonPayload,
+  Concert,
+  Event,
+  EventsResponse,
+  Genre,
+  Keyboard,
+  Message,
+  Post,
+  StatsPeriod,
+  WallAttachment,
+} from './types';
+import { captions, defaultVKQuery } from './constants';
 import config from './config';
+import Database from './Database';
 
 const {
   private_key,
@@ -325,6 +337,65 @@ export function getRepostPostId(post: Post): string | null {
 
 export function getUserLink(userId: number): string {
   return `https://vk.com/id${userId}`;
+}
+
+export function getSectionsString(sections: { header: string; rows: string[]; }[]): string {
+  return sections.map(({ header, rows }) => [header, ...rows].join('\n')).join('\n\n');
+}
+
+export function getClickStats(period: StatsPeriod): string {
+  const periodStats = Database.getPeriodDailyStats(period);
+  const allClicks = periodStats.reduce((count, dailyStats) => count + dailyStats.clicks.length, 0);
+  const buttonStats: { payload: Partial<ButtonPayload> | 'all'; caption: string; }[] = [
+    { payload: 'all', caption: captions.clicks_all },
+    { payload: { command: 'poster' }, caption: captions.poster },
+    { payload: { command: 'poster/type', type: 'day' }, caption: captions.poster_day },
+    { payload: { command: 'poster/type/day' }, caption: captions.poster_choose_day },
+    { payload: { command: 'poster/type', type: 'week' }, caption: captions.poster_week },
+    { payload: { command: 'poster/type/week' }, caption: captions.poster_choose_week },
+    { payload: { command: 'poster/type', type: 'genres' }, caption: captions.poster_genre },
+    ..._.map(Genre, (genre) => (
+      { payload: { command: 'poster/type/genre' as 'poster/type/genre', genre }, caption: captions.poster_genre_type(genre) }
+    )),
+  ];
+
+  return buttonStats
+    .map(({ payload, caption }) => {
+      if (payload === 'all') {
+        return `${caption}: ${allClicks}`;
+      }
+
+      const count = periodStats.reduce((count, dailyStats) => (
+        dailyStats.clicks.reduce((count, click) => (
+          count + (_.isMatch(click.payload, payload) ? 1 : 0)
+        ), count)
+      ), 0);
+
+      return `${caption}: ${count} (${+((count / allClicks) * 100).toFixed(2)})`;
+    })
+    .join('\n');
+}
+
+export function getGroupStats(period: StatsPeriod): string {
+  const periodStats = Database.getPeriodDailyStats(period);
+  const joinedUsers: number[] = [];
+  const leftUsers: number[] = [];
+
+  periodStats.forEach(({ groupJoinUsers, groupLeaveUsers }) => {
+    joinedUsers.push(...groupJoinUsers);
+    leftUsers.push(...groupLeaveUsers.filter(({ self }) => self).map(({ userId }) => userId));
+  });
+
+  return getSectionsString([
+    {
+      header: captions.users_joined(joinedUsers.length),
+      rows: joinedUsers.map(getUserLink)
+    },
+    {
+      header: captions.users_left(leftUsers.length),
+      rows: leftUsers.map(getUserLink)
+    },
+  ]);
 }
 
 export function createEverydayDaemon(time: string, daemon: () => void) {

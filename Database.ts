@@ -1,7 +1,16 @@
 import * as fs from 'fs-extra';
 import moment = require('moment-timezone');
 
-import { DailyStats, Drawing, DrawingParams, ManagersResponse, Subscription, SubscriptionPost, User } from './types';
+import {
+  DailyStats,
+  Drawing,
+  DrawingParams,
+  ManagersResponse,
+  StatsPeriod,
+  Subscription,
+  SubscriptionPost,
+  User,
+} from './types';
 import { sendVKRequest } from './helpers';
 import config from './config';
 
@@ -262,7 +271,7 @@ export default class Database {
     };
   }
 
-  static getPeriodDailyStats(period: 'today' | 'yesterday'): DailyStats[] {
+  static getPeriodDailyStats(period: StatsPeriod): DailyStats[] {
     const stats: DailyStats[] = [];
     const start = moment().startOf('day');
     const end = start.clone();
