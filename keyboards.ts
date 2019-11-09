@@ -10,10 +10,9 @@ import {
   Subscription,
   User,
 } from './types';
-import { genreNames, genresButtons, subscriptionNames, subscriptionButtons } from './constants';
+import { captions, genreNames, genresButtons, subscriptionNames, subscriptionButtons } from './constants';
 import Database from './Database';
 import { getWeekString } from './helpers';
-import captions from './captions';
 
 export const backButtonText: Record<BackButtonDest, string> = {
   [BackButtonDest.MAIN]: captions.main_menu,
