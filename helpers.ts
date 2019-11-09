@@ -346,6 +346,11 @@ export function getSectionsString(sections: { header: string; rows: string[]; }[
 export function getClickStats(period: StatsPeriod): string {
   const periodStats = Database.getPeriodDailyStats(period);
   const allClicks = periodStats.reduce((count, dailyStats) => count + dailyStats.clicks.length, 0);
+
+  if (!allClicks) {
+    return captions.no_clicks;
+  }
+
   const buttonStats: { payload: Partial<ButtonPayload> | 'all'; caption: string; }[] = [
     { payload: 'all', caption: captions.clicks_all },
     { payload: { command: 'poster' }, caption: captions.poster },
