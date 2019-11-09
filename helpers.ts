@@ -371,7 +371,7 @@ export function getClickStats(period: StatsPeriod): string {
         ), count)
       ), 0);
 
-      return `${caption}: ${count} (${+((count / allClicks) * 100).toFixed(2)})`;
+      return `${caption}: ${count} (${+((count / allClicks) * 100).toFixed(2)}%)`;
     })
     .join('\n');
 }
