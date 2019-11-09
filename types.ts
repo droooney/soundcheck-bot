@@ -280,6 +280,24 @@ export interface AdminSubscriptionStatsButtonPayload {
   command: 'admin/stats/subscriptions';
 }
 
+export interface AdminClickStatsButtonPayload {
+  command: 'admin/stats/clicks';
+}
+
+export interface AdminClickStatsPeriodButtonPayload {
+  command: 'admin/stats/clicks/period';
+  period: 'today' | 'yesterday';
+}
+
+export interface AdminGroupStatsButtonPayload {
+  command: 'admin/stats/group';
+}
+
+export interface AdminGroupStatsPeriodButtonPayload {
+  command: 'admin/stats/group/period';
+  period: 'today' | 'yesterday';
+}
+
 export interface RefreshKeyboardButtonPayload {
   command: 'refresh_keyboard';
 }
@@ -323,6 +341,10 @@ export type ButtonPayload = (
   | AdminDeleteDrawingButtonPayload
   | AdminStatsButtonPayload
   | AdminSubscriptionStatsButtonPayload
+  | AdminClickStatsButtonPayload
+  | AdminClickStatsPeriodButtonPayload
+  | AdminGroupStatsButtonPayload
+  | AdminGroupStatsPeriodButtonPayload
   | RefreshKeyboardButtonPayload
 );
 
@@ -331,6 +353,7 @@ export enum BackButtonDest {
   POSTER = 'poster',
   ADMIN = 'admin',
   ADMIN_DRAWINGS = 'admin/drawings',
+  ADMIN_STATS = 'admin/stats',
 }
 
 export interface BaseButtonAction {

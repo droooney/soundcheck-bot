@@ -119,6 +119,19 @@ export default {
   drawing_edited: 'Розыгрыш сохранен',
   drawing_deleted: 'Розыгрыш удален',
 
+  // admin stats
+  clicks: 'Клики',
+  group: 'Группа',
+  today: 'Сегодня',
+  yesterday: 'Вчера',
+  choose_period: 'Выберите период',
+  poster_day: 'Афиша (день)',
+  poster_week: 'Афиша (неделя)',
+  poster_genre: 'Афиша (жанр)',
+  poster_genre_type: (genre: Genre) => `Афиша (${genreNames[genre]})`,
+  users_joined: (count: number) => `Вступило в группу: ${count}`,
+  users_left: (count: number) => `Вышло из группы: ${count}`,
+
   // rest
   group_history_message: 'Рассказ о группе',
   release_message: 'Релиз',

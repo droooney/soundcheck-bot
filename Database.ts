@@ -262,6 +262,29 @@ export default class Database {
     };
   }
 
+  static getPeriodDailyStats(period: 'today' | 'yesterday'): DailyStats[] {
+    const stats: DailyStats[] = [];
+    const start = moment();
+    const end = start.clone();
+
+    if (period === 'yesterday') {
+      start.subtract(1, 'day');
+      end.subtract(1, 'day');
+    }
+
+    while (start.isSameOrBefore(end)) {
+      const dailyStats = Database.dailyStats[+start];
+
+      if (dailyStats) {
+        stats.push(dailyStats);
+      }
+
+      start.add(1, 'day');
+    }
+
+    return stats;
+  }
+
   static async saveDailyStats(dailyStats: DailyStats) {
     try {
       await Database.writeToDb(`${Database.dailyStatsDir}/${dailyStats.date}.json`, dailyStats);

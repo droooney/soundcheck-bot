@@ -20,6 +20,7 @@ export const backButtonText: Record<BackButtonDest, string> = {
   [BackButtonDest.POSTER]: captions.poster,
   [BackButtonDest.ADMIN]: captions.admin_section,
   [BackButtonDest.ADMIN_DRAWINGS]: captions.drawings,
+  [BackButtonDest.ADMIN_STATS]: captions.stats,
 };
 
 export function generateMainKeyboard(isManager: boolean): Keyboard {
@@ -196,7 +197,35 @@ export const adminStatsKeyboard: Keyboard = {
   buttons: [
     [
       generateButton(captions.subscriptions, { command: 'admin/stats/subscriptions' }),
+      generateButton(captions.clicks, { command: 'admin/stats/clicks' }),
+      generateButton(captions.group, { command: 'admin/stats/group' }),
     ],
+    [generateBackButton(BackButtonDest.ADMIN)],
+    [generateBackButton()],
+  ]
+};
+
+export const adminClickStatsKeyboard: Keyboard = {
+  one_time: false,
+  buttons: [
+    [
+      generateButton(captions.today, { command: 'admin/stats/clicks/period', period: 'today' }),
+      generateButton(captions.yesterday, { command: 'admin/stats/clicks/period', period: 'yesterday' }),
+    ],
+    [generateBackButton(BackButtonDest.ADMIN_STATS)],
+    [generateBackButton(BackButtonDest.ADMIN)],
+    [generateBackButton()],
+  ]
+};
+
+export const adminGroupStatsKeyboard: Keyboard = {
+  one_time: false,
+  buttons: [
+    [
+      generateButton(captions.today, { command: 'admin/stats/group/period', period: 'today' }),
+      generateButton(captions.yesterday, { command: 'admin/stats/group/period', period: 'yesterday' }),
+    ],
+    [generateBackButton(BackButtonDest.ADMIN_STATS)],
     [generateBackButton(BackButtonDest.ADMIN)],
     [generateBackButton()],
   ]

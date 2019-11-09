@@ -14,6 +14,7 @@ import {
   getDayString,
   getPostId,
   getRepostPostId,
+  getUserLink,
   getWeeklyConcerts,
   sendVKMessage,
 } from './helpers';
@@ -22,6 +23,7 @@ import {
   Body,
   ButtonColor,
   ButtonPayload,
+  Genre,
   PhotoAttachment,
   Subscription,
   User,
@@ -52,6 +54,8 @@ import {
   writeToSoundcheckKeyboard,
   adminKeyboard,
   adminStatsKeyboard,
+  adminClickStatsKeyboard,
+  adminGroupStatsKeyboard,
 } from './keyboards';
 import Database from './Database';
 import captions from './captions';
@@ -379,7 +383,7 @@ export default async (ctx: Context) => {
         } else {
           await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
         }
-      } else if (payload.command === 'admin/stats') {
+      } else if (payload.command === 'admin/stats' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN_STATS)) {
         await respond(captions.stats_response, { keyboard: adminStatsKeyboard });
       } else if (payload.command === 'admin/stats/subscriptions') {
         const subscriptions = _.mapValues(Subscription, (subscription) => (
@@ -388,6 +392,59 @@ export default async (ctx: Context) => {
 
         await respond(
           _.map(subscriptions, (count, subscription: Subscription) => `${subscriptionNames[subscription]}: ${count}`).join('\n')
+        );
+      } else if (payload.command === 'admin/stats/clicks') {
+        await respond(captions.choose_period, { keyboard: adminClickStatsKeyboard });
+      } else if (payload.command === 'admin/stats/clicks/period') {
+        const periodStats = Database.getPeriodDailyStats(payload.period);
+        const buttonStats: { payload: Partial<ButtonPayload> | 'any'; caption: string; }[] = [
+          { payload: { command: 'poster' }, caption: captions.poster },
+          { payload: { command: 'poster/type', type: 'day' }, caption: captions.poster_day },
+          { payload: { command: 'poster/type', type: 'week' }, caption: captions.poster_week },
+          { payload: { command: 'poster/type', type: 'genres' }, caption: captions.poster_genre },
+          ..._.map(Genre, (genre) => (
+            { payload: { command: 'poster/type/genre' as 'poster/type/genre', genre }, caption: captions.poster_genre_type(genre) }
+          )),
+        ];
+
+        await respond(
+          buttonStats
+            .map(({ payload, caption }) => {
+              const count = periodStats.reduce((count, dailyStats) => (
+                payload === 'any' ? count + dailyStats.clicks.length : dailyStats.clicks.reduce((count, click) => (
+                  count + (_.isMatch(click.payload, payload) ? 1 : 0)
+                ), count)
+              ), 0);
+
+              return `${caption}: ${count}`;
+            })
+            .join('\n')
+        );
+      } else if (payload.command === 'admin/stats/group') {
+        await respond(captions.choose_period, { keyboard: adminGroupStatsKeyboard });
+      } else if (payload.command === 'admin/stats/group/period') {
+        const periodStats = Database.getPeriodDailyStats(payload.period);
+        const joinedUsers: number[] = [];
+        const leftUsers: number[] = [];
+
+        periodStats.forEach(({ groupJoinUsers, groupLeaveUsers }) => {
+          joinedUsers.push(...groupJoinUsers);
+          leftUsers.push(...groupLeaveUsers.filter(({ self }) => self).map(({ userId }) => userId));
+        });
+
+        const sections: { header: string; rows: string[]; }[] = [
+          {
+            header: captions.users_joined(joinedUsers.length),
+            rows: joinedUsers.map(getUserLink)
+          },
+          {
+            header: captions.users_left(leftUsers.length),
+            rows: leftUsers.map(getUserLink)
+          },
+        ];
+
+        await respond(
+          sections.map(({ header, rows }) => [header, ...rows].join('\n')).join('\n\n')
         );
       } else if (payload.command === 'refresh_keyboard') {
         await respond(captions.refresh_keyboard_response, { keyboard: mainKeyboard });

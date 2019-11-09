@@ -323,6 +323,10 @@ export function getRepostPostId(post: Post): string | null {
   return null;
 }
 
+export function getUserLink(userId: number): string {
+  return `https://vk.com/id${userId}`;
+}
+
 export function createEverydayDaemon(time: string, daemon: () => void) {
   const timeMoment = moment(time, 'HH:mm:ss');
   const ms = +timeMoment - +timeMoment.clone().startOf('day');
