@@ -24,7 +24,6 @@ export const captions = {
   admin_section: 'Админка',
   refresh_keyboard: '🔄 Обновить клавиатуру',
   choose_action: 'Выберите действие',
-  playlists_response: 'Смотри плейлисты тут: https://vk.com/soundcheck_ural/music_selections',
   releases_response: 'Смотри релизы тут: https://vk.com/soundcheck_ural/new_release',
   refresh_keyboard_response: 'Клавиатура обновлена',
 
@@ -45,6 +44,20 @@ export const captions = {
       ? 'В ближайшее время событий на тему музыки нет'
       : `В ближайшее время концертов в жанре "${genreNames[genre]}" нет`
   ),
+
+  // playlists
+  playlists_all: 'Все',
+  playlists_thematic: 'Тематические',
+  playlists_genre: 'По жанрам',
+  choose_playlists_type: 'Выберите тип плейлистов',
+  playlists_all_response: 'Все плейлисты смотри тут: https://vk.com/soundcheck_ural/music_selections',
+  playlists_thematic_response: 'Тематические плейлисты смотри тут: https://vk.com/soundcheck_ural/music_selections',
+  playlists_genres_response: `Рок, Альтернатива: https://vk.com/wall-177574047_1342
+Панк: https://vk.com/wall-177574047_1617
+Хип-хоп: https://vk.com/wall-177574047_1295
+Инди: https://vk.com/wall-177574047_1142
+Электроника: https://vk.com/wall-177574047_1508
+Фолк: https://vk.com/wall-177574047_1397`,
 
   // drawings
   choose_drawing: 'Выберите розыгрыш',

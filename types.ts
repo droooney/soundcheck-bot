@@ -152,8 +152,25 @@ export interface SubscribeToPosterButtonPayload {
   subscribed: boolean;
 }
 
-export interface PlaylistButtonPayload {
-  command: 'playlist';
+export interface PlaylistsButtonPayload {
+  command: 'playlists';
+}
+
+export interface PlaylistsAllButtonPayload {
+  command: 'playlists/all';
+}
+
+export interface PlaylistsThematicButtonPayload {
+  command: 'playlists/thematic';
+}
+
+export interface PlaylistsGenreButtonPayload {
+  command: 'playlists/genre';
+}
+
+export interface SubscribeToPlaylistsButtonPayload {
+  command: 'playlists/subscribe';
+  subscribed: boolean;
 }
 
 export interface TextMaterialsButtonPayload {
@@ -311,6 +328,11 @@ export interface RefreshKeyboardButtonPayload {
   command: 'refresh_keyboard';
 }
 
+export type SubscribeToSectionButtonPayload = (
+  SubscribeToPosterButtonPayload
+  | SubscribeToPlaylistsButtonPayload
+);
+
 export type ButtonPayload = (
   StartButtonPayload
   | BackButtonPayload
@@ -320,7 +342,11 @@ export type ButtonPayload = (
   | PosterWeekButtonPayload
   | PosterGenreButtonPayload
   | SubscribeToPosterButtonPayload
-  | PlaylistButtonPayload
+  | PlaylistsButtonPayload
+  | PlaylistsAllButtonPayload
+  | PlaylistsThematicButtonPayload
+  | PlaylistsGenreButtonPayload
+  | SubscribeToPlaylistsButtonPayload
   | ReleasesButtonPayload
   | TextMaterialsButtonPayload
   | LongreadButtonPayload
@@ -396,6 +422,7 @@ export interface KeyboardButton {
 
 export interface Keyboard {
   one_time?: boolean;
+  inline?: boolean;
   buttons: KeyboardButton[][];
 }
 

@@ -44,11 +44,13 @@ import {
   generateMainKeyboard,
   generatePosterKeyboard,
   generateWeekPosterKeyboard,
+  generatePlaylistsKeyboard,
   generateDrawingsKeyboard,
   generateSubscriptionsKeyboard,
   generateAdminDrawingsKeyboard,
   generateAdminDrawingMenuKeyboard,
 
+  subscriptionMap,
   genresKeyboard,
   servicesKeyboard,
   textMaterialsKeyboard,
@@ -216,18 +218,14 @@ export default async (ctx: Context) => {
         for (const concertsString of concertsStrings) {
           await respond(concertsString);
         }
-      } else if (payload.command === 'poster/subscribe') {
-        if (payload.subscribed) {
-          await Database.unsubscribeUser(user, Subscription.POSTER);
-
-          await respond(captions.unsubscribe_response(Subscription.POSTER), { keyboard: generatePosterKeyboard(user) });
-        } else {
-          await Database.subscribeUser(user, Subscription.POSTER);
-
-          await respond(captions.subscribe_response(Subscription.POSTER), { keyboard: generatePosterKeyboard(user) });
-        }
-      } else if (payload.command === 'playlist') {
-        await respond(captions.playlists_response);
+      } else if (payload.command === 'playlists') {
+        await respond(captions.choose_playlists_type, { keyboard: generatePlaylistsKeyboard(user) });
+      } else if (payload.command === 'playlists/all') {
+        await respond(captions.playlists_all_response);
+      } else if (payload.command === 'playlists/thematic') {
+        await respond(captions.playlists_thematic_response);
+      } else if (payload.command === 'playlists/genre') {
+        await respond(captions.playlists_genres_response);
       } else if (payload.command === 'releases') {
         await respond(captions.releases_response);
       } else if (payload.command === 'drawings') {
@@ -324,6 +322,21 @@ export default async (ctx: Context) => {
           await Database.subscribeUser(user, payload.subscription);
 
           await respond(captions.subscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(user) });
+        }
+      } else if (
+        payload.command === 'poster/subscribe'
+        || payload.command === 'playlists/subscribe'
+      ) {
+        const { subscription, generateKeyboard } = subscriptionMap[payload.command];
+
+        if (payload.subscribed) {
+          await Database.unsubscribeUser(user, subscription);
+
+          await respond(captions.unsubscribe_response(subscription), { keyboard: generateKeyboard(user) });
+        } else {
+          await Database.subscribeUser(user, subscription);
+
+          await respond(captions.subscribe_response(subscription), { keyboard: generateKeyboard(user) });
         }
       } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
         await respond(captions.choose_action, { keyboard: adminKeyboard });

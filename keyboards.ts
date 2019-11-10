@@ -7,12 +7,18 @@ import {
   Drawing,
   Keyboard,
   KeyboardButton,
+  SubscribeToSectionButtonPayload,
   Subscription,
   User,
 } from './types';
 import { captions, genreNames, genresButtons, subscriptionNames, subscriptionButtons } from './constants';
 import Database from './Database';
 import { getWeekString } from './helpers';
+
+export interface SubscriptionParams {
+  subscription: Subscription;
+  generateKeyboard(user: User): Keyboard;
+}
 
 export const backButtonText: Record<BackButtonDest, string> = {
   [BackButtonDest.MAIN]: captions.main_menu,
@@ -22,13 +28,24 @@ export const backButtonText: Record<BackButtonDest, string> = {
   [BackButtonDest.ADMIN_STATS]: captions.stats,
 };
 
+export const subscriptionMap: Record<SubscribeToSectionButtonPayload['command'], SubscriptionParams> = {
+  'poster/subscribe': {
+    subscription: Subscription.POSTER,
+    generateKeyboard: generatePosterKeyboard
+  },
+  'playlists/subscribe': {
+    subscription: Subscription.PLAYLISTS,
+    generateKeyboard: generatePlaylistsKeyboard
+  },
+};
+
 export function generateMainKeyboard(isManager: boolean): Keyboard {
   return {
     one_time: false,
     buttons: [
       [
         generateButton(captions.poster, { command: 'poster' }),
-        generateButton(captions.playlists, { command: 'playlist' }),
+        generateButton(captions.playlists, { command: 'playlists' }),
         generateButton(captions.releases, { command: 'releases' }),
       ],
       [
@@ -60,9 +77,9 @@ export function generatePosterKeyboard(user: User): Keyboard {
       [
         generateButton(captions.day, { command: 'poster/type', type: 'day' }),
         generateButton(captions.week, { command: 'poster/type', type: 'week' }),
-        generateButton(captions.by_genres, { command: 'poster/type', type: 'genres' })
+        generateButton(captions.by_genres, { command: 'poster/type', type: 'genres' }),
       ],
-      [generateSubscribeButton(user, Subscription.POSTER, 'poster/subscribe')],
+      [generateSubscribeButton(user, 'poster/subscribe')],
       [generateBackButton()],
     ]
   };
@@ -74,7 +91,7 @@ export function generateWeekPosterKeyboard(): Keyboard {
     thisWeek,
     thisWeek.clone().add(1, 'week'),
     thisWeek.clone().add(2, 'week'),
-    thisWeek.clone().add(3, 'week')
+    thisWeek.clone().add(3, 'week'),
   ];
 
   return {
@@ -84,6 +101,21 @@ export function generateWeekPosterKeyboard(): Keyboard {
         generateButton(index === 0 ? captions.this_week : getWeekString(week), { command: 'poster/type/week', weekStart: +week })
       ]),
       [generateBackButton(BackButtonDest.POSTER)],
+      [generateBackButton()],
+    ]
+  };
+}
+
+export function generatePlaylistsKeyboard(user: User): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      [
+        generateButton(captions.playlists_all, { command: 'playlists/all' }),
+        generateButton(captions.playlists_thematic, { command: 'playlists/thematic' }),
+        generateButton(captions.playlists_genre, { command: 'playlists/genre' }),
+      ],
+      [generateSubscribeButton(user, 'playlists/subscribe')],
       [generateBackButton()],
     ]
   };
@@ -307,11 +339,8 @@ export function generateBackButton(dest: BackButtonDest = BackButtonDest.MAIN): 
   return generateButton(`← ${backButtonText[dest]}`, { command: 'back', dest }, ButtonColor.SECONDARY);
 }
 
-export function generateSubscribeButton(
-  user: User,
-  subscription: Subscription,
-  command: 'poster/subscribe'
-): KeyboardButton {
+export function generateSubscribeButton(user: User, command: SubscribeToSectionButtonPayload['command']): KeyboardButton {
+  const { subscription } = subscriptionMap[command];
   const subscribed = user.subscriptions.includes(subscription);
 
   return generateButton(
