@@ -51,7 +51,7 @@ export const captions = {
   playlists_genre: 'По жанрам',
   choose_playlists_type: 'Выберите тип плейлистов',
   playlists_all_response: 'Все плейлисты смотри тут: https://vk.com/soundcheck_ural/music_selections',
-  playlists_thematic_response: 'Тематические плейлисты смотри тут: https://vk.com/soundcheck_ural/music_selections',
+  playlists_thematic_response: 'Тематические плейлисты смотри тут: https://vk.com/soundcheck_ural/them_playlists',
   playlists_genres_response: `Рок, Альтернатива: https://vk.com/wall-177574047_1342
 Панк: https://vk.com/wall-177574047_1617
 Хип-хоп: https://vk.com/wall-177574047_1295
