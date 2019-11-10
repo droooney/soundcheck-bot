@@ -71,6 +71,20 @@ export default class Database {
         });
       });
     },
+
+    // remove start, back and refresh button clicks
+    async () => {
+      await Database.iterateFolderFiles<DailyStats>(Database.dailyStatsDir, async (dailyStats) => {
+        await Database.saveDailyStats({
+          ...dailyStats,
+          clicks: dailyStats.clicks.filter((click) => (
+            click.payload.command !== 'start'
+            && click.payload.command !== 'back'
+            && click.payload.command !== 'refresh_keyboard'
+          ))
+        });
+      });
+    },
   ];
   static preparations: Preparation[] = [
     // prepare drawings

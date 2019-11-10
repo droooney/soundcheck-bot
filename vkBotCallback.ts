@@ -108,7 +108,11 @@ export default async (ctx: Context) => {
       }
 
       if (
-        !isManager && !dailyStats.clicks.some((click) => (
+        !isManager
+        && payload.command !== 'start'
+        && payload.command !== 'back'
+        && payload.command !== 'refresh_keyboard'
+        && !dailyStats.clicks.some((click) => (
           click.userId === userId
           && click.date >= latestClickTime
           && _.isEqual(click.payload, payload)
