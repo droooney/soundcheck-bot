@@ -13,7 +13,6 @@ export default interface User {
 }
 
 export default class User extends Sequelize.Model {
-  static tableName = 'users';
   static defaults = {
     lastMessageDate: new Date(0),
     state: null
@@ -51,4 +50,7 @@ User.init({
     field: 'updated_at',
     allowNull: false
   },
-}, { sequelize });
+}, {
+  sequelize,
+  tableName: 'users'
+});
