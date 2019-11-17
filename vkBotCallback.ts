@@ -390,10 +390,12 @@ export default async (ctx: Context) => {
         if (payload.subscribed) {
           user.unsubscribe(subscription);
 
+          await user.save();
           await respond(captions.unsubscribe_response(subscription), { keyboard: generateKeyboard(user) });
         } else {
           user.subscribe(subscription);
 
+          await user.save();
           await respond(captions.subscribe_response(subscription), { keyboard: generateKeyboard(user) });
         }
       } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
