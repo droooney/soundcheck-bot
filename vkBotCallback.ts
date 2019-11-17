@@ -86,7 +86,7 @@ export default async (ctx: Context) => {
     const respond = async (message: string, options: SendVkMessageOptions = {}) => {
       await sendVKMessage(vkId, message, options);
     };
-    const [user] = await User.findOrBuild({
+    const [user] = await User.findOrCreate({
       where: { vkId },
       defaults: {
         ...User.defaults,
