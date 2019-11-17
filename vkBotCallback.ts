@@ -371,11 +371,11 @@ export default async (ctx: Context) => {
         await respond(captions.subscriptions_response(localUser), { keyboard: generateSubscriptionsKeyboard(user) });
       } else if (payload.command === 'subscriptions/subscription') {
         if (payload.subscribed) {
-          user.subscribe(payload.subscription);
+          user.unsubscribe(payload.subscription);
 
           await respond(captions.unsubscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(user) });
         } else {
-          user.unsubscribe(payload.subscription);
+          user.subscribe(payload.subscription);
 
           await respond(captions.subscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(user) });
         }
@@ -386,11 +386,11 @@ export default async (ctx: Context) => {
         const { subscription, generateKeyboard } = subscriptionMap[payload.command];
 
         if (payload.subscribed) {
-          user.subscribe(subscription);
+          user.unsubscribe(subscription);
 
           await respond(captions.unsubscribe_response(subscription), { keyboard: generateKeyboard(user) });
         } else {
-          user.unsubscribe(subscription);
+          user.subscribe(subscription);
 
           await respond(captions.subscribe_response(subscription), { keyboard: generateKeyboard(user) });
         }
