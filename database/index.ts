@@ -16,6 +16,8 @@ export async function migrate() {
   for (const [i, migration] of migrations.slice(currentVersion).entries()) {
     await migration(queryInterface, sequelize);
     await fs.writeFile(versionFile, currentVersion + i + 1, { encoding: 'utf8' });
+
+    console.log(`migration #${currentVersion + i} completed successfully`);
   }
 }
 

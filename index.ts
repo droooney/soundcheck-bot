@@ -115,4 +115,12 @@ async function main() {
   createEverydayDaemon('05:00:00', sendStatsMessage);
 }
 
-main();
+(async () => {
+  try {
+    await main();
+  } catch (e) {
+    console.log('init error', e);
+
+    process.exit(1);
+  }
+})();
