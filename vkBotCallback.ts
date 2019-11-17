@@ -89,7 +89,6 @@ export default async (ctx: Context) => {
       where: { vkId },
       defaults: { vkId }
     });
-    const localUser = Database.getUserById(vkId);
     const userState = user.state;
     const newLastMessageDate = new Date(body.object.date * 1000);
     let buttonPayload: ButtonPayload | null = null;
@@ -368,7 +367,7 @@ export default async (ctx: Context) => {
 
         await respond(message, { attachments });
       } else if (payload.command === 'subscriptions') {
-        await respond(captions.subscriptions_response(localUser), { keyboard: generateSubscriptionsKeyboard(user) });
+        await respond(captions.subscriptions_response(user), { keyboard: generateSubscriptionsKeyboard(user) });
       } else if (payload.command === 'subscriptions/subscription') {
         if (payload.subscribed) {
           user.unsubscribe(payload.subscription);
