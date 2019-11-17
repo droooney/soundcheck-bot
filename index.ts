@@ -52,6 +52,9 @@ app.use(async (ctx, next) => {
 
   ctx.managers = managers;
   ctx.changeManagers = (newManagers) => {
+    console.log('old managers', managers);
+    console.log('new managers', newManagers);
+
     managers = newManagers;
   };
 
