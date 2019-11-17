@@ -13,6 +13,7 @@ export default interface User {
 }
 
 export default class User extends Sequelize.Model {
+  static tableName = 'users';
   static defaults = {
     lastMessageDate: new Date(0),
     state: null
