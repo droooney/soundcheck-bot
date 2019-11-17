@@ -4,6 +4,7 @@ export interface Message {
   id: number;
   date: number;
   peer_id: number;
+  conversation_message_id: number;
   text: string;
   payload?: string;
   attachments: Attachment[];

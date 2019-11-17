@@ -1,22 +1,30 @@
 import * as Sequelize from 'sequelize';
 
 import sequelize from './';
-import { UserState } from '../types';
+import { Subscription, UserState } from '../types';
 
 export default interface User {
   id: number;
   vkId: number;
   lastMessageDate: Date;
   state: UserState;
+  subscriptions: Subscription[];
   createdAt: Date;
   updatedAt: Date;
 }
 
 export default class User extends Sequelize.Model {
-  static defaults = {
-    lastMessageDate: new Date(0),
-    state: null
-  };
+  subscribe(subscription: Subscription) {
+    if (!this.subscriptions.includes(subscription)) {
+      this.subscriptions = [...this.subscriptions, subscription];
+    }
+  }
+
+  unsubscribe(subscription: Subscription) {
+    if (this.subscriptions.includes(subscription)) {
+      this.subscriptions = this.subscriptions.filter((sub) => sub !== subscription);
+    }
+  }
 }
 
 User.init({
@@ -35,20 +43,27 @@ User.init({
   lastMessageDate: {
     type: Sequelize.DATE,
     allowNull: false,
+    defaultValue: () => new Date(0),
   },
   state: {
-    type: Sequelize.JSON,
+    type: Sequelize.JSONB,
     allowNull: true,
+    defaultValue: null,
+  },
+  subscriptions: {
+    type: Sequelize.JSONB,
+    allowNull: false,
+    defaultValue: () => [],
   },
   createdAt: {
     type: Sequelize.DATE,
     field: 'created_at',
-    allowNull: false
+    allowNull: false,
   },
   updatedAt: {
     type: Sequelize.DATE,
     field: 'updated_at',
-    allowNull: false
+    allowNull: false,
   },
 }, {
   sequelize,

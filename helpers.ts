@@ -21,6 +21,7 @@ import {
 import { captions, defaultVKQuery, subscriptionNames } from './constants';
 import config from './config';
 import Database from './Database';
+import User from './database/User';
 
 const {
   private_key,
@@ -137,12 +138,13 @@ export interface SendVkMessageOptions {
   keyboard?: Keyboard;
   forwardMessages?: number[];
   attachments?: string[];
+  randomId?: number | bigint;
 }
 
 export async function sendVKMessage(dest: number | number[], message: string, options: SendVkMessageOptions = {}) {
   await sendVKRequest('messages.send', {
     user_ids: typeof dest === 'number' ? dest : dest.join(','),
-    random_id: Math.floor(Math.random() * 2 ** 32),
+    random_id: (options.randomId || 0).toString(),
     message,
     keyboard: JSON.stringify(options.keyboard),
     forward_messages: (options.forwardMessages || []).join(','),
@@ -349,9 +351,10 @@ export function getSectionsString(sections: { header: string; rows: string[]; }[
   return sections.map(({ header, rows }) => [header, ...rows].join('\n')).join('\n\n');
 }
 
-export function getSubscriptionStats(): string {
+export async function getSubscriptionStats(): Promise<string> {
+  const users = await User.findAll();
   const subscriptions = _.mapValues(Subscription, (subscription) => (
-    _.filter(Database.users, (user) => !!user && user.subscriptions.includes(subscription)).length
+    users.filter((user) => !!user && user.subscriptions.includes(subscription)).length
   ));
 
   return _.map(subscriptions, (count, subscription: Subscription) => `${subscriptionNames[subscription]}: ${count}`).join('\n');
@@ -435,9 +438,9 @@ export function getRepostStats(period: StatsPeriod): string {
   );
 }
 
-export function getAllStats(period: StatsPeriod): string {
+export async function getAllStats(period: StatsPeriod): Promise<string> {
   return getSectionsString([
-    { header: captions.subscriptions, rows: [getSubscriptionStats()] },
+    { header: captions.subscriptions, rows: [await getSubscriptionStats()] },
     { header: captions.clicks, rows: [getClickStats(period)] },
     { header: captions.group, rows: [getGroupStats(period)] },
     { header: captions.reposts, rows: [getRepostStats(period)] },
@@ -479,5 +482,5 @@ export async function sendPosterMessage() {
 }
 
 export async function sendStatsMessage() {
-  await sendVKMessage(config.targets.stats, getAllStats('yesterday'));
+  await sendVKMessage(config.targets.stats, await getAllStats('yesterday'));
 }

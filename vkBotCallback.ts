@@ -28,7 +28,6 @@ import {
   ButtonPayload,
   PhotoAttachment,
   Subscription,
-  User as IUser,
   UserState,
 } from './types';
 import {
@@ -88,10 +87,7 @@ export default async (ctx: Context) => {
     };
     const [user] = await User.findOrCreate({
       where: { vkId },
-      defaults: {
-        ...User.defaults,
-        vkId
-      }
+      defaults: { vkId }
     });
     const localUser = Database.getUserById(vkId);
     const userState = user.state;
@@ -136,7 +132,7 @@ export default async (ctx: Context) => {
 
     message: if (payload) {
       if ((payload.command.startsWith('admin') || (payload.command === 'back' && payload.dest.startsWith('admin'))) && !isManager) {
-        await respond(captions.you_re_not_a_manager, { keyboard: mainKeyboard });
+        await respond(captions.you_re_not_a_manager, { keyboard: mainKeyboard, randomId: body.object.conversation_message_id });
 
         break message;
       }
@@ -146,7 +142,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'back' && payload.dest === BackButtonDest.MAIN) {
         await respond(captions.choose_action, { keyboard: mainKeyboard });
       } else if (payload.command === 'poster' || (payload.command === 'back' && payload.dest === BackButtonDest.POSTER)) {
-        await respond(captions.choose_poster_type, { keyboard: generatePosterKeyboard(localUser) });
+        await respond(captions.choose_poster_type, { keyboard: generatePosterKeyboard(user) });
       } else if (payload.command === 'poster/type') {
         if (payload.type === 'day') {
           const upcomingConcerts = await getConcerts(moment().startOf('day'));
@@ -239,7 +235,7 @@ export default async (ctx: Context) => {
           await respond(concertsString);
         }
       } else if (payload.command === 'playlists') {
-        await respond(captions.choose_playlists_type, { keyboard: generatePlaylistsKeyboard(localUser) });
+        await respond(captions.choose_playlists_type, { keyboard: generatePlaylistsKeyboard(user) });
       } else if (payload.command === 'playlists/all') {
         await respond(captions.playlists_all_response);
       } else if (payload.command === 'playlists/thematic') {
@@ -372,16 +368,16 @@ export default async (ctx: Context) => {
 
         await respond(message, { attachments });
       } else if (payload.command === 'subscriptions') {
-        await respond(captions.subscriptions_response(localUser), { keyboard: generateSubscriptionsKeyboard(localUser) });
+        await respond(captions.subscriptions_response(localUser), { keyboard: generateSubscriptionsKeyboard(user) });
       } else if (payload.command === 'subscriptions/subscription') {
         if (payload.subscribed) {
-          await Database.unsubscribeUser(localUser, payload.subscription);
+          user.subscribe(payload.subscription);
 
-          await respond(captions.unsubscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(localUser) });
+          await respond(captions.unsubscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(user) });
         } else {
-          await Database.subscribeUser(localUser, payload.subscription);
+          user.unsubscribe(payload.subscription);
 
-          await respond(captions.subscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(localUser) });
+          await respond(captions.subscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(user) });
         }
       } else if (
         payload.command === 'poster/subscribe'
@@ -390,13 +386,13 @@ export default async (ctx: Context) => {
         const { subscription, generateKeyboard } = subscriptionMap[payload.command];
 
         if (payload.subscribed) {
-          await Database.unsubscribeUser(localUser, subscription);
+          user.subscribe(subscription);
 
-          await respond(captions.unsubscribe_response(subscription), { keyboard: generateKeyboard(localUser) });
+          await respond(captions.unsubscribe_response(subscription), { keyboard: generateKeyboard(user) });
         } else {
-          await Database.subscribeUser(localUser, subscription);
+          user.unsubscribe(subscription);
 
-          await respond(captions.subscribe_response(subscription), { keyboard: generateKeyboard(localUser) });
+          await respond(captions.subscribe_response(subscription), { keyboard: generateKeyboard(user) });
         }
       } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
         await respond(captions.choose_action, { keyboard: adminKeyboard });
@@ -525,7 +521,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'admin/stats' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN_STATS)) {
         await respond(captions.stats_response, { keyboard: adminStatsKeyboard });
       } else if (payload.command === 'admin/stats/subscriptions') {
-        await respond(getSubscriptionStats());
+        await respond(await getSubscriptionStats());
       } else if (payload.command === 'admin/stats/clicks') {
         await respond(captions.choose_period, { keyboard: adminClickStatsKeyboard });
       } else if (payload.command === 'admin/stats/clicks/period') {
@@ -608,7 +604,6 @@ export default async (ctx: Context) => {
 
     if (photoAttachment) {
       const postId = `${body.object.owner_id}_${body.object.id}`;
-      const subscriptionPost = Database.getSubscriptionPostById(postId);
       const hashtags = photoAttachment.photo.text
         .split(/\s+/)
         .map((hashtag) => hashtag.trim())
@@ -617,25 +612,21 @@ export default async (ctx: Context) => {
         subscriptionHashtags[subscription].some((hashtag) => hashtags.includes(hashtag))
       ));
       const subscribedUsers = _.chunk(
-        _.filter(Database.users, (user) => (
+        (await User.findAll()).filter((user) => (
           !!user
           && user.subscriptions.some((subscription) => subscriptions.includes(subscription))
-          && !subscriptionPost.sent.includes(user.id)
-        )) as IUser[],
+        )),
         100
       );
 
       for (const users of subscribedUsers) {
-        const userIds = users.map(({ id }) => id);
+        const userIds = users.map(({ vkId }) => vkId);
 
         await sendVKMessage(userIds, '', {
-          attachments: [`wall${postId}`]
+          attachments: [`wall${postId}`],
+          randomId: 2n ** 63n + BigInt(body.object.id),
         });
-
-        await Database.addSentSubscriptions(subscriptionPost, userIds);
       }
-
-      await Database.deleteSubscriptionFile(postId);
     }
 
     ctx.body = 'ok';

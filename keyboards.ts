@@ -9,11 +9,11 @@ import {
   KeyboardButton,
   SubscribeToSectionButtonPayload,
   Subscription,
-  User,
 } from './types';
 import { captions, genreNames, genresButtons, subscriptionNames, subscriptionButtons } from './constants';
 import Database from './Database';
 import { getWeekString } from './helpers';
+import User from './database/User';
 
 export interface SubscriptionParams {
   subscription: Subscription;
