@@ -373,10 +373,12 @@ export default async (ctx: Context) => {
         if (payload.subscribed) {
           user.unsubscribe(payload.subscription);
 
+          await user.save();
           await respond(captions.unsubscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(user) });
         } else {
           user.subscribe(payload.subscription);
 
+          await user.save();
           await respond(captions.subscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(user) });
         }
       } else if (
