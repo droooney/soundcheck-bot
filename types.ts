@@ -472,7 +472,7 @@ export interface MarketService {
   id: string;
 }
 
-export type Service = MarketService;
+export type Service = 'stickers_design' | 'soundcheck_ads';
 
 export interface Drawing {
   id: string;
@@ -483,50 +483,50 @@ export interface Drawing {
 export type DrawingParams = Omit<Drawing, 'id'>;
 
 export interface TellAboutGroupUserState {
-  type: 'write_to_soundcheck/tell_about_group';
+  command: 'write_to_soundcheck/tell_about_group/message';
 }
 
 export interface TellAboutReleaseUserState {
-  type: 'write_to_soundcheck/tell_about_release';
+  command: 'write_to_soundcheck/tell_about_release/message';
 }
 
 export interface CollaborationUserState {
-  type: 'write_to_soundcheck/collaboration';
+  command: 'write_to_soundcheck/collaboration/message';
 }
 
 export interface TellAboutBugUserState {
-  type: 'write_to_soundcheck/tell_about_bug';
+  command: 'write_to_soundcheck/tell_about_bug/message';
 }
 
 export interface WantToParticipateUserState {
-  type: 'write_to_soundcheck/want_to_participate';
+  command: 'write_to_soundcheck/want_to_participate/message';
 }
 
 export interface WriteToSoundcheckOtherUserState {
-  type: 'write_to_soundcheck/other';
+  command: 'write_to_soundcheck/other/message';
 }
 
 export interface AdminAddDrawingSetNameUserState {
-  type: 'admin/drawings/add/set_name';
+  command: 'admin/drawings/add/set_name';
 }
 
 export interface AdminAddDrawingSetPostUserState {
-  type: 'admin/drawings/add/set_post';
+  command: 'admin/drawings/add/set_post';
   name: string;
 }
 
 export interface AdminEditDrawingNameUserState {
-  type: 'admin/drawings/drawing/edit_name';
+  command: 'admin/drawings/drawing/edit_name/message';
   drawingId: string;
 }
 
 export interface AdminEditDrawingPostUserState {
-  type: 'admin/drawings/drawing/edit_post';
+  command: 'admin/drawings/drawing/edit_post/message';
   drawingId: string;
 }
 
 export interface AdminDeleteDrawingUserState {
-  type: 'admin/drawings/drawing/delete';
+  command: 'admin/drawings/drawing/delete/confirmation';
   drawingId: string;
 }
 
@@ -569,6 +569,7 @@ export type Target = (
 );
 
 export interface Config {
+  dbConnection: string;
   port: number;
   endpoint: string;
   soundcheckId: number;
@@ -596,6 +597,11 @@ export interface DailyStats {
 export interface SubscriptionPost {
   postId: string;
   sent: number[];
+}
+
+export interface ServiceResponse {
+  message: string;
+  attachments?: string[];
 }
 
 export type StatsPeriod = 'today' | 'yesterday';

@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 
-import { Drawing, Genre, Subscription, User } from './types';
+import { Drawing, Genre, Service, ServiceResponse, Subscription, User } from './types';
 
 export const defaultVKQuery = {
   v: '5.101',
@@ -227,4 +227,15 @@ export const subscriptionHashtags: Record<Subscription, string[]> = {
   [Subscription.DRAWINGS]: ['#prize@soundcheck_ural'],
   // [Subscription.SERVICES]: ['#service@soundcheck_ural'],
   [Subscription.FOR_MUSICIANS]: ['#for_musicians@soundcheck_ural'],
+};
+
+export const serviceResponses: Record<Service, ServiceResponse> = {
+  'stickers_design': {
+    message: '',
+    attachments: ['market-177574047_3113786']
+  },
+  'soundcheck_ads': {
+    message: '',
+    attachments: ['market-177574047_2685381']
+  },
 };

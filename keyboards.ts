@@ -138,11 +138,11 @@ export const servicesKeyboard: Keyboard = {
     [
       generateButton(captions.stickers_design, {
         command: 'services/service',
-        service: { type: 'market', id: 'market-177574047_3113786' }
+        service: 'stickers_design'
       }),
       generateButton(captions.soundcheck_ads, {
         command: 'services/service',
-        service: { type: 'market', id: 'market-177574047_2685381' }
+        service: 'soundcheck_ads'
       }),
     ],
     [generateBackButton()],

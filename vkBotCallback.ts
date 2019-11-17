@@ -28,7 +28,7 @@ import {
   ButtonPayload,
   PhotoAttachment,
   Subscription,
-  User,
+  User as IUser,
   UserState,
 } from './types';
 import {
@@ -37,6 +37,7 @@ import {
   genreMatches,
   subscriptionHashtags,
   confirmPositiveAnswers,
+  serviceResponses,
 } from './constants';
 import {
   generateButton,
@@ -64,6 +65,7 @@ import {
 } from './keyboards';
 import Database from './Database';
 import config from './config';
+import User from './database/User';
 
 export default async (ctx: Context) => {
   const body: Body = ctx.request.body;
@@ -76,22 +78,54 @@ export default async (ctx: Context) => {
   eventHandler: if (body.type === 'confirmation') {
     ctx.body = 'afcb8751';
   } else if (body.type === 'message_new') {
-    const userId = body.object.peer_id;
-    const isManager = Database.managers.includes(userId);
+    const messageId = body.object.id;
+    const vkId = body.object.peer_id;
+    const text = body.object.text;
+    const isManager = ctx.managers.includes(vkId);
     const mainKeyboard = generateMainKeyboard(isManager);
     const respond = async (message: string, options: SendVkMessageOptions = {}) => {
-      await sendVKMessage(userId, message, options);
+      await sendVKMessage(vkId, message, options);
     };
-    const user = Database.getUserById(userId);
+    const [user] = await User.findOrBuild({
+      where: { vkId },
+      defaults: {
+        ...User.defaults,
+        vkId
+      }
+    });
+    const localUser = Database.getUserById(vkId);
     const userState = user.state;
-    const newLastMessageDate = body.object.date * 1000;
-    let newUserState: UserState = null;
-    let payload: ButtonPayload | null = null;
+    const newLastMessageDate = new Date(body.object.date * 1000);
+    let buttonPayload: ButtonPayload | null = null;
+    let payload: ButtonPayload | UserState | null = null;
 
     if (body.object.payload) {
       try {
-        payload = JSON.parse(body.object.payload);
+        buttonPayload = payload = JSON.parse(body.object.payload);
       } catch (err) {}
+    }
+
+    if (
+      !isManager
+      && buttonPayload
+      && buttonPayload.command !== 'start'
+      && buttonPayload.command !== 'back'
+      && buttonPayload.command !== 'refresh_keyboard'
+      && !dailyStats.clicks.some((click) => (
+        click.userId === vkId
+        && click.date >= latestClickTime
+        && _.isEqual(click.payload, payload)
+      ))
+    ) {
+      dailyStats.clicks.push({
+        userId: vkId,
+        date: +requestTime,
+        payload: buttonPayload
+      });
+    }
+
+    if (!payload) {
+      payload = userState;
     }
 
     if (user.lastMessageDate > newLastMessageDate) {
@@ -107,30 +141,12 @@ export default async (ctx: Context) => {
         break message;
       }
 
-      if (
-        !isManager
-        && payload.command !== 'start'
-        && payload.command !== 'back'
-        && payload.command !== 'refresh_keyboard'
-        && !dailyStats.clicks.some((click) => (
-          click.userId === userId
-          && click.date >= latestClickTime
-          && _.isEqual(click.payload, payload)
-        ))
-      ) {
-        dailyStats.clicks.push({
-          userId,
-          date: +requestTime,
-          payload
-        });
-      }
-
       if (payload.command === 'start') {
         await respond(captions.welcome_text, { keyboard: mainKeyboard });
       } else if (payload.command === 'back' && payload.dest === BackButtonDest.MAIN) {
         await respond(captions.choose_action, { keyboard: mainKeyboard });
       } else if (payload.command === 'poster' || (payload.command === 'back' && payload.dest === BackButtonDest.POSTER)) {
-        await respond(captions.choose_poster_type, { keyboard: generatePosterKeyboard(user) });
+        await respond(captions.choose_poster_type, { keyboard: generatePosterKeyboard(localUser) });
       } else if (payload.command === 'poster/type') {
         if (payload.type === 'day') {
           const upcomingConcerts = await getConcerts(moment().startOf('day'));
@@ -223,7 +239,7 @@ export default async (ctx: Context) => {
           await respond(concertsString);
         }
       } else if (payload.command === 'playlists') {
-        await respond(captions.choose_playlists_type, { keyboard: generatePlaylistsKeyboard(user) });
+        await respond(captions.choose_playlists_type, { keyboard: generatePlaylistsKeyboard(localUser) });
       } else if (payload.command === 'playlists/all') {
         await respond(captions.playlists_all_response);
       } else if (payload.command === 'playlists/thematic') {
@@ -272,60 +288,100 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'write_to_soundcheck') {
         await respond(captions.write_to_soundcheck_response, { keyboard: writeToSoundcheckKeyboard });
       } else if (payload.command === 'write_to_soundcheck/tell_about_group') {
-        newUserState = {
-          type: 'write_to_soundcheck/tell_about_group'
+        user.state = {
+          command: 'write_to_soundcheck/tell_about_group/message'
         };
 
         await respond(captions.tell_about_group_response);
+      } else if (payload.command === 'write_to_soundcheck/tell_about_group/message') {
+        await Promise.all([
+          respond(captions.tell_about_group_message_response),
+          sendVKMessage(config.targets.tellAboutGroup, captions.group_history_message, {
+            forwardMessages: [messageId]
+          })
+        ]);
       } else if (payload.command === 'write_to_soundcheck/tell_about_release') {
-        newUserState = {
-          type: 'write_to_soundcheck/tell_about_release'
+        user.state = {
+          command: 'write_to_soundcheck/tell_about_release/message'
         };
 
         await respond(captions.tell_about_release_response);
+      } else if (payload.command === 'write_to_soundcheck/tell_about_release/message') {
+        await Promise.all([
+          respond(captions.tell_about_release_message_response),
+          sendVKMessage(config.targets.tellAboutRelease, captions.release_message, {
+            forwardMessages: [messageId]
+          })
+        ]);
       } else if (payload.command === 'write_to_soundcheck/collaboration') {
-        newUserState = {
-          type: 'write_to_soundcheck/collaboration'
+        user.state = {
+          command: 'write_to_soundcheck/collaboration/message'
         };
 
         await respond(captions.collaboration_response);
+      } else if (payload.command === 'write_to_soundcheck/collaboration/message') {
+        await Promise.all([
+          respond(captions.collaboration_message_response),
+          sendVKMessage(config.targets.collaboration, captions.collaboration_message, {
+            forwardMessages: [messageId]
+          })
+        ]);
       } else if (payload.command === 'write_to_soundcheck/tell_about_bug') {
-        newUserState = {
-          type: 'write_to_soundcheck/tell_about_bug'
+        user.state = {
+          command: 'write_to_soundcheck/tell_about_bug/message'
         };
 
         await respond(captions.tell_about_bug_response);
+      } else if (payload.command === 'write_to_soundcheck/tell_about_bug/message') {
+        await Promise.all([
+          respond(captions.tell_about_bug_message_response),
+          sendVKMessage(config.targets.tellAboutBug, captions.tell_about_bug_message, {
+            forwardMessages: [messageId]
+          })
+        ]);
       } else if (payload.command === 'write_to_soundcheck/want_to_participate') {
-        newUserState = {
-          type: 'write_to_soundcheck/want_to_participate'
+        user.state = {
+          command: 'write_to_soundcheck/want_to_participate/message'
         };
 
         await respond(captions.want_to_participate_response);
+      } else if (payload.command === 'write_to_soundcheck/want_to_participate/message') {
+        await Promise.all([
+          respond(captions.want_to_participate_message_response),
+          sendVKMessage(config.targets.wantToParticipate, captions.want_to_participate_message, {
+            forwardMessages: [messageId]
+          })
+        ]);
       } else if (payload.command === 'write_to_soundcheck/other') {
-        newUserState = {
-          type: 'write_to_soundcheck/other'
+        user.state = {
+          command: 'write_to_soundcheck/other/message'
         };
 
         await respond(captions.write_to_soundcheck_other_response);
+      } else if (payload.command === 'write_to_soundcheck/other/message') {
+        await Promise.all([
+          respond(captions.write_to_soundcheck_other_message_response),
+          sendVKMessage(config.targets.other, captions.write_to_soundcheck_other_message, {
+            forwardMessages: [body.object.id]
+          })
+        ]);
       } else if (payload.command === 'services') {
         await respond(captions.choose_service, { keyboard: servicesKeyboard });
       } else if (payload.command === 'services/service') {
-        if (payload.service.type === 'market') {
-          await respond('', {
-            attachments: [payload.service.id]
-          });
-        }
+        const { message, attachments } = serviceResponses[payload.service];
+
+        await respond(message, { attachments });
       } else if (payload.command === 'subscriptions') {
-        await respond(captions.subscriptions_response(user), { keyboard: generateSubscriptionsKeyboard(user) });
+        await respond(captions.subscriptions_response(localUser), { keyboard: generateSubscriptionsKeyboard(localUser) });
       } else if (payload.command === 'subscriptions/subscription') {
         if (payload.subscribed) {
-          await Database.unsubscribeUser(user, payload.subscription);
+          await Database.unsubscribeUser(localUser, payload.subscription);
 
-          await respond(captions.unsubscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(user) });
+          await respond(captions.unsubscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(localUser) });
         } else {
-          await Database.subscribeUser(user, payload.subscription);
+          await Database.subscribeUser(localUser, payload.subscription);
 
-          await respond(captions.subscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(user) });
+          await respond(captions.subscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(localUser) });
         }
       } else if (
         payload.command === 'poster/subscribe'
@@ -334,24 +390,46 @@ export default async (ctx: Context) => {
         const { subscription, generateKeyboard } = subscriptionMap[payload.command];
 
         if (payload.subscribed) {
-          await Database.unsubscribeUser(user, subscription);
+          await Database.unsubscribeUser(localUser, subscription);
 
-          await respond(captions.unsubscribe_response(subscription), { keyboard: generateKeyboard(user) });
+          await respond(captions.unsubscribe_response(subscription), { keyboard: generateKeyboard(localUser) });
         } else {
-          await Database.subscribeUser(user, subscription);
+          await Database.subscribeUser(localUser, subscription);
 
-          await respond(captions.subscribe_response(subscription), { keyboard: generateKeyboard(user) });
+          await respond(captions.subscribe_response(subscription), { keyboard: generateKeyboard(localUser) });
         }
       } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
         await respond(captions.choose_action, { keyboard: adminKeyboard });
       } else if (payload.command === 'admin/drawings' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN_DRAWINGS)) {
         await respond(captions.choose_or_add_drawing, { keyboard: generateAdminDrawingsKeyboard() });
       } else if (payload.command === 'admin/drawings/add') {
-        newUserState = {
-          type: 'admin/drawings/add/set_name'
+        user.state = {
+          command: 'admin/drawings/add/set_name'
         };
 
         await respond(captions.enter_drawing_name);
+      } else if (payload.command === 'admin/drawings/add/set_name') {
+        user.state = {
+          command: 'admin/drawings/add/set_post',
+          name: text
+        };
+
+        await respond(captions.send_drawing_post);
+      } else if (payload.command === 'admin/drawings/add/set_post') {
+        const postId = getPostId(body.object);
+
+        if (postId) {
+          await Database.addDrawing({
+            name: payload.name,
+            postId
+          });
+
+          await respond(captions.drawing_added, { keyboard: generateAdminDrawingsKeyboard() });
+        } else {
+          user.state = { ...payload };
+
+          await respond(captions.send_drawing_post);
+        }
       } else if (payload.command === 'admin/drawings/drawing') {
         const drawing = Database.getDrawingById(payload.drawingId);
 
@@ -367,8 +445,8 @@ export default async (ctx: Context) => {
         const drawing = Database.getDrawingById(payload.drawingId);
 
         if (drawing) {
-          newUserState = {
-            type: 'admin/drawings/drawing/edit_name',
+          user.state = {
+            command: 'admin/drawings/drawing/edit_name/message',
             drawingId: payload.drawingId
           };
 
@@ -376,12 +454,22 @@ export default async (ctx: Context) => {
         } else {
           await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
         }
+      } else if (payload.command === 'admin/drawings/drawing/edit_name/message') {
+        const drawing = Database.getDrawingById(payload.drawingId);
+
+        if (drawing) {
+          await Database.editDrawing(drawing, 'name', text);
+
+          await respond(captions.drawing_edited, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
+        } else {
+          await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
+        }
       } else if (payload.command === 'admin/drawings/drawing/edit_post') {
         const drawing = Database.getDrawingById(payload.drawingId);
 
         if (drawing) {
-          newUserState = {
-            type: 'admin/drawings/drawing/edit_post',
+          user.state = {
+            command: 'admin/drawings/drawing/edit_post/message',
             drawingId: payload.drawingId
           };
 
@@ -389,18 +477,50 @@ export default async (ctx: Context) => {
         } else {
           await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
         }
+      } else if (payload.command === 'admin/drawings/drawing/edit_post/message') {
+        const drawing = Database.getDrawingById(payload.drawingId);
+
+        if (drawing) {
+          const postId = getPostId(body.object);
+
+          if (postId) {
+            await Database.editDrawing(drawing, 'postId', postId);
+
+            await respond(captions.drawing_edited, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
+          } else {
+            user.state = { ...payload };
+
+            await respond(captions.send_drawing_post);
+          }
+        } else {
+          await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
+        }
       } else if (payload.command === 'admin/drawings/drawing/delete') {
         const drawing = Database.getDrawingById(payload.drawingId);
 
         if (drawing) {
-          newUserState = {
-            type: 'admin/drawings/drawing/delete',
+          user.state = {
+            command: 'admin/drawings/drawing/delete/confirmation',
             drawingId: payload.drawingId
           };
 
           await respond(captions.confirm_drawing_delete(drawing));
         } else {
           await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
+        }
+      } else if (payload.command === 'admin/drawings/drawing/delete/confirmation') {
+        if (confirmPositiveAnswers.includes(text.toLowerCase())) {
+          await Database.deleteDrawing(payload.drawingId);
+
+          await respond(captions.drawing_deleted, { keyboard: generateAdminDrawingsKeyboard() });
+        } else {
+          const drawing = Database.getDrawingById(payload.drawingId);
+
+          if (drawing) {
+            await respond(captions.choose_action, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
+          } else {
+            await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
+          }
         }
       } else if (payload.command === 'admin/stats' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN_STATS)) {
         await respond(captions.stats_response, { keyboard: adminStatsKeyboard });
@@ -420,129 +540,19 @@ export default async (ctx: Context) => {
         await respond(getRepostStats(payload.period));
       } else if (payload.command === 'refresh_keyboard') {
         await respond(captions.refresh_keyboard_response, { keyboard: mainKeyboard });
-      }
-    } else if (userState) {
-      const text = body.object.text;
+      } else {
+        console.error('unknown payload', payload);
 
-      if (userState.type.startsWith('admin') && !isManager) {
-        await respond(captions.you_re_not_a_manager, { keyboard: mainKeyboard });
-
-        break message;
-      }
-
-      if (userState.type === 'write_to_soundcheck/tell_about_group') {
-        await Promise.all([
-          respond(captions.tell_about_group_message_response),
-          sendVKMessage(config.targets.tellAboutGroup, captions.group_history_message, {
-            forwardMessages: [body.object.id]
-          })
-        ]);
-      } else if (userState.type === 'write_to_soundcheck/tell_about_release') {
-        await Promise.all([
-          respond(captions.tell_about_release_message_response),
-          sendVKMessage(config.targets.tellAboutRelease, captions.release_message, {
-            forwardMessages: [body.object.id]
-          })
-        ]);
-      } else if (userState.type === 'write_to_soundcheck/collaboration') {
-        await Promise.all([
-          respond(captions.collaboration_message_response),
-          sendVKMessage(config.targets.collaboration, captions.collaboration_message, {
-            forwardMessages: [body.object.id]
-          })
-        ]);
-      } else if (userState.type === 'write_to_soundcheck/tell_about_bug') {
-        await Promise.all([
-          respond(captions.tell_about_bug_message_response),
-          sendVKMessage(config.targets.tellAboutBug, captions.tell_about_bug_message, {
-            forwardMessages: [body.object.id]
-          })
-        ]);
-      } else if (userState.type === 'write_to_soundcheck/want_to_participate') {
-        await Promise.all([
-          respond(captions.want_to_participate_message_response),
-          sendVKMessage(config.targets.wantToParticipate, captions.want_to_participate_message, {
-            forwardMessages: [body.object.id]
-          })
-        ]);
-      } else if (userState.type === 'write_to_soundcheck/other') {
-        await Promise.all([
-          respond(captions.write_to_soundcheck_other_message_response),
-          sendVKMessage(config.targets.other, captions.write_to_soundcheck_other_message, {
-            forwardMessages: [body.object.id]
-          })
-        ]);
-      } else if (userState.type === 'admin/drawings/add/set_name') {
-        newUserState = {
-          type: 'admin/drawings/add/set_post',
-          name: text
-        };
-
-        await respond(captions.send_drawing_post);
-      } else if (userState.type === 'admin/drawings/add/set_post') {
-        const postId = getPostId(body.object);
-
-        if (postId) {
-          await Database.addDrawing({
-            name: userState.name,
-            postId
-          });
-
-          await respond(captions.drawing_added, { keyboard: generateAdminDrawingsKeyboard() });
-        } else {
-          newUserState = userState;
-
-          await respond(captions.send_drawing_post);
-        }
-      } else if (userState.type === 'admin/drawings/drawing/edit_name') {
-        const drawing = Database.getDrawingById(userState.drawingId);
-
-        if (drawing) {
-          await Database.editDrawing(drawing, 'name', text);
-
-          await respond(captions.drawing_edited, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
-        } else {
-          await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
-        }
-      } else if (userState.type === 'admin/drawings/drawing/edit_post') {
-        const drawing = Database.getDrawingById(userState.drawingId);
-
-        if (drawing) {
-          const postId = getPostId(body.object);
-
-          if (postId) {
-            await Database.editDrawing(drawing, 'postId', postId);
-
-            await respond(captions.drawing_edited, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
-          } else {
-            newUserState = userState;
-
-            await respond(captions.send_drawing_post);
-          }
-        } else {
-          await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
-        }
-      } else if (userState.type === 'admin/drawings/drawing/delete') {
-        if (confirmPositiveAnswers.includes(text.toLowerCase())) {
-          await Database.deleteDrawing(userState.drawingId);
-
-          await respond(captions.drawing_deleted, { keyboard: generateAdminDrawingsKeyboard() });
-        } else {
-          const drawing = Database.getDrawingById(userState.drawingId);
-
-          if (drawing) {
-            await respond(captions.choose_action, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
-          } else {
-            await respond(captions.no_drawing, { keyboard: generateAdminDrawingsKeyboard() });
-          }
-        }
+        await respond(captions.choose_action, { keyboard: mainKeyboard });
       }
     }
 
-    await Database.editUser(user, {
-      lastMessageDate: newLastMessageDate,
-      state: newUserState
-    });
+    user.lastMessageDate = newLastMessageDate;
+    user.state = user.state === userState
+      ? null
+      : user.state;
+
+    await user.save();
 
     ctx.body = 'ok';
   } else if (body.type === 'group_officers_edit') {
@@ -551,11 +561,13 @@ export default async (ctx: Context) => {
       level_new
     } = body.object;
 
-    Database.managers = Database.managers.filter((id) => id !== user_id);
+    const newManagers = ctx.managers.filter((id) => id !== user_id);
 
     if (level_new > 1) {
-      Database.managers.push(user_id);
+      newManagers.push(user_id);
     }
+
+    ctx.changeManagers(newManagers);
 
     ctx.body = 'ok';
   } else if (body.type === 'group_leave') {
@@ -609,7 +621,7 @@ export default async (ctx: Context) => {
           !!user
           && user.subscriptions.some((subscription) => subscriptions.includes(subscription))
           && !subscriptionPost.sent.includes(user.id)
-        )) as User[],
+        )) as IUser[],
         100
       );
 
@@ -644,5 +656,11 @@ export default async (ctx: Context) => {
     ctx.body = 'ok';
   }
 
-  Database.saveDailyStats(dailyStats);
+  (async () => {
+    try {
+      await Database.saveDailyStats(dailyStats);
+    } catch (err) {
+      console.log('failed to save daily stats', err);
+    }
+  })();
 }

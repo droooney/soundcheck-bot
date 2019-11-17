@@ -16,9 +16,23 @@ import {
 } from './helpers';
 import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
-import { ConversationsResponse } from './types';
+import { ConversationsResponse, ManagersResponse } from './types';
 import { generateMainKeyboard } from './keyboards';
 import config from './config';
+
+import { migrate } from './database/index';
+
+declare module 'koa' {
+  interface BaseContext {
+    managers: number[];
+    changeManagers(managers: number[]): void;
+  }
+
+  interface Context {
+    managers: number[];
+    changeManagers(managers: number[]): void;
+  }
+}
 
 moment.tz.setDefault('Asia/Yekaterinburg');
 moment.locale('ru-RU');
@@ -28,12 +42,18 @@ const server = http.createServer(app.callback());
 const router = new Router({
   prefix: `/soundcheck-bot${config.port}`
 });
+let managers: number[] = [];
 
 router.get('/api/concerts', getConcertsCallback);
 router.post(config.endpoint, vkBotCallback);
 
 app.use(async (ctx, next) => {
   console.log(ctx.method, ctx.type, ctx.url);
+
+  ctx.managers = managers;
+  ctx.changeManagers = (newManagers) => {
+    managers = newManagers;
+  };
 
   try {
     await next();
@@ -53,10 +73,17 @@ app.use(router.routes());
 app.use(router.allowedMethods());
 
 async function main() {
-  await Promise.all([
+  const [{ data: { response } }] = await Promise.all([
+    sendVKRequest<ManagersResponse>('groups.getMembers', {
+      group_id: config.soundcheckId,
+      filter: 'managers'
+    }),
     refreshGoogleAccessToken(),
-    Database.migrate()
+    Database.migrate(),
+    migrate()
   ]);
+
+  managers = response.items.map(({ id }) => id);
 
   await Database.prepare();
 

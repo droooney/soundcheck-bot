@@ -237,12 +237,6 @@ export default class Database {
     await Database.writeToDb(`${Database.usersDir}/${user.id}.json`, user);
   }
 
-  static async editUser<K extends keyof User>(user: User, changes: Pick<User, K>) {
-    Object.assign(user, changes);
-
-    await Database.saveUser(user);
-  }
-
   static async subscribeUser(user: User, subscription: Subscription) {
     user.subscriptions = user.subscriptions.filter((sub) => sub !== subscription);
     user.subscriptions.push(subscription);
@@ -309,10 +303,6 @@ export default class Database {
   }
 
   static async saveDailyStats(dailyStats: DailyStats) {
-    try {
-      await Database.writeToDb(`${Database.dailyStatsDir}/${dailyStats.date}.json`, dailyStats);
-    } catch (err) {
-      console.log('failed to save daily stats', err);
-    }
+    await Database.writeToDb(`${Database.dailyStatsDir}/${dailyStats.date}.json`, dailyStats);
   }
 }
