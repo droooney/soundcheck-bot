@@ -76,7 +76,7 @@ export default async (ctx: Context) => {
   console.log('bot event', requestTime.format('YYYY-MM-DD HH:mm:ss.SSS'), body);
 
   eventHandler: if (body.type === 'confirmation') {
-    ctx.body = 'afcb8751';
+    ctx.body = config.confirmationCode;
   } else if (body.type === 'message_new') {
     const messageId = body.object.id;
     const vkId = body.object.peer_id;
