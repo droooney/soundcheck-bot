@@ -7,10 +7,12 @@ import moment = require('moment-timezone');
 import {
   ButtonPayload,
   Concert,
+  ConversationsResponse,
   Event,
   EventsResponse,
   Genre,
   Keyboard,
+  ManagersResponse,
   Message,
   Post,
   Repost,
@@ -121,7 +123,13 @@ export function getConcertsByDays(concerts: Concert[]): Record<string, Concert[]
   return _.groupBy(concerts, (concert) => +concert.startTime.clone().startOf('day'));
 }
 
-export async function sendVKRequest<T>(method: string, query: object = {}): Promise<AxiosResponse<T>> {
+export interface VKRequestMap {
+  'groups.getMembers': ManagersResponse;
+  'messages.getConversations': ConversationsResponse;
+  'messages.send': void;
+}
+
+export async function sendVKRequest<T extends keyof VKRequestMap>(method: T, query: object = {}): Promise<VKRequestMap[T]> {
   const response = await axios.post(`https://api.vk.com/method/${method}`, qs.stringify({
     v: '5.101',
     access_token: config.vkToken,
@@ -132,7 +140,7 @@ export async function sendVKRequest<T>(method: string, query: object = {}): Prom
     throw new Error(response.data.error.error_msg);
   }
 
-  return response;
+  return response.data.response;
 }
 
 export interface SendVkMessageOptions {
@@ -151,6 +159,26 @@ export async function sendVKMessage(dest: number | number[], message: string, op
     forward_messages: (options.forwardMessages || []).join(','),
     attachment: (options.attachments || []).join(',')
   });
+}
+
+export async function getAllConversations(): Promise<number[]> {
+  const conversations: number[] = [];
+  const count = 200;
+  let offset = 0;
+
+  while (true) {
+    const { items } = await sendVKRequest('messages.getConversations', { offset, count });
+
+    conversations.push(...items.map(({ conversation }) => conversation.peer.id));
+
+    if (items.length < count) {
+      break;
+    }
+
+    offset = conversations.length;
+  }
+
+  return conversations;
 }
 
 export function getConcertFields(description?: string): Partial<Record<string, string>> {

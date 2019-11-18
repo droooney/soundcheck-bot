@@ -5,7 +5,6 @@ import {
   DailyStats,
   Drawing,
   DrawingParams,
-  ManagersResponse,
   StatsPeriod,
   Subscription,
   SubscriptionPost,
@@ -170,12 +169,8 @@ export default class Database {
 
   static async getManagers(): Promise<number[]> {
     const {
-      data: {
-        response: {
-          items: managers
-        }
-      }
-    } = await sendVKRequest<ManagersResponse>('groups.getMembers', {
+      items: managers
+    } = await sendVKRequest('groups.getMembers', {
       group_id: config.soundcheckId,
       filter: 'managers'
     });

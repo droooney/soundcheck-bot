@@ -8,6 +8,7 @@ import * as _ from 'lodash';
 import Database from './Database';
 import {
   createEverydayDaemon,
+  getAllConversations,
   refreshGoogleAccessToken,
   sendPosterMessage,
   sendStatsMessage,
@@ -16,7 +17,6 @@ import {
 } from './helpers';
 import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
-import { ConversationsResponse, ManagersResponse } from './types';
 import { generateMainKeyboard } from './keyboards';
 import config from './config';
 
@@ -76,8 +76,8 @@ app.use(router.routes());
 app.use(router.allowedMethods());
 
 async function main() {
-  const [{ data: { response } }] = await Promise.all([
-    sendVKRequest<ManagersResponse>('groups.getMembers', {
+  const [{ items }] = await Promise.all([
+    sendVKRequest('groups.getMembers', {
       group_id: config.soundcheckId,
       filter: 'managers'
     }),
@@ -86,19 +86,12 @@ async function main() {
     migrate()
   ]);
 
-  managers = response.items.map(({ id }) => id);
+  managers = items.map(({ id }) => id);
 
   await Database.prepare();
 
   if (false) {
-    const {
-      data: {
-        response: {
-          items: conversations
-        }
-      }
-    } = await sendVKRequest<ConversationsResponse>('messages.getConversations', { count: 200 });
-    const userIds = conversations.map(({ conversation }) => conversation.peer.id);
+    const userIds = await getAllConversations();
     const chunks = _.chunk(userIds, 100);
 
     for (const chunk of chunks) {

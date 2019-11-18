@@ -78,22 +78,18 @@ export type Body = (
 );
 
 export interface ManagersResponse {
-  response: {
-    count: number;
-    items: { id: number; role: string; permissions: string[]; }[];
-  };
+  count: number;
+  items: { id: number; role: string; permissions: string[]; }[];
 }
 
 export interface ConversationsResponse {
-  response: {
-    count: number;
-    items: {
-      conversation: {
-        peer: { id: number; };
-      };
-      last_message: Message;
-    }[];
-  };
+  count: number;
+  items: {
+    conversation: {
+      peer: { id: number; };
+    };
+    last_message: Message;
+  }[];
 }
 
 export interface WallAttachment {
