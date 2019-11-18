@@ -1,7 +1,8 @@
 import * as _ from 'lodash';
 
-import { Drawing, Genre, Service, ServiceResponse, Subscription } from './types';
+import { Genre, Service, ServiceResponse, Subscription } from './types';
 import User from './database/User';
+import Drawing from './database/Drawing';
 
 export const defaultVKQuery = {
   v: '5.101',

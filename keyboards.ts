@@ -4,16 +4,15 @@ import {
   BackButtonDest,
   ButtonColor,
   ButtonPayload,
-  Drawing,
   Keyboard,
   KeyboardButton,
   SubscribeToSectionButtonPayload,
   Subscription,
 } from './types';
 import { captions, genreNames, genresButtons, subscriptionNames, subscriptionButtons } from './constants';
-import Database from './Database';
 import { getWeekString } from './helpers';
 import User from './database/User';
+import Drawing from './database/Drawing';
 
 export interface SubscriptionParams {
   subscription: Subscription;
@@ -278,11 +277,11 @@ export const adminRepostStatsKeyboard: Keyboard = {
   ]
 };
 
-export function generateAdminDrawingsKeyboard(): Keyboard {
+export async function generateAdminDrawingsKeyboard(): Promise<Keyboard> {
   return {
     one_time: false,
     buttons: [
-      ...Database.drawings.map(({ id, name }) => [
+      ...(await Drawing.findAll()).map(({ id, name }) => [
         generateButton(name, { command: 'admin/drawings/drawing', drawingId: id })
       ]),
       [
@@ -308,8 +307,8 @@ export function generateAdminDrawingMenuKeyboard(drawing: Drawing): Keyboard {
   };
 }
 
-export function generateDrawingsKeyboard(): Keyboard | null {
-  const buttons = Database.drawings.map(({ id, name }) => [generateButton(name, { command: 'drawings/drawing', drawingId: id })]);
+export async function generateDrawingsKeyboard(): Promise<Keyboard | null> {
+  const buttons = (await Drawing.findAll()).map(({ id, name }) => [generateButton(name, { command: 'drawings/drawing', drawingId: id })]);
 
   if (!buttons.length) {
     return null;

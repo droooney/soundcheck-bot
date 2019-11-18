@@ -208,7 +208,7 @@ export interface DrawingsButtonPayload {
 
 export interface DrawingButtonPayload {
   command: 'drawings/drawing';
-  drawingId: string;
+  drawingId: number;
 }
 
 export interface WriteToSoundcheckButtonPayload {
@@ -268,7 +268,7 @@ export interface AdminDrawingsButtonPayload {
 
 export interface AdminDrawingButtonPayload {
   command: 'admin/drawings/drawing';
-  drawingId: string;
+  drawingId: number;
 }
 
 export interface AdminDrawingsAddButtonPayload {
@@ -277,17 +277,17 @@ export interface AdminDrawingsAddButtonPayload {
 
 export interface AdminEditDrawingNameButtonPayload {
   command: 'admin/drawings/drawing/edit_name';
-  drawingId: string;
+  drawingId: number;
 }
 
 export interface AdminEditDrawingPostButtonPayload {
   command: 'admin/drawings/drawing/edit_post';
-  drawingId: string;
+  drawingId: number;
 }
 
 export interface AdminDeleteDrawingButtonPayload {
   command: 'admin/drawings/drawing/delete';
-  drawingId: string;
+  drawingId: number;
 }
 
 export interface AdminStatsButtonPayload {
@@ -518,17 +518,17 @@ export interface AdminAddDrawingSetPostUserState {
 
 export interface AdminEditDrawingNameUserState {
   command: 'admin/drawings/drawing/edit_name/message';
-  drawingId: string;
+  drawingId: number;
 }
 
 export interface AdminEditDrawingPostUserState {
   command: 'admin/drawings/drawing/edit_post/message';
-  drawingId: string;
+  drawingId: number;
 }
 
 export interface AdminDeleteDrawingUserState {
   command: 'admin/drawings/drawing/delete/confirmation';
-  drawingId: string;
+  drawingId: number;
 }
 
 export type UserState = (
