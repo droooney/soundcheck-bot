@@ -4,11 +4,6 @@ import { Genre, Service, ServiceResponse, Subscription } from './types';
 import User from './database/User';
 import Drawing from './database/Drawing';
 
-export const defaultVKQuery = {
-  v: '5.101',
-  access_token: '2d0c91d1f4f816ed81c83008fa171fe5642e9153de1bebdf08f993392675512944a731975ad559157906b',
-};
-
 export const captions = {
   // main menu
   welcome_text: 'Добро пожаловать в SoundCheck - Музыка Екатеринбурга. Что Вас интересует?',

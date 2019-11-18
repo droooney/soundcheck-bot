@@ -574,6 +574,7 @@ export interface Config {
   port: number;
   endpoint: string;
   soundcheckId: number;
+  vkToken: string;
   targets: Record<Target, number[]>;
 }
 

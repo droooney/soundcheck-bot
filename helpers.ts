@@ -18,7 +18,7 @@ import {
   Subscription,
   WallAttachment,
 } from './types';
-import { captions, defaultVKQuery, subscriptionNames } from './constants';
+import { captions, subscriptionNames } from './constants';
 import config from './config';
 import Database from './Database';
 import User from './database/User';
@@ -123,7 +123,8 @@ export function getConcertsByDays(concerts: Concert[]): Record<string, Concert[]
 
 export async function sendVKRequest<T>(method: string, query: object = {}): Promise<AxiosResponse<T>> {
   const response = await axios.post(`https://api.vk.com/method/${method}`, qs.stringify({
-    ...defaultVKQuery,
+    v: '5.101',
+    access_token: config.vkToken,
     ...query,
   }));
 
