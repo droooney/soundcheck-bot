@@ -92,6 +92,11 @@ export interface ConversationsResponse {
   }[];
 }
 
+export type SendMessageResponse = (
+  { peer_id: number; message_id: number; }
+  | { peer_id: number; error: { code: number; description: string; }; }
+)[];
+
 export interface WallAttachment {
   type: 'wall';
   wall: {

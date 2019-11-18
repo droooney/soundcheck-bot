@@ -1,6 +1,6 @@
 import * as Sequelize from 'sequelize';
 
-type Migration = (queryInterface: Sequelize.QueryInterface, sequelize: Sequelize.Sequelize) => void;
+type Migration = (queryInterface: Sequelize.QueryInterface, sequelize: Sequelize.Sequelize, dbVersion: number) => void;
 
 const migrations: Migration[] = [
   // create users table

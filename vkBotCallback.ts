@@ -20,6 +20,7 @@ import {
   getSubscriptionStats,
   getWeeklyConcerts,
   sendVKMessage,
+  sendVKMessages,
 } from './helpers';
 import {
   BackButtonDest,
@@ -614,22 +615,14 @@ export default async (ctx: Context) => {
       const subscriptions = _.filter(Subscription, (subscription) => (
         subscriptionHashtags[subscription].some((hashtag) => hashtags.includes(hashtag))
       ));
-      const subscribedUsers = _.chunk(
-        (await User.findAll()).filter((user) => (
-          !!user
-          && user.subscriptions.some((subscription) => subscriptions.includes(subscription))
-        )),
-        100
-      );
+      const subscribedUsers = (await User.findAll()).filter((user) => (
+        user.subscriptions.some((subscription) => subscriptions.includes(subscription))
+      ));
 
-      for (const users of subscribedUsers) {
-        const userIds = users.map(({ vkId }) => vkId);
-
-        await sendVKMessage(userIds, '', {
-          attachments: [`wall${postId}`],
-          randomId: 2n ** 63n + BigInt(body.object.id),
-        });
-      }
+      await sendVKMessages(subscribedUsers.map(({ vkId }) => vkId), '', {
+        attachments: [`wall${postId}`],
+        randomId: 2n ** 30n + BigInt(body.object.id),
+      });
     }
 
     ctx.body = 'ok';

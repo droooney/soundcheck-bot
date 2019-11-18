@@ -3,7 +3,6 @@ import Application = require('koa');
 import BodyParser = require('koa-bodyparser');
 import Router = require('koa-router');
 import moment = require('moment-timezone');
-import * as _ from 'lodash';
 
 import Database from './Database';
 import {
@@ -12,15 +11,15 @@ import {
   refreshGoogleAccessToken,
   sendPosterMessage,
   sendStatsMessage,
-  sendVKMessage,
+  sendVKMessages,
   sendVKRequest,
 } from './helpers';
 import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
 import { generateMainKeyboard } from './keyboards';
 import config from './config';
-
 import { migrate } from './database/index';
+import VKError from './VKError';
 
 declare module 'koa' {
   interface BaseContext {
@@ -63,6 +62,8 @@ app.use(async (ctx, next) => {
   } catch (e) {
     if (e.isAxiosError) {
       console.log(e.response.status, e.response.data);
+    } else if (e instanceof VKError) {
+      console.log('vk error', e.vkError);
     } else {
       console.log(e);
     }
@@ -92,11 +93,13 @@ async function main() {
 
   if (false) {
     const userIds = await getAllConversations();
-    const chunks = _.chunk(userIds, 100);
 
-    for (const chunk of chunks) {
-      await sendVKMessage(chunk, 'test', { keyboard: generateMainKeyboard(false) });
-    }
+    console.log(
+      await sendVKMessages(userIds, 'test unique', {
+        keyboard: generateMainKeyboard(false),
+        randomId: 2n ** 30n + 2n ** 29n,
+      })
+    );
   }
 
   await new Promise((resolve) => {

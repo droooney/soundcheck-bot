@@ -16,12 +16,14 @@ import {
   Message,
   Post,
   Repost,
+  SendMessageResponse,
   StatsPeriod,
   Subscription,
   WallAttachment,
 } from './types';
 import { captions, subscriptionNames } from './constants';
 import config from './config';
+import VKError from './VKError';
 import Database from './Database';
 import User from './database/User';
 
@@ -32,6 +34,10 @@ const {
 } = require('./googleCredentials.json');
 
 let googleAPIAccessToken = '';
+
+export async function timeout(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export async function refreshGoogleAccessToken() {
   const now = Math.floor(Date.now() / 1000);
@@ -126,7 +132,7 @@ export function getConcertsByDays(concerts: Concert[]): Record<string, Concert[]
 export interface VKRequestMap {
   'groups.getMembers': ManagersResponse;
   'messages.getConversations': ConversationsResponse;
-  'messages.send': void;
+  'messages.send': SendMessageResponse;
 }
 
 export async function sendVKRequest<T extends keyof VKRequestMap>(method: T, query: object = {}): Promise<VKRequestMap[T]> {
@@ -137,7 +143,7 @@ export async function sendVKRequest<T extends keyof VKRequestMap>(method: T, que
   }));
 
   if (response.data.error) {
-    throw new Error(response.data.error.error_msg);
+    throw new VKError(response.data.error);
   }
 
   return response.data.response;
@@ -150,8 +156,8 @@ export interface SendVkMessageOptions {
   randomId?: number | bigint;
 }
 
-export async function sendVKMessage(dest: number | number[], message: string, options: SendVkMessageOptions = {}) {
-  await sendVKRequest('messages.send', {
+export async function sendVKMessage(dest: number | number[], message: string, options: SendVkMessageOptions = {}): Promise<SendMessageResponse> {
+  return await sendVKRequest('messages.send', {
     user_ids: typeof dest === 'number' ? dest : dest.join(','),
     random_id: (options.randomId || 0).toString(),
     message,
@@ -159,6 +165,19 @@ export async function sendVKMessage(dest: number | number[], message: string, op
     forward_messages: (options.forwardMessages || []).join(','),
     attachment: (options.attachments || []).join(',')
   });
+}
+
+export async function sendVKMessages(dest: number[], message: string, options: SendVkMessageOptions = {}): Promise<SendMessageResponse> {
+  const response: SendMessageResponse = [];
+  const chunks = _.chunk(dest, 2);
+
+  for (const chunk of chunks) {
+    response.push(...await sendVKMessage(chunk, message, options));
+
+    await timeout(1000);
+  }
+
+  return response;
 }
 
 export async function getAllConversations(): Promise<number[]> {
@@ -176,6 +195,8 @@ export async function getAllConversations(): Promise<number[]> {
     }
 
     offset = conversations.length;
+
+    await timeout(100);
   }
 
   return conversations;
@@ -383,7 +404,7 @@ export function getSectionsString(sections: { header: string; rows: string[]; }[
 export async function getSubscriptionStats(): Promise<string> {
   const users = await User.findAll();
   const subscriptions = _.mapValues(Subscription, (subscription) => (
-    users.filter((user) => !!user && user.subscriptions.includes(subscription)).length
+    users.filter((user) => user.subscriptions.includes(subscription)).length
   ));
 
   return _.map(subscriptions, (count, subscription: Subscription) => `${subscriptionNames[subscription]}: ${count}`).join('\n');
