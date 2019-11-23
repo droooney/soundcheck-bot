@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import moment = require('moment-timezone');
 import { Context } from 'koa';
+import { Op } from 'sequelize';
 
 import {
   SendVkMessageOptions,
@@ -37,7 +38,7 @@ import {
   genreMatches,
   subscriptionHashtags,
   confirmPositiveAnswers,
-  serviceResponses,
+  services,
 } from './constants';
 import {
   generateButton,
@@ -46,6 +47,8 @@ import {
   generatePosterKeyboard,
   generateWeekPosterKeyboard,
   generatePlaylistsKeyboard,
+  generateTextMaterialsKeyboard,
+  generateAudioMaterialsKeyboard,
   generateDrawingsKeyboard,
   generateSubscriptionsKeyboard,
   generateAdminDrawingsKeyboard,
@@ -54,8 +57,6 @@ import {
   subscriptionMap,
   genresKeyboard,
   servicesKeyboard,
-  textMaterialsKeyboard,
-  audioMaterialsKeyboard,
   writeToSoundcheckKeyboard,
   adminKeyboard,
   adminStatsKeyboard,
@@ -63,16 +64,18 @@ import {
   adminGroupStatsKeyboard,
   adminRepostStatsKeyboard,
 } from './keyboards';
-import Database from './Database';
 import config from './config';
+import sequelize from './database';
 import User from './database/User';
 import Drawing from './database/Drawing';
+import Click from './database/Click';
+import GroupUser from './database/GroupUser';
+import Repost from './database/Repost';
 
 export default async (ctx: Context) => {
   const body: Body = ctx.request.body;
-  const dailyStats = Database.getTodayDailyStats();
   const requestTime = moment();
-  const latestClickTime = +requestTime.clone().subtract(1, 'minute');
+  const latestClickTime = requestTime.clone().subtract(1, 'minute');
 
   console.log('bot event', requestTime.format('YYYY-MM-DD HH:mm:ss.SSS'), body);
 
@@ -108,17 +111,27 @@ export default async (ctx: Context) => {
       && buttonPayload.command !== 'start'
       && buttonPayload.command !== 'back'
       && buttonPayload.command !== 'refresh_keyboard'
-      && !dailyStats.clicks.some((click) => (
-        click.userId === vkId
-        && click.date >= latestClickTime
-        && _.isEqual(click.payload, payload)
-      ))
+      && !buttonPayload.command.startsWith('admin')
     ) {
-      dailyStats.clicks.push({
-        userId: vkId,
-        date: +requestTime,
-        payload: buttonPayload
-      });
+      try {
+        const userClicks = await Click.findAll({
+          where: {
+            vkId,
+            createdAt: {
+              [Op.gte]: latestClickTime.toDate()
+            }
+          }
+        });
+
+        if (userClicks.every((click) => _.isEqual(click.payload, payload))) {
+          await Click.create({
+            vkId,
+            payload: buttonPayload
+          });
+        }
+      } catch (err) {
+        console.log('save click error', err);
+      }
     }
 
     if (!payload) {
@@ -246,13 +259,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'releases') {
         await respond(captions.releases_response);
       } else if (payload.command === 'drawings') {
-        const drawingsKeyboard = await generateDrawingsKeyboard();
-
-        if (drawingsKeyboard) {
-          await respond(captions.choose_drawing, { keyboard: drawingsKeyboard });
-        } else {
-          await respond(captions.no_drawings);
-        }
+        await respond(captions.choose_drawing, { keyboard: await generateDrawingsKeyboard(user) });
       } else if (payload.command === 'drawings/drawing') {
         const drawing = await Drawing.findByPk(payload.drawingId);
 
@@ -261,22 +268,16 @@ export default async (ctx: Context) => {
             attachments: [`wall${drawing.postId}`]
           });
         } else {
-          const drawingsKeyboard = await generateDrawingsKeyboard();
-
-          if (drawingsKeyboard) {
-            await respond(captions.no_drawing, { keyboard: drawingsKeyboard });
-          } else {
-            await respond(captions.no_drawings, { keyboard: mainKeyboard });
-          }
+          await respond(captions.no_drawing, { keyboard: await generateDrawingsKeyboard(user) });
         }
       } else if (payload.command === 'text_materials') {
-        await respond(captions.text_materials_response, { keyboard: textMaterialsKeyboard });
+        await respond(captions.text_materials_response, { keyboard: generateTextMaterialsKeyboard(user) });
       } else if (payload.command === 'text_materials/longread') {
         await respond(captions.longreads_response);
       } else if (payload.command === 'text_materials/group_history') {
         await respond(captions.group_history_response);
       } else if (payload.command === 'audio_materials') {
-        await respond(captions.audio_materials_response, { keyboard: audioMaterialsKeyboard });
+        await respond(captions.audio_materials_response, { keyboard: generateAudioMaterialsKeyboard(user) });
       } else if (payload.command === 'audio_materials/digests') {
         await respond(captions.digests_response);
       } else if (payload.command === 'audio_materials/podcasts') {
@@ -364,7 +365,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'services') {
         await respond(captions.choose_service, { keyboard: servicesKeyboard });
       } else if (payload.command === 'services/service') {
-        const { message, attachments } = serviceResponses[payload.service];
+        const { message, attachments } = services[payload.service];
 
         await respond(message, { attachments });
       } else if (payload.command === 'subscriptions') {
@@ -384,6 +385,9 @@ export default async (ctx: Context) => {
       } else if (
         payload.command === 'poster/subscribe'
         || payload.command === 'playlists/subscribe'
+        || payload.command === 'text_materials/subscribe'
+        || payload.command === 'audio_materials/subscribe'
+        || payload.command === 'drawings/subscribe'
       ) {
         const { subscription, generateKeyboard } = subscriptionMap[payload.command];
 
@@ -391,12 +395,12 @@ export default async (ctx: Context) => {
           user.unsubscribe(subscription);
 
           await user.save();
-          await respond(captions.unsubscribe_response(subscription), { keyboard: generateKeyboard(user) });
+          await respond(captions.unsubscribe_response(subscription), { keyboard: await generateKeyboard(user) });
         } else {
           user.subscribe(subscription);
 
           await user.save();
-          await respond(captions.subscribe_response(subscription), { keyboard: generateKeyboard(user) });
+          await respond(captions.subscribe_response(subscription), { keyboard: await generateKeyboard(user) });
         }
       } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
         await respond(captions.choose_action, { keyboard: adminKeyboard });
@@ -514,7 +518,9 @@ export default async (ctx: Context) => {
 
         if (drawing) {
           if (confirmPositiveAnswers.includes(text.toLowerCase())) {
-            await drawing.destroy();
+            drawing.active = false;
+
+            await drawing.save();
             await respond(captions.drawing_deleted, { keyboard: await generateAdminDrawingsKeyboard() });
           } else {
             await respond(captions.choose_action, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
@@ -529,15 +535,15 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'admin/stats/clicks') {
         await respond(captions.choose_period, { keyboard: adminClickStatsKeyboard });
       } else if (payload.command === 'admin/stats/clicks/period') {
-        await respond(getClickStats(payload.period));
+        await respond(await getClickStats(payload.period));
       } else if (payload.command === 'admin/stats/group') {
         await respond(captions.choose_period, { keyboard: adminGroupStatsKeyboard });
       } else if (payload.command === 'admin/stats/group/period') {
-        await respond(getGroupStats(payload.period));
+        await respond(await getGroupStats(payload.period));
       } else if (payload.command === 'admin/stats/reposts') {
         await respond(captions.choose_period, { keyboard: adminRepostStatsKeyboard });
       } else if (payload.command === 'admin/stats/reposts/period') {
-        await respond(getRepostStats(payload.period));
+        await respond(await getRepostStats(payload.period));
       } else if (payload.command === 'refresh_keyboard') {
         await respond(captions.refresh_keyboard_response, { keyboard: mainKeyboard });
       } else {
@@ -570,37 +576,38 @@ export default async (ctx: Context) => {
     ctx.changeManagers(newManagers);
 
     ctx.body = 'ok';
-  } else if (body.type === 'group_leave') {
-    const userId = body.object.user_id;
-    const joinedIndex = dailyStats.groupJoinUsers.findIndex((joined) => joined === userId);
+  } else if (
+    body.type === 'group_leave'
+    || (body.type === 'group_join' && (body.object.join_type === 'join' || body.object.join_type === 'accepted'))
+  ) {
+    const vkId = body.object.user_id;
+    const status = body.type === 'group_join';
+    const now = moment();
+    const startOfDay = now.startOf('day').toDate();
+    const endOfDay = now.endOf('day').toDate();
 
-    if (joinedIndex === -1) {
-      if (dailyStats.groupLeaveUsers.every((left) => left.userId !== userId)) {
-        dailyStats.groupLeaveUsers.push({
-          userId,
-          self: !!body.object.self
-        });
-      }
-    } else {
-      dailyStats.groupJoinUsers.splice(joinedIndex, 1);
-    }
+    await sequelize.transaction(async (transaction) => {
+      const groupUser = await GroupUser.findOne({
+        where: {
+          vkId,
+          createdAt: {
+            [Op.gte]: startOfDay,
+            [Op.lte]: endOfDay
+          },
+        },
+        transaction
+      });
 
-    // todo: send message
-
-    ctx.body = 'ok';
-  } else if (body.type === 'group_join') {
-    if (body.object.join_type === 'join' || body.object.join_type === 'accepted') {
-      const userId = body.object.user_id;
-      const leftIndex = dailyStats.groupLeaveUsers.findIndex((left) => left.userId === userId);
-
-      if (leftIndex === -1) {
-        if (dailyStats.groupJoinUsers.every((joined) => joined !== userId)) {
-          dailyStats.groupJoinUsers.push(userId);
+      if (groupUser) {
+        if (groupUser.status === status) {
+          await groupUser.save({ transaction });
+        } else {
+          await groupUser.destroy({ transaction });
         }
       } else {
-        dailyStats.groupLeaveUsers.splice(leftIndex, 1);
+        await GroupUser.create({ vkId, status }, { transaction });
       }
-    }
+    });
 
     ctx.body = 'ok';
   } else if (body.type === 'wall_post_new') {
@@ -627,27 +634,21 @@ export default async (ctx: Context) => {
 
     ctx.body = 'ok';
   } else if (body.type === 'wall_repost') {
-    const userId = body.object.owner_id;
-    const postId = getRepostPostId(body.object);
+    const postId = `${body.object.owner_id}_${body.object.id}`;
+    const originalPostId = getRepostPostId(body.object);
 
-    if (postId && dailyStats.reposts.every((repost) => repost.userId !== userId || repost.postId !== postId)) {
-      dailyStats.reposts.push({
-        userId,
-        postId: `${userId}_${body.object.id}`,
-        originalPostId: postId
+    if (originalPostId) {
+      const existingPost = await Repost.findOne({
+        where: { postId, originalPostId }
       });
+
+      if (!existingPost) {
+        await Repost.create({ postId, originalPostId });
+      }
     }
 
     ctx.body = 'ok';
   } else {
     ctx.body = 'ok';
   }
-
-  (async () => {
-    try {
-      await Database.saveDailyStats(dailyStats);
-    } catch (err) {
-      console.log('failed to save daily stats', err);
-    }
-  })();
 }

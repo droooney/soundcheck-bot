@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 
-import { Genre, Service, ServiceResponse, Subscription } from './types';
+import { Genre, Service, ServiceParams, Subscription } from './types';
 import User from './database/User';
 import Drawing from './database/Drawing';
 
@@ -98,8 +98,6 @@ export const captions = {
 
   // services
   choose_service: 'Выберите услугу',
-  stickers_design: 'Дизайн стикеров',
-  soundcheck_ads: 'Реклама в Soundcheck',
 
   // subscriptions
   subscriptions_response: (user: User) => {
@@ -111,6 +109,7 @@ export const captions = {
       : 'Для того, чтобы подписаться на категорию, нажмите на соответствующую кнопку';
   },
   subscribe: 'Подписаться',
+  unsubscribe: 'Отписаться',
   you_re_already_subscribed: 'Вы уже подписаны',
   subscribe_response: (subscription: Subscription) => `Вы подписались на категорию "${subscriptionNames[subscription]}"`,
   unsubscribe_response: (subscription: Subscription) => `Вы отписались от категории "${subscriptionNames[subscription]}"`,
@@ -139,6 +138,9 @@ export const captions = {
   reposts: 'Репосты',
   today: 'Сегодня',
   yesterday: 'Вчера',
+  prev_week: 'Прошлая неделя',
+  this_month: 'Этот месяц',
+  prev_month: 'Прошлый месяц',
   choose_period: 'Выберите период',
   clicks_all: 'Всего',
   no_clicks: 'Кликов не было',
@@ -149,6 +151,7 @@ export const captions = {
   poster_choose_week: 'Афиша (выбор недели)',
   poster_genre: 'Афиша (жанр)',
   poster_genre_type: (genre: Genre) => `Афиша (${genreNames[genre]})`,
+  drawing: 'Розыгрыш',
   users_joined: (count: number) => `Вступило в группу: ${count}`,
   users_left: (count: number) => `Вышло из группы: ${count}`,
 
@@ -226,12 +229,14 @@ export const subscriptionHashtags: Record<Subscription, string[]> = {
   [Subscription.FOR_MUSICIANS]: ['#for_musicians@soundcheck_ural'],
 };
 
-export const serviceResponses: Record<Service, ServiceResponse> = {
-  'stickers_design': {
+export const services: Record<Service, ServiceParams> = {
+  stickers_design: {
+    name: 'Дизайн стикеров',
     message: '',
     attachments: ['market-177574047_3113786']
   },
-  'soundcheck_ads': {
+  soundcheck_ads: {
+    name: 'Реклама в Soundcheck',
     message: '',
     attachments: ['market-177574047_2685381']
   },

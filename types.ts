@@ -187,6 +187,11 @@ export interface GroupHistoryButtonPayload {
   command: 'text_materials/group_history';
 }
 
+export interface SubscribeToTextMaterialsButtonPayload {
+  command: 'text_materials/subscribe';
+  subscribed: boolean;
+}
+
 export interface AudioMaterialsButtonPayload {
   command: 'audio_materials';
 }
@@ -197,6 +202,11 @@ export interface DigestsButtonPayload {
 
 export interface PodcastsButtonPayload {
   command: 'audio_materials/podcasts';
+}
+
+export interface SubscribeToAudioMaterialsButtonPayload {
+  command: 'audio_materials/subscribe';
+  subscribed: boolean;
 }
 
 export interface ReleasesButtonPayload {
@@ -210,6 +220,11 @@ export interface DrawingsButtonPayload {
 export interface DrawingButtonPayload {
   command: 'drawings/drawing';
   drawingId: number;
+}
+
+export interface SubscribeToDrawingsButtonPayload {
+  command: 'drawings/subscribe';
+  subscribed: boolean;
 }
 
 export interface WriteToSoundcheckButtonPayload {
@@ -333,6 +348,9 @@ export interface RefreshKeyboardButtonPayload {
 export type SubscribeToSectionButtonPayload = (
   SubscribeToPosterButtonPayload
   | SubscribeToPlaylistsButtonPayload
+  | SubscribeToTextMaterialsButtonPayload
+  | SubscribeToAudioMaterialsButtonPayload
+  | SubscribeToDrawingsButtonPayload
 );
 
 export type ButtonPayload = (
@@ -353,11 +371,14 @@ export type ButtonPayload = (
   | TextMaterialsButtonPayload
   | LongreadButtonPayload
   | GroupHistoryButtonPayload
+  | SubscribeToTextMaterialsButtonPayload
   | AudioMaterialsButtonPayload
   | DigestsButtonPayload
   | PodcastsButtonPayload
+  | SubscribeToAudioMaterialsButtonPayload
   | DrawingsButtonPayload
   | DrawingButtonPayload
+  | SubscribeToDrawingsButtonPayload
   | WriteToSoundcheckButtonPayload
   | TellAboutGroupButtonPayload
   | TellAboutReleaseButtonPayload
@@ -469,20 +490,7 @@ export enum Genre {
   ABOUT_MUSIC = 'ABOUT_MUSIC',
 }
 
-export interface MarketService {
-  type: 'market';
-  id: string;
-}
-
 export type Service = 'stickers_design' | 'soundcheck_ads';
-
-export interface Drawing {
-  id: string;
-  name: string;
-  postId: string;
-}
-
-export type DrawingParams = Omit<Drawing, 'id'>;
 
 export interface TellAboutGroupUserState {
   command: 'write_to_soundcheck/tell_about_group/message';
@@ -558,13 +566,6 @@ export enum Subscription {
   FOR_MUSICIANS = 'FOR_MUSICIANS',
 }
 
-export interface User {
-  id: number;
-  lastMessageDate: number;
-  state: UserState;
-  subscriptions: Subscription[];
-}
-
 export type Target = (
   'tellAboutGroup' | 'tellAboutRelease' | 'collaboration'
   | 'tellAboutBug' | 'wantToParticipate' | 'other' | 'poster' | 'stats'
@@ -580,32 +581,15 @@ export interface Config {
   targets: Record<Target, number[]>;
 }
 
-export interface Repost {
-  userId: number;
-  postId: string;
-  originalPostId: string;
+export interface ClicksGroup {
+  payload: Partial<ButtonPayload>;
+  count: number;
 }
 
-export interface DailyStats {
-  date: number;
-  groupLeaveUsers: { userId: number; self: boolean; }[];
-  groupJoinUsers: number[];
-  clicks: {
-    userId: number;
-    date: number;
-    payload: ButtonPayload;
-  }[];
-  reposts: Repost[];
-}
-
-export interface SubscriptionPost {
-  postId: string;
-  sent: number[];
-}
-
-export interface ServiceResponse {
+export interface ServiceParams {
+  name: string;
   message: string;
   attachments?: string[];
 }
 
-export type StatsPeriod = 'today' | 'yesterday';
+export type StatsPeriod = 'today' | 'yesterday' | 'this_week' | 'this_month' | 'prev_week' | 'prev_month';

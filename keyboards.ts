@@ -6,17 +6,25 @@ import {
   ButtonPayload,
   Keyboard,
   KeyboardButton,
+  Service,
   SubscribeToSectionButtonPayload,
   Subscription,
 } from './types';
-import { captions, genreNames, genresButtons, subscriptionNames, subscriptionButtons } from './constants';
+import {
+  captions,
+  genreNames,
+  genresButtons,
+  services,
+  subscriptionNames,
+  subscriptionButtons,
+} from './constants';
 import { getWeekString } from './helpers';
 import User from './database/User';
 import Drawing from './database/Drawing';
 
 export interface SubscriptionParams {
   subscription: Subscription;
-  generateKeyboard(user: User): Keyboard;
+  generateKeyboard(user: User): Keyboard | Promise<Keyboard>;
 }
 
 export const backButtonText: Record<BackButtonDest, string> = {
@@ -35,6 +43,18 @@ export const subscriptionMap: Record<SubscribeToSectionButtonPayload['command'],
   'playlists/subscribe': {
     subscription: Subscription.PLAYLISTS,
     generateKeyboard: generatePlaylistsKeyboard
+  },
+  'text_materials/subscribe': {
+    subscription: Subscription.TEXT_MATERIALS,
+    generateKeyboard: generateTextMaterialsKeyboard
+  },
+  'audio_materials/subscribe': {
+    subscription: Subscription.AUDIO_MATERIALS,
+    generateKeyboard: generateAudioMaterialsKeyboard
+  },
+  'drawings/subscribe': {
+    subscription: Subscription.DRAWINGS,
+    generateKeyboard: generateDrawingsKeyboard
   },
 };
 
@@ -135,40 +155,40 @@ export const servicesKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton(captions.stickers_design, {
-        command: 'services/service',
-        service: 'stickers_design'
-      }),
-      generateButton(captions.soundcheck_ads, {
-        command: 'services/service',
-        service: 'soundcheck_ads'
-      }),
+      generateServiceButton('stickers_design'),
+      generateServiceButton('soundcheck_ads'),
     ],
     [generateBackButton()],
   ]
 };
 
-export const textMaterialsKeyboard: Keyboard = {
-  one_time: false,
-  buttons: [
-    [
-      generateButton(captions.longreads, { command: 'text_materials/longread' }),
-      generateButton(captions.group_history, { command: 'text_materials/group_history' }),
-    ],
-    [generateBackButton()],
-  ]
-};
+export function generateTextMaterialsKeyboard(user: User): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      [
+        generateButton(captions.longreads, { command: 'text_materials/longread' }),
+        generateButton(captions.group_history, { command: 'text_materials/group_history' }),
+      ],
+      [generateSubscribeButton(user, 'text_materials/subscribe')],
+      [generateBackButton()],
+    ]
+  };
+}
 
-export const audioMaterialsKeyboard: Keyboard = {
-  one_time: false,
-  buttons: [
-    [
-      generateButton(captions.digests, { command: 'audio_materials/digests' }),
-      // generateButton(captions.podcasts, { command: 'audio_materials/podcasts' }),
-    ],
-    [generateBackButton()],
-  ]
-};
+export function generateAudioMaterialsKeyboard(user: User): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      [
+        generateButton(captions.digests, { command: 'audio_materials/digests' }),
+        // generateButton(captions.podcasts, { command: 'audio_materials/podcasts' }),
+      ],
+      [generateSubscribeButton(user, 'audio_materials/subscribe')],
+      [generateBackButton()],
+    ]
+  };
+}
 
 export const writeToSoundcheckKeyboard: Keyboard = {
   one_time: false,
@@ -245,6 +265,14 @@ export const adminClickStatsKeyboard: Keyboard = {
       generateButton(captions.today, { command: 'admin/stats/clicks/period', period: 'today' }),
       generateButton(captions.yesterday, { command: 'admin/stats/clicks/period', period: 'yesterday' }),
     ],
+    [
+      generateButton(captions.this_week, { command: 'admin/stats/clicks/period', period: 'this_week' }),
+      generateButton(captions.prev_week, { command: 'admin/stats/clicks/period', period: 'prev_week' }),
+    ],
+    [
+      generateButton(captions.this_month, { command: 'admin/stats/clicks/period', period: 'this_month' }),
+      generateButton(captions.prev_month, { command: 'admin/stats/clicks/period', period: 'prev_month' }),
+    ],
     [generateBackButton(BackButtonDest.ADMIN_STATS)],
     [generateBackButton(BackButtonDest.ADMIN)],
     [generateBackButton()],
@@ -257,6 +285,10 @@ export const adminGroupStatsKeyboard: Keyboard = {
     [
       generateButton(captions.today, { command: 'admin/stats/group/period', period: 'today' }),
       generateButton(captions.yesterday, { command: 'admin/stats/group/period', period: 'yesterday' }),
+    ],
+    [
+      generateButton(captions.this_week, { command: 'admin/stats/group/period', period: 'this_week' }),
+      generateButton(captions.prev_week, { command: 'admin/stats/group/period', period: 'prev_week' }),
     ],
     [generateBackButton(BackButtonDest.ADMIN_STATS)],
     [generateBackButton(BackButtonDest.ADMIN)],
@@ -271,6 +303,10 @@ export const adminRepostStatsKeyboard: Keyboard = {
       generateButton(captions.today, { command: 'admin/stats/reposts/period', period: 'today' }),
       generateButton(captions.yesterday, { command: 'admin/stats/reposts/period', period: 'yesterday' }),
     ],
+    [
+      generateButton(captions.this_week, { command: 'admin/stats/reposts/period', period: 'this_week' }),
+      generateButton(captions.prev_week, { command: 'admin/stats/reposts/period', period: 'prev_week' }),
+    ],
     [generateBackButton(BackButtonDest.ADMIN_STATS)],
     [generateBackButton(BackButtonDest.ADMIN)],
     [generateBackButton()],
@@ -281,7 +317,7 @@ export async function generateAdminDrawingsKeyboard(): Promise<Keyboard> {
   return {
     one_time: false,
     buttons: [
-      ...(await Drawing.findAll()).map(({ id, name }) => [
+      ...(await Drawing.getActiveDrawings()).map(({ id, name }) => [
         generateButton(name, { command: 'admin/drawings/drawing', drawingId: id })
       ]),
       [
@@ -307,17 +343,14 @@ export function generateAdminDrawingMenuKeyboard(drawing: Drawing): Keyboard {
   };
 }
 
-export async function generateDrawingsKeyboard(): Promise<Keyboard | null> {
-  const buttons = (await Drawing.findAll()).map(({ id, name }) => [generateButton(name, { command: 'drawings/drawing', drawingId: id })]);
-
-  if (!buttons.length) {
-    return null;
-  }
+export async function generateDrawingsKeyboard(user: User): Promise<Keyboard> {
+  const buttons = (await Drawing.getActiveDrawings()).map(({ id, name }) => [generateButton(name, { command: 'drawings/drawing', drawingId: id })]);
 
   return {
     one_time: false,
     buttons: [
       ...buttons,
+      [generateSubscribeButton(user, 'drawings/subscribe')],
       [generateBackButton()],
     ]
   };
@@ -336,6 +369,13 @@ export function generateButton(text: string, payload: ButtonPayload, color: Butt
 
 export function generateBackButton(dest: BackButtonDest = BackButtonDest.MAIN): KeyboardButton {
   return generateButton(`← ${backButtonText[dest]}`, { command: 'back', dest }, ButtonColor.SECONDARY);
+}
+
+export function generateServiceButton(service: Service): KeyboardButton {
+  return generateButton(services[service].name, {
+    command: 'services/service',
+    service: 'stickers_design'
+  });
 }
 
 export function generateSubscribeButton(user: User, command: SubscribeToSectionButtonPayload['command']): KeyboardButton {

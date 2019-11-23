@@ -4,11 +4,11 @@ import BodyParser = require('koa-bodyparser');
 import Router = require('koa-router');
 import moment = require('moment-timezone');
 
-import Database from './Database';
 import {
   createEverydayDaemon,
   getAllConversations,
   refreshGoogleAccessToken,
+  rotateClicks,
   sendPosterMessage,
   sendStatsMessage,
   sendVKMessages,
@@ -18,7 +18,7 @@ import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
 import { generateMainKeyboard } from './keyboards';
 import config from './config';
-import { migrate } from './database/index';
+import { migrate } from './database';
 import VKError from './VKError';
 
 declare module 'koa' {
@@ -83,13 +83,10 @@ async function main() {
       filter: 'managers'
     }),
     refreshGoogleAccessToken(),
-    Database.migrate(),
     migrate()
   ]);
 
   managers = items.map(({ id }) => id);
-
-  await Database.prepare();
 
   if (false) {
     const userIds = await getAllConversations();
@@ -112,6 +109,7 @@ async function main() {
 
   createEverydayDaemon('23:00:00', sendPosterMessage);
   createEverydayDaemon('05:00:00', sendStatsMessage);
+  createEverydayDaemon('05:10:00', rotateClicks);
 }
 
 (async () => {

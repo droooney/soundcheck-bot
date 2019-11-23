@@ -2,43 +2,34 @@ import * as Sequelize from 'sequelize';
 
 import sequelize from './';
 
-export default interface Drawing {
+export default interface Repost {
   id: number;
-  active: boolean;
-  name: string;
   postId: string;
+  originalPostId: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export default class Drawing extends Sequelize.Model {
-  static async getActiveDrawings(): Promise<Drawing[]> {
-    return Drawing.findAll({
-      where: {
-        active: true
-      }
-    });
-  }
+export default class Repost extends Sequelize.Model {
+
 }
 
-Drawing.init({
+Repost.init({
   id: {
     type: Sequelize.INTEGER,
     allowNull: false,
     primaryKey: true,
     autoIncrement: true,
   },
-  active: {
-    type: Sequelize.BOOLEAN,
-    allowNull: false,
-    defaultValue: true,
-  },
-  name: {
-    type: Sequelize.STRING,
-    allowNull: false,
-  },
   postId: {
     type: Sequelize.STRING,
-    field: 'post_id',
     allowNull: false,
+    field: 'post_id',
+  },
+  originalPostId: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    field: 'original_post_id',
   },
   createdAt: {
     type: Sequelize.DATE,
@@ -52,5 +43,5 @@ Drawing.init({
   },
 }, {
   sequelize,
-  tableName: 'drawings'
+  tableName: 'reposts'
 });

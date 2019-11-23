@@ -3,9 +3,11 @@ import axios, { AxiosResponse } from 'axios';
 import * as jwt from 'jsonwebtoken';
 import * as _ from 'lodash';
 import moment = require('moment-timezone');
+import * as Sequelize from 'sequelize';
 
 import {
   ButtonPayload,
+  ClicksGroup,
   Concert,
   ConversationsResponse,
   Event,
@@ -15,17 +17,21 @@ import {
   ManagersResponse,
   Message,
   Post,
-  Repost,
   SendMessageResponse,
+  Service,
   StatsPeriod,
   Subscription,
   WallAttachment,
 } from './types';
-import { captions, subscriptionNames } from './constants';
+import { captions, services, subscriptionNames } from './constants';
 import config from './config';
 import VKError from './VKError';
-import Database from './Database';
 import User from './database/User';
+import Drawing from './database/Drawing';
+import Click from './database/Click';
+import DailyClicks from './database/DailyClicks';
+import GroupUser from './database/GroupUser';
+import Repost from './database/Repost';
 
 const {
   private_key,
@@ -208,7 +214,7 @@ export function getConcertFields(description?: string): Partial<Record<string, s
   let prevKey = '';
 
   while (string) {
-    const match = string.match(/(?:^|\n)([а-я ]+):/i);
+    const match = string.match(/(?:^|\n)([^:]*):/i);
 
     if (!match) {
       fields[prevKey] = string.trim();
@@ -410,14 +416,128 @@ export async function getSubscriptionStats(): Promise<string> {
   return _.map(subscriptions, (count, subscription: Subscription) => `${subscriptionNames[subscription]}: ${count}`).join('\n');
 }
 
-export function getClickStats(period: StatsPeriod): string {
-  const periodStats = Database.getPeriodDailyStats(period);
-  const allClicks = periodStats.reduce((count, dailyStats) => count + dailyStats.clicks.length, 0);
+export function getStatsPeriodWhere(period: StatsPeriod, columnName: 'createdAt' | 'date'): Sequelize.WhereAttributeHash {
+  const start = moment();
+  const end = start.clone();
+
+  if (period === 'today') {
+    start.startOf('day');
+    end.endOf('day');
+  } else if (period === 'yesterday') {
+    start.subtract(1, 'day').startOf('day');
+    end.subtract(1, 'day').endOf('day');
+  } else if (period === 'this_week') {
+    start.startOf('week');
+    end.endOf('week');
+  } else if (period === 'prev_week') {
+    start.subtract(1, 'week').startOf('week');
+    end.subtract(1, 'week').endOf('week');
+  } else if (period === 'this_month') {
+    start.startOf('month');
+    end.endOf('month');
+  } else if (period === 'prev_month') {
+    start.subtract(1, 'month').startOf('month');
+    end.subtract(1, 'month').endOf('month');
+  }
+
+  return {
+    [columnName]: {
+      [Sequelize.Op.gte]: start.toDate(),
+      [Sequelize.Op.lte]: end.toDate(),
+    }
+  };
+}
+
+export function getClickGroups(clicks: Click[]): ClicksGroup[] {
+  const clickGroups: ClicksGroup[] = [];
+
+  clicks.forEach((click) => {
+    const payload: Partial<ButtonPayload> = click.payload.command === 'poster/type/day'
+      ? { command: 'poster/type/day' }
+      : click.payload.command === 'poster/type/week'
+        ? { command: 'poster/type/week' }
+        : click.payload;
+    const group = clickGroups.find((clicksGroup) => _.isEqual(clicksGroup.payload, payload));
+
+    if (group) {
+      group.count++;
+    } else {
+      clickGroups.push({ payload, count: 1 });
+    }
+  });
+
+  return clickGroups;
+}
+
+export function mergeClickGroups(clickGroups: ClicksGroup[][]): ClicksGroup[] {
+  const groups: ClicksGroup[] = [];
+
+  clickGroups.forEach((clickGroups) => {
+    clickGroups.forEach((clicksGroup) => {
+      const group = groups.find(({ payload }) => _.isEqual(clicksGroup.payload, payload));
+
+      if (group) {
+        group.count += clicksGroup.count;
+      } else {
+        groups.push(clicksGroup);
+      }
+    });
+  });
+
+  return groups;
+}
+
+export async function getClickStats(period: StatsPeriod): Promise<string> {
+  let clickGroups: ClicksGroup[];
+
+  if (period === 'today' || period === 'yesterday' || period === 'this_week') {
+    clickGroups = getClickGroups(
+      await Click.findAll({
+        where: getStatsPeriodWhere(period, 'createdAt')
+      })
+    );
+  } else {
+    const today = moment();
+    const yesterday = today.clone().subtract(1, 'day').startOf('day');
+    const dailyClicks = await DailyClicks.findAll({
+      where: getStatsPeriodWhere(period, 'date')
+    });
+
+    clickGroups = mergeClickGroups(dailyClicks.map(({ clicks }) => clicks));
+
+    if (
+      (period === 'this_month' || (period === 'prev_week' && !yesterday.isSame(today, 'week')))
+      && dailyClicks.every(({ date }) => +date !== +yesterday)
+    ) {
+      clickGroups = mergeClickGroups([
+        clickGroups,
+        getClickGroups(
+          await Click.findAll({
+            where: getStatsPeriodWhere('yesterday', 'createdAt')
+          })
+        )
+      ]);
+    }
+
+    if (period === 'this_month') {
+      clickGroups = mergeClickGroups([
+        clickGroups,
+        getClickGroups(
+          await Click.findAll({
+            where: getStatsPeriodWhere('today', 'createdAt')
+          })
+        )
+      ]);
+    }
+  }
+
+  const allClicks = clickGroups.reduce((count, clicksGroup) => count + clicksGroup.count, 0);
 
   if (!allClicks) {
     return captions.no_clicks;
   }
 
+  const drawings = await Drawing.findAll();
   const buttonStats: { payload: Partial<ButtonPayload> | 'all'; caption: string; }[] = [
     { payload: 'all', caption: captions.clicks_all },
     { payload: { command: 'poster' }, caption: captions.poster },
@@ -429,6 +549,49 @@ export function getClickStats(period: StatsPeriod): string {
     ..._.map(Genre, (genre) => (
       { payload: { command: 'poster/type/genre' as 'poster/type/genre', genre }, caption: captions.poster_genre_type(genre) }
     )),
+    { payload: { command: 'poster/subscribe', subscribed: false }, caption: `${captions.poster} (${captions.subscribe})` },
+    { payload: { command: 'poster/subscribe', subscribed: true }, caption: `${captions.poster} (${captions.unsubscribe})` },
+    { payload: { command: 'playlists' }, caption: captions.playlists },
+    { payload: { command: 'playlists/all' }, caption: `${captions.playlists} (${captions.playlists_all})` },
+    { payload: { command: 'playlists/thematic' }, caption: `${captions.playlists} (${captions.playlists_thematic})` },
+    { payload: { command: 'playlists/genre' }, caption: `${captions.playlists} (${captions.playlists_genre})` },
+    { payload: { command: 'playlists/subscribe', subscribed: false }, caption: `${captions.playlists} (${captions.subscribe})` },
+    { payload: { command: 'playlists/subscribe', subscribed: true }, caption: `${captions.playlists} (${captions.unsubscribe})` },
+    { payload: { command: 'releases' }, caption: captions.releases },
+    { payload: { command: 'drawings' }, caption: captions.drawings },
+    ...drawings.map((drawing) => (
+      { payload: { command: 'drawings/drawing' as 'drawings/drawing', drawingId: drawing.id }, caption: `${captions.drawing} (${drawing.name})` }
+    )),
+    { payload: { command: 'drawings/subscribe', subscribed: false }, caption: `${captions.drawings} (${captions.subscribe})` },
+    { payload: { command: 'drawings/subscribe', subscribed: true }, caption: `${captions.drawings} (${captions.unsubscribe})` },
+    { payload: { command: 'text_materials' }, caption: captions.text_materials },
+    { payload: { command: 'text_materials/longread' }, caption: captions.longreads },
+    { payload: { command: 'text_materials/group_history' }, caption: captions.group_history },
+    { payload: { command: 'text_materials/subscribe', subscribed: false }, caption: `${captions.text_materials} (${captions.subscribe})` },
+    { payload: { command: 'text_materials/subscribe', subscribed: true }, caption: `${captions.text_materials} (${captions.unsubscribe})` },
+    { payload: { command: 'audio_materials' }, caption: captions.audio_materials },
+    { payload: { command: 'audio_materials/digests' }, caption: captions.digests },
+    { payload: { command: 'audio_materials/subscribe', subscribed: false }, caption: `${captions.audio_materials} (${captions.subscribe})` },
+    { payload: { command: 'audio_materials/subscribe', subscribed: true }, caption: `${captions.audio_materials} (${captions.unsubscribe})` },
+    { payload: { command: 'services' }, caption: captions.services },
+    { payload: { command: 'services/service', service: 'stickers_design' }, caption: captions.services },
+    ..._.map(services, ({ name }, service) => (
+      { payload: { command: 'services/service' as 'services/service', service: service as Service }, caption: `${captions.services} (${name})` }
+    )),
+    { payload: { command: 'subscriptions' }, caption: captions.subscriptions },
+    ..._.map(Subscription, (subscription) => (
+      [false, true].map((subscribed) => ({
+        payload: { command: 'subscriptions/subscription' as 'subscriptions/subscription', subscription, subscribed },
+        caption: `${captions.subscriptions} (${subscriptionNames[subscription]} / ${subscribed ? captions.unsubscribe : captions.subscribe})`
+      }))
+    )).flat(),
+    { payload: { command: 'write_to_soundcheck' }, caption: captions.write_to_soundcheck },
+    { payload: { command: 'write_to_soundcheck/tell_about_group' }, caption: `${captions.write_to_soundcheck} (${captions.tell_about_group})` },
+    { payload: { command: 'write_to_soundcheck/tell_about_release' }, caption: `${captions.write_to_soundcheck} (${captions.tell_about_release})` },
+    { payload: { command: 'write_to_soundcheck/collaboration' }, caption: `${captions.write_to_soundcheck} (${captions.collaboration})` },
+    { payload: { command: 'write_to_soundcheck/want_to_participate' }, caption: `${captions.write_to_soundcheck} (${captions.want_to_participate})` },
+    { payload: { command: 'write_to_soundcheck/tell_about_bug' }, caption: `${captions.write_to_soundcheck} (${captions.tell_about_bug})` },
+    { payload: { command: 'write_to_soundcheck/other' }, caption: `${captions.write_to_soundcheck} (${captions.write_to_soundcheck_other})` },
   ];
 
   return buttonStats
@@ -437,25 +600,41 @@ export function getClickStats(period: StatsPeriod): string {
         return `${caption}: ${allClicks}`;
       }
 
-      const count = periodStats.reduce((count, dailyStats) => (
-        dailyStats.clicks.reduce((count, click) => (
-          count + (_.isMatch(click.payload, payload) ? 1 : 0)
-        ), count)
-      ), 0);
+      const clicksGroup = _.find(clickGroups, (clicksGroup) => _.isEqual(clicksGroup.payload, payload));
+      const count = clicksGroup ? clicksGroup.count : 0;
 
       return `${caption}: ${count} (${+((count / allClicks) * 100).toFixed(2)}%)`;
     })
     .join('\n');
 }
 
-export function getGroupStats(period: StatsPeriod): string {
-  const periodStats = Database.getPeriodDailyStats(period);
+export async function getGroupStats(period: StatsPeriod): Promise<string> {
+  const groupUsers = await GroupUser.findAll({
+    where: getStatsPeriodWhere(period, 'createdAt')
+  });
+  const userStartStatuses: Record<number, boolean> = {};
+  const userEndStatuses: Record<number, boolean> = {};
   const joinedUsers: number[] = [];
   const leftUsers: number[] = [];
 
-  periodStats.forEach(({ groupJoinUsers, groupLeaveUsers }) => {
-    joinedUsers.push(...groupJoinUsers);
-    leftUsers.push(...groupLeaveUsers.filter(({ self }) => self).map(({ userId }) => userId));
+  groupUsers.forEach(({ vkId, status }) => {
+    if (!(vkId in userStartStatuses)) {
+      userStartStatuses[vkId] = status;
+    }
+
+    userEndStatuses[vkId] = status;
+  });
+
+  _.forEach(userEndStatuses, (status, vkId) => {
+    const startStatus = userStartStatuses[+vkId];
+
+    if (startStatus === status) {
+      if (status) {
+        joinedUsers.push(+vkId);
+      } else {
+        leftUsers.push(+vkId);
+      }
+    }
   });
 
   return getSectionsString([
@@ -470,9 +649,10 @@ export function getGroupStats(period: StatsPeriod): string {
   ]);
 }
 
-export function getRepostStats(period: StatsPeriod): string {
-  const periodStats = Database.getPeriodDailyStats(period);
-  const allReposts = periodStats.reduce<Repost[]>((reposts, dailyStats) => [...reposts, ...dailyStats.reposts], []);
+export async function getRepostStats(period: StatsPeriod): Promise<string> {
+  const allReposts = await Repost.findAll({
+    where: getStatsPeriodWhere(period, 'createdAt')
+  });
 
   if (!allReposts.length) {
     return captions.no_reposts;
@@ -489,15 +669,29 @@ export function getRepostStats(period: StatsPeriod): string {
 }
 
 export async function getAllStats(period: StatsPeriod): Promise<string> {
+  const [subscriptionStats, clickStats, groupStats, repostStats] = await Promise.all([
+    getSubscriptionStats(),
+    getClickStats(period),
+    getGroupStats(period),
+    getRepostStats(period),
+  ]);
+
   return getSectionsString([
-    { header: captions.subscriptions, rows: [await getSubscriptionStats()] },
-    { header: captions.clicks, rows: [getClickStats(period)] },
-    { header: captions.group, rows: [getGroupStats(period)] },
-    { header: captions.reposts, rows: [getRepostStats(period)] },
+    { header: captions.subscriptions, rows: [subscriptionStats] },
+    { header: captions.clicks, rows: [clickStats] },
+    { header: captions.group, rows: [groupStats] },
+    { header: captions.reposts, rows: [repostStats] },
   ].map(({ header, rows }) => ({ header: `——————————————\n${header.toUpperCase()}\n——————————————\n`, rows })));
 }
 
 export function createEverydayDaemon(time: string, daemon: () => void) {
+  const daemonFunc = async () => {
+    try {
+      await daemon();
+    } catch (err) {
+      console.log(`${daemon.name} error`, err);
+    }
+  };
   const timeMoment = moment(time, 'HH:mm:ss');
   const ms = +timeMoment - +timeMoment.clone().startOf('day');
   const now = moment();
@@ -511,9 +705,9 @@ export function createEverydayDaemon(time: string, daemon: () => void) {
   }
 
   setTimeout(() => {
-    daemon();
+    daemonFunc();
 
-    setInterval(daemon, 24 * 60 * 60 * 1000);
+    setInterval(daemonFunc, 24 * 60 * 60 * 1000);
   }, +nextDaemonRunTime - +now);
 }
 
@@ -533,4 +727,26 @@ export async function sendPosterMessage() {
 
 export async function sendStatsMessage() {
   await sendVKMessage(config.targets.stats, await getAllStats('yesterday'));
+}
+
+export async function rotateClicks() {
+  const yesterday = moment().subtract(1, 'day').startOf('day');
+  const destroyDate = moment().subtract(10, 'days').startOf('day');
+  const yesterdayClicks = await Click.findAll({
+    where: getStatsPeriodWhere('yesterday', 'createdAt')
+  });
+
+  await Promise.all([
+    DailyClicks.create({
+      date: yesterday.toDate(),
+      clicks: getClickGroups(yesterdayClicks)
+    }),
+    Click.destroy({
+      where: {
+        createdAt: {
+          [Sequelize.Op.lt]: destroyDate.toDate()
+        }
+      }
+    })
+  ]);
 }
