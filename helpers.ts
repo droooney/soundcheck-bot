@@ -467,25 +467,44 @@ export async function getSubscriptionStats(period: StatsPeriod): Promise<string>
     ).join('\n');
   }
 
-  const periodStart = getStatsPeriodBounds(period).start.subtract(1, 'day');
-  const periodEnd = periodStart.clone().endOf('day');
-  const [subscriptionsNow, dailyStatsThen] = await Promise.all([
-    getSubscriptionGroups(),
+  const periodBounds = getStatsPeriodBounds(period);
+  const periodStart = {
+    start: periodBounds.start.clone().subtract(1, 'day').startOf('day'),
+    end: periodBounds.start.clone().subtract(1, 'day').endOf('day')
+  };
+  const periodEnd = {
+    start: periodBounds.end.clone().startOf('day'),
+    end: periodBounds.end.clone().endOf('day')
+  };
+  const [dailyStatsPeriodStart, dailyStatsPeriodEnd] = await Promise.all([
     DailyStats.findOne({
       where: {
         date: {
-          [Sequelize.Op.gte]: periodStart.toDate(),
-          [Sequelize.Op.lte]: periodEnd.toDate()
+          [Sequelize.Op.gte]: periodStart.start.toDate(),
+          [Sequelize.Op.lte]: periodEnd.end.toDate()
+        }
+      }
+    }),
+    DailyStats.findOne({
+      where: {
+        date: {
+          [Sequelize.Op.gte]: periodStart.end.toDate(),
+          [Sequelize.Op.lte]: periodEnd.end.toDate()
         }
       }
     })
   ]);
-  const subscriptionsThen = dailyStatsThen
-    ? dailyStatsThen.subscriptions
+  const subscriptionsPeriodStart = dailyStatsPeriodStart
+    ? dailyStatsPeriodStart.subscriptions
     : _.mapValues(Subscription, () => 0);
+  const subscriptionsPeriodEnd = dailyStatsPeriodEnd
+    ? dailyStatsPeriodEnd.subscriptions
+    : period === 'today' || period === 'this_week' || period === 'this_month'
+      ? await getSubscriptionGroups()
+      : subscriptionsPeriodStart;
 
-  return _.map(subscriptionsNow, (count, subscription: Subscription) => {
-    const diff = count - (subscriptionsThen[subscription] || 0);
+  return _.map(Subscription, (subscription) => {
+    const diff = (subscriptionsPeriodEnd[subscription] || 0) - (subscriptionsPeriodStart[subscription] || 0);
 
     return `${subscriptionNames[subscription]}: ${diff >= 0 ? '+' : ''}${diff}`;
   }).join('\n');
