@@ -469,6 +469,21 @@ export interface Event {
   location?: string;
 }
 
+export interface File {
+  kind: string;
+  id: string;
+  name: string;
+  mimeType: string;
+  shared: boolean;
+  parents?: string[];
+}
+
+export interface FileMetadata {
+  mimeType: string;
+  name: string;
+  parents?: string[];
+}
+
 export interface Concert {
   ready: boolean;
   title: string;
@@ -482,6 +497,10 @@ export interface Concert {
 export interface EventsResponse {
   nextPageToken?: string;
   items?: Event[];
+}
+
+export interface FilesResponse {
+  files: { id: string; }[];
 }
 
 export enum Genre {
@@ -578,7 +597,7 @@ export type Target = (
 );
 
 export interface Config {
-  dbConnection: string;
+  dbConnection: DbConnection;
   port: number;
   endpoint: string;
   soundcheckId: number;
@@ -599,3 +618,12 @@ export interface ServiceParams {
 }
 
 export type StatsPeriod = 'all_time' | 'today' | 'yesterday' | 'this_week' | 'this_month' | 'prev_week' | 'prev_month';
+
+export interface DbConnection {
+  dialect: 'postgres';
+  user: string;
+  password: string;
+  host: string;
+  port: number;
+  database: string;
+}

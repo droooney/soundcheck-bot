@@ -8,7 +8,9 @@ import {
   createEverydayDaemon,
   getAllConversations,
   refreshGoogleAccessToken,
+  removeUnusedDumpsInDrive,
   rotateClicks,
+  rotateDbDumps,
   saveDailyStats,
   sendClickStatsMessage,
   sendPosterMessage,
@@ -114,6 +116,8 @@ async function main() {
   createEverydayDaemon('05:10:00', rotateClicks);
   createEverydayDaemon('00:01:00', saveDailyStats);
   createEverydayDaemon('01:00:00', sendClickStatsMessage);
+  createEverydayDaemon('05:30:00', rotateDbDumps);
+  createEverydayDaemon('06:00:00', removeUnusedDumpsInDrive);
 }
 
 (async () => {

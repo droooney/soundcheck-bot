@@ -1,7 +1,14 @@
 import { Config } from '../types';
 
 const config: Config = {
-  dbConnection: 'postgres://user:123@localhost:5432/soundcheck_bot_dev',
+  dbConnection: {
+    dialect: 'postgres',
+    user: 'user',
+    password: 'password',
+    host: 'localhost',
+    port: 5432,
+    database: 'soundcheck_bot_dev'
+  },
   port: 5778,
   endpoint: '/9lyvg7xn27axayu5ybpy3o1og67',
   soundcheckId: 164134127,

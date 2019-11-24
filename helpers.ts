@@ -1,9 +1,15 @@
 import * as qs from 'querystring';
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosResponse, Method } from 'axios';
 import * as jwt from 'jsonwebtoken';
 import * as _ from 'lodash';
 import moment = require('moment-timezone');
 import * as Sequelize from 'sequelize';
+import { ExecOptions as NativeExecOptions } from 'child_process';
+import { exec, Options as ExecOptions } from 'child-process-promise';
+import * as fs from 'fs-extra';
+import * as path from 'path';
+import * as uuid from 'uuid';
+import * as stream from 'stream';
 
 import {
   ButtonPayload,
@@ -12,6 +18,9 @@ import {
   ConversationsResponse,
   Event,
   EventsResponse,
+  File,
+  FileMetadata,
+  FilesResponse,
   Genre,
   Keyboard,
   ManagersResponse,
@@ -33,6 +42,8 @@ import DailyStats from './database/DailyStats';
 import GroupUser from './database/GroupUser';
 import Repost from './database/Repost';
 
+const dumpDir = `${__dirname}/database/dumps`;
+const versionFile = `${__dirname}/database/version`;
 const {
   private_key,
   client_email,
@@ -49,7 +60,12 @@ export async function refreshGoogleAccessToken() {
   const now = Math.floor(Date.now() / 1000);
   const jwtToken = jwt.sign({
     iss: client_email,
-    scope: 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events.readonly',
+    scope: [
+      'https://www.googleapis.com/auth/calendar.readonly',
+      'https://www.googleapis.com/auth/calendar.events.readonly',
+      'https://www.googleapis.com/auth/drive',
+      'https://www.googleapis.com/auth/drive.file',
+    ].join(' '),
     aud: token_uri,
     exp: now + 3600,
     iat: now
@@ -64,12 +80,20 @@ export async function refreshGoogleAccessToken() {
   googleAPIAccessToken = data.access_token;
 }
 
-export async function sendGoogleRequest<T>(method: string, query?: object): Promise<AxiosResponse<T>> {
+export interface SendGoogleRequestOptions {
+  url: string;
+  method: Method;
+  headers?: object;
+  query?: object;
+  data?: any;
+}
+
+export async function sendGoogleRequest<T>(options: SendGoogleRequestOptions): Promise<AxiosResponse<T>> {
   let i = 0;
 
   while (i++ < 5) {
     try {
-      return await trySendGoogleRequest(method, query);
+      return await trySendGoogleRequest(options);
     } catch (err) {
       if (err.response.data.error && err.response.data.error.code === 401) {
         await refreshGoogleAccessToken();
@@ -79,14 +103,18 @@ export async function sendGoogleRequest<T>(method: string, query?: object): Prom
     }
   }
 
-  return trySendGoogleRequest(method, query);
+  return trySendGoogleRequest(options);
 }
 
-export function trySendGoogleRequest<T>(method: string, query: object = {}): Promise<AxiosResponse<T>> {
-  return axios.get(`https://www.googleapis.com/calendar/v3${method}${query ? `?${qs.stringify(query as any)}` : ''}`, {
+export function trySendGoogleRequest<T>(options: SendGoogleRequestOptions): Promise<AxiosResponse<T>> {
+  return axios.request({
+    url: `${options.url}${options.query ? `?${qs.stringify(options.query as any)}` : ''}`,
+    method: options.method,
     headers: {
-      Authorization: `Bearer ${googleAPIAccessToken}`
-    }
+      Authorization: `Bearer ${googleAPIAccessToken}`,
+      ...options.headers
+    },
+    data: options.data,
   });
 }
 
@@ -95,13 +123,17 @@ export async function getEvents(calendarId: string, dateStart?: moment.Moment, d
   let pageToken: string | undefined;
 
   while (true) {
-    const { data } = await sendGoogleRequest<EventsResponse>(`/calendars/${encodeURIComponent(calendarId)}/events`, {
-      maxResults: 2500,
-      pageToken,
-      orderBy: 'startTime',
-      singleEvents: true,
-      ...(dateStart ? { timeMin: dateStart.toISOString(true) } : {}),
-      ...(dateEnd ? { timeMax: dateEnd.toISOString(true) } : {})
+    const { data } = await sendGoogleRequest<EventsResponse>({
+      url: `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`,
+      method: 'get',
+      query: {
+        maxResults: 2500,
+        pageToken,
+        orderBy: 'startTime',
+        singleEvents: true,
+        ...(dateStart ? { timeMin: dateStart.toISOString(true) } : {}),
+        ...(dateEnd ? { timeMax: dateEnd.toISOString(true) } : {})
+      }
     });
 
     if (!data.items) {
@@ -732,6 +764,110 @@ export async function getAllStats(period: StatsPeriod): Promise<string> {
   ].map(({ header, rows }) => ({ header: `——————————————\n${header.toUpperCase()}\n——————————————\n`, rows })));
 }
 
+export async function createDbDump(): Promise<string> {
+  const currentVersion = +await fs.readFile(versionFile, 'utf8');
+  const { user, host, database } = config.dbConnection;
+  const filename = `${dumpDir}/db_dump-v${currentVersion}-${moment().format('YYYY-MM-DD-HH-mm')}.sql`;
+  const command = `pg_dump -U ${user} -h ${host} ${database} > ${filename}`;
+
+  await executeCommand(command, { cwd: process.cwd() });
+
+  return filename;
+}
+
+export async function getAllGoogleDriveFiles(): Promise<File[]> {
+  const {
+    data: {
+      files
+    }
+  } = await sendGoogleRequest<FilesResponse>({
+    url: 'https://www.googleapis.com/drive/v3/files',
+    method: 'get',
+    query: {
+      pageSize: 1000
+    }
+  });
+
+  return Promise.all(
+    files.map(async ({ id }) => (
+      (await sendGoogleRequest<File>({
+        url: `https://www.googleapis.com/drive/v3/files/${id}`,
+        method: 'get',
+        query: {
+          fields: 'kind, id, name, mimeType, shared, parents'
+        }
+      })).data
+    ))
+  );
+}
+
+export async function uploadFile(filename: string, mimeType: string, parentFolder?: string) {
+  const metadata: FileMetadata = {
+    mimeType,
+    name: path.basename(filename)
+  };
+
+  if (parentFolder) {
+    metadata.parents = [parentFolder];
+  }
+
+  const multipart: [{ contentType: string; body: string; }, { contentType: string; body: stream.Readable; }] = [
+    { contentType: 'application/json', body: JSON.stringify(metadata) },
+    { contentType: mimeType, body: fs.createReadStream(filename) },
+  ];
+  const boundary = uuid.v4();
+  const finale = `--${boundary}--`;
+  const rStream = new stream.PassThrough({
+    flush(callback) {
+      this.push('\r\n');
+      this.push(finale);
+      callback();
+    }
+  });
+
+  for (const part of multipart) {
+    const preamble = `--${boundary}\r\nContent-Type: ${part.contentType}\r\n\r\n`;
+
+    rStream.push(preamble);
+
+    if (typeof part.body === 'string') {
+      rStream.push(part.body);
+      rStream.push('\r\n');
+    } else {
+      part.body.pipe(rStream);
+    }
+  }
+
+  await sendGoogleRequest({
+    url: 'https://www.googleapis.com/upload/drive/v3/files',
+    method: 'post',
+    headers: {
+      'Content-Type': `multipart/related; boundary=${boundary}`
+    },
+    query: {
+      uploadType: 'multipart'
+    },
+    data: rStream
+  });
+}
+
+export async function executeCommand(command: string, options?: NativeExecOptions & ExecOptions) {
+  try {
+    return (await exec(command, options)).stdout;
+  } catch (err) {
+    throw new Error(err.stderr);
+  }
+}
+
+export async function getSortedFiles(dir: string) {
+  const files = await fs.readdir(dir);
+
+  return (await Promise.all(files.map((file) => fs.stat(path.join(dir, file)))))
+    .map((stat, ix) => ({ stat, ix }))
+    .sort(({ stat: { birthtimeMs: b1 } }, { stat: { birthtimeMs: b2 } }) => b2 - b1)
+    .map(({ ix }) => path.join(dir, files[ix]));
+}
+
 export function createEverydayDaemon(time: string, daemon: () => void) {
   const daemonFunc = async () => {
     try {
@@ -813,4 +949,39 @@ export async function rotateClicks() {
       }
     }
   });
+}
+
+export async function rotateDbDumps() {
+  const filename = await createDbDump();
+
+  try {
+    await uploadFile(filename, 'application/x-sql', '1kiqlsctnlOvIDo2vUpTLrZUx5yg14bKe');
+  } catch (err) {
+    console.log('upload file error', err);
+  }
+
+  const DUMPS_TO_KEEP = 7;
+
+  await Promise.all(
+    (await getSortedFiles(dumpDir))
+      .slice(DUMPS_TO_KEEP)
+      .map((dump) => fs.unlink(dump))
+  );
+}
+
+export async function removeUnusedDumpsInDrive() {
+  const files = await getAllGoogleDriveFiles();
+
+  await Promise.all(
+    files.map(async (file) => {
+      if (file.mimeType === 'application/x-sql' && (!file.parents || !file.shared)) {
+        await sendGoogleRequest({
+          url: `https://www.googleapis.com/drive/v3/files/${file.id}`,
+          method: 'delete'
+        });
+
+        console.log(`dump ${file.name} deleted`);
+      }
+    })
+  );
 }
