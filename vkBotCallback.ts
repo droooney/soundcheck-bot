@@ -266,7 +266,17 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'releases') {
         await respond(captions.releases_response);
       } else if (payload.command === 'drawings') {
-        await respond(captions.choose_drawing, { keyboard: await generateDrawingsKeyboard(user) });
+        const keyboard = await generateDrawingsKeyboard(user);
+        const hasDrawings = keyboard.buttons.some((buttons) => (
+          buttons.some(({ action }) => (
+            !!action.payload && (JSON.parse(action.payload) as ButtonPayload).command === 'drawings/drawing'
+          ))
+        ));
+
+        await respond(
+          hasDrawings ? captions.choose_drawing : captions.no_drawings,
+          { keyboard: await generateDrawingsKeyboard(user) }
+        );
       } else if (payload.command === 'drawings/drawing') {
         const drawing = await Drawing.findByPk(payload.drawingId);
 
