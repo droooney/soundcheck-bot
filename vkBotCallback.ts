@@ -90,10 +90,7 @@ export default async (ctx: Context) => {
     const respond = async (message: string, options: SendVkMessageOptions = {}) => {
       await sendVKMessage(vkId, message, options);
     };
-    const [user] = await User.findOrCreate({
-      where: { vkId },
-      defaults: { vkId }
-    });
+    const user = await User.findOne({ where: { vkId } }) || await User.add({ vkId });
     const userState = user.state;
     const newLastMessageDate = new Date(body.object.date * 1000);
     let buttonPayload: ButtonPayload | null = null;

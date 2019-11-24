@@ -3,9 +3,12 @@ import * as Sequelize from 'sequelize';
 import sequelize from './';
 import { Subscription, UserState } from '../types';
 
-export default interface User {
-  id: number;
+export interface UserAddValues {
   vkId: number;
+}
+
+export default interface User extends UserAddValues {
+  id: number;
   lastMessageDate: Date;
   state: UserState;
   subscriptions: Subscription[];
@@ -14,6 +17,10 @@ export default interface User {
 }
 
 export default class User extends Sequelize.Model {
+  static async add(values: UserAddValues, options?: Sequelize.CreateOptions): Promise<User> {
+    return this.create(values, options);
+  }
+
   subscribe(subscription: Subscription) {
     if (!this.subscriptions.includes(subscription)) {
       this.subscriptions = [...this.subscriptions, subscription];
