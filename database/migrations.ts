@@ -52,6 +52,10 @@ const migrations: Migration[] = [
         primaryKey: true,
         autoIncrement: true,
       },
+      active: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+      },
       name: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -105,9 +109,9 @@ const migrations: Migration[] = [
     });
   },
 
-  // create daily clicks table
+  // create daily stats table
   async (queryInterface) => {
-    await queryInterface.createTable('daily_clicks', {
+    await queryInterface.createTable('daily_stats', {
       id: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -118,7 +122,17 @@ const migrations: Migration[] = [
         type: Sequelize.DATE,
         allowNull: false,
       },
-      clicks: {
+      clickGroups: {
+        type: Sequelize.JSONB,
+        allowNull: false,
+        field: 'click_groups',
+      },
+      userClicks: {
+        type: Sequelize.JSONB,
+        allowNull: false,
+        field: 'user_clicks',
+      },
+      subscriptions: {
         type: Sequelize.JSONB,
         allowNull: false,
       },
@@ -132,15 +146,6 @@ const migrations: Migration[] = [
         field: 'updated_at',
         allowNull: false,
       },
-    });
-  },
-
-  // add Drawing#active column
-  async (queryInterface) => {
-    await queryInterface.addColumn('drawings', 'active', {
-      type: Sequelize.BOOLEAN,
-      allowNull: false,
-      defaultValue: true,
     });
   },
 

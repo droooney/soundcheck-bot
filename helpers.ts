@@ -29,7 +29,7 @@ import VKError from './VKError';
 import User from './database/User';
 import Drawing from './database/Drawing';
 import Click from './database/Click';
-import DailyClicks from './database/DailyClicks';
+import DailyStats from './database/DailyStats';
 import GroupUser from './database/GroupUser';
 import Repost from './database/Repost';
 
@@ -407,13 +407,19 @@ export function getSectionsString(sections: { header: string; rows: string[]; }[
   return sections.map(({ header, rows }) => [header, ...rows].join('\n')).join('\n\n');
 }
 
-export async function getSubscriptionStats(): Promise<string> {
+export async function getSubscriptionGroups(): Promise<Record<Subscription, number>> {
   const users = await User.findAll();
-  const subscriptions = _.mapValues(Subscription, (subscription) => (
+
+  return _.mapValues(Subscription, (subscription) => (
     users.filter((user) => user.subscriptions.includes(subscription)).length
   ));
+}
 
-  return _.map(subscriptions, (count, subscription: Subscription) => `${subscriptionNames[subscription]}: ${count}`).join('\n');
+export async function getSubscriptionStats(): Promise<string> {
+  return _.map(
+    await getSubscriptionGroups(),
+    (count, subscription: Subscription) => `${subscriptionNames[subscription]}: ${count}`
+  ).join('\n');
 }
 
 export function getStatsPeriodWhere(period: StatsPeriod, columnName: 'createdAt' | 'date'): Sequelize.WhereAttributeHash {
@@ -499,11 +505,11 @@ export async function getClickStats(period: StatsPeriod): Promise<string> {
   } else {
     const today = moment();
     const yesterday = today.clone().subtract(1, 'day').startOf('day');
-    const dailyClicks = await DailyClicks.findAll({
+    const dailyClicks = await DailyStats.findAll({
       where: getStatsPeriodWhere(period, 'date')
     });
 
-    clickGroups = mergeClickGroups(dailyClicks.map(({ clicks }) => clicks));
+    clickGroups = mergeClickGroups(dailyClicks.map(({ clickGroups }) => clickGroups));
 
     if (
       (period === 'this_month' || (period === 'prev_week' && !yesterday.isSame(today, 'week')))
@@ -538,8 +544,9 @@ export async function getClickStats(period: StatsPeriod): Promise<string> {
   }
 
   const drawings = await Drawing.findAll();
-  const buttonStats: { payload: Partial<ButtonPayload> | 'all'; caption: string; }[] = [
+  const buttonStats: ({ payload: Partial<ButtonPayload> | 'all'; caption: string; } | null)[] = [
     { payload: 'all', caption: captions.clicks_all },
+    null,
     { payload: { command: 'poster' }, caption: captions.poster },
     { payload: { command: 'poster/type', type: 'day' }, caption: captions.poster_day },
     { payload: { command: 'poster/type/day' }, caption: captions.poster_choose_day },
@@ -549,53 +556,40 @@ export async function getClickStats(period: StatsPeriod): Promise<string> {
     ..._.map(Genre, (genre) => (
       { payload: { command: 'poster/type/genre' as 'poster/type/genre', genre }, caption: captions.poster_genre_type(genre) }
     )),
-    { payload: { command: 'poster/subscribe', subscribed: false }, caption: `${captions.poster} (${captions.subscribe})` },
-    { payload: { command: 'poster/subscribe', subscribed: true }, caption: `${captions.poster} (${captions.unsubscribe})` },
+    null,
     { payload: { command: 'playlists' }, caption: captions.playlists },
     { payload: { command: 'playlists/all' }, caption: `${captions.playlists} (${captions.playlists_all})` },
     { payload: { command: 'playlists/thematic' }, caption: `${captions.playlists} (${captions.playlists_thematic})` },
     { payload: { command: 'playlists/genre' }, caption: `${captions.playlists} (${captions.playlists_genre})` },
-    { payload: { command: 'playlists/subscribe', subscribed: false }, caption: `${captions.playlists} (${captions.subscribe})` },
-    { payload: { command: 'playlists/subscribe', subscribed: true }, caption: `${captions.playlists} (${captions.unsubscribe})` },
+    null,
     { payload: { command: 'releases' }, caption: captions.releases },
+    null,
     { payload: { command: 'drawings' }, caption: captions.drawings },
     ...drawings.map((drawing) => (
       { payload: { command: 'drawings/drawing' as 'drawings/drawing', drawingId: drawing.id }, caption: `${captions.drawing} (${drawing.name})` }
     )),
-    { payload: { command: 'drawings/subscribe', subscribed: false }, caption: `${captions.drawings} (${captions.subscribe})` },
-    { payload: { command: 'drawings/subscribe', subscribed: true }, caption: `${captions.drawings} (${captions.unsubscribe})` },
+    null,
     { payload: { command: 'text_materials' }, caption: captions.text_materials },
     { payload: { command: 'text_materials/longread' }, caption: captions.longreads },
     { payload: { command: 'text_materials/group_history' }, caption: captions.group_history },
-    { payload: { command: 'text_materials/subscribe', subscribed: false }, caption: `${captions.text_materials} (${captions.subscribe})` },
-    { payload: { command: 'text_materials/subscribe', subscribed: true }, caption: `${captions.text_materials} (${captions.unsubscribe})` },
+    null,
     { payload: { command: 'audio_materials' }, caption: captions.audio_materials },
     { payload: { command: 'audio_materials/digests' }, caption: captions.digests },
-    { payload: { command: 'audio_materials/subscribe', subscribed: false }, caption: `${captions.audio_materials} (${captions.subscribe})` },
-    { payload: { command: 'audio_materials/subscribe', subscribed: true }, caption: `${captions.audio_materials} (${captions.unsubscribe})` },
+    null,
     { payload: { command: 'services' }, caption: captions.services },
-    { payload: { command: 'services/service', service: 'stickers_design' }, caption: captions.services },
     ..._.map(services, ({ name }, service) => (
       { payload: { command: 'services/service' as 'services/service', service: service as Service }, caption: `${captions.services} (${name})` }
     )),
-    { payload: { command: 'subscriptions' }, caption: captions.subscriptions },
-    ..._.map(Subscription, (subscription) => (
-      [false, true].map((subscribed) => ({
-        payload: { command: 'subscriptions/subscription' as 'subscriptions/subscription', subscription, subscribed },
-        caption: `${captions.subscriptions} (${subscriptionNames[subscription]} / ${subscribed ? captions.unsubscribe : captions.subscribe})`
-      }))
-    )).flat(),
-    { payload: { command: 'write_to_soundcheck' }, caption: captions.write_to_soundcheck },
-    { payload: { command: 'write_to_soundcheck/tell_about_group' }, caption: `${captions.write_to_soundcheck} (${captions.tell_about_group})` },
-    { payload: { command: 'write_to_soundcheck/tell_about_release' }, caption: `${captions.write_to_soundcheck} (${captions.tell_about_release})` },
-    { payload: { command: 'write_to_soundcheck/collaboration' }, caption: `${captions.write_to_soundcheck} (${captions.collaboration})` },
-    { payload: { command: 'write_to_soundcheck/want_to_participate' }, caption: `${captions.write_to_soundcheck} (${captions.want_to_participate})` },
-    { payload: { command: 'write_to_soundcheck/tell_about_bug' }, caption: `${captions.write_to_soundcheck} (${captions.tell_about_bug})` },
-    { payload: { command: 'write_to_soundcheck/other' }, caption: `${captions.write_to_soundcheck} (${captions.write_to_soundcheck_other})` },
   ];
 
   return buttonStats
-    .map(({ payload, caption }) => {
+    .map((button) => {
+      if (!button) {
+        return '';
+      }
+
+      const { payload, caption } = button;
+
       if (payload === 'all') {
         return `${caption}: ${allClicks}`;
       }
@@ -669,16 +663,14 @@ export async function getRepostStats(period: StatsPeriod): Promise<string> {
 }
 
 export async function getAllStats(period: StatsPeriod): Promise<string> {
-  const [subscriptionStats, clickStats, groupStats, repostStats] = await Promise.all([
+  const [subscriptionStats, groupStats, repostStats] = await Promise.all([
     getSubscriptionStats(),
-    getClickStats(period),
     getGroupStats(period),
     getRepostStats(period),
   ]);
 
   return getSectionsString([
     { header: captions.subscriptions, rows: [subscriptionStats] },
-    { header: captions.clicks, rows: [clickStats] },
     { header: captions.group, rows: [groupStats] },
     { header: captions.reposts, rows: [repostStats] },
   ].map(({ header, rows }) => ({ header: `——————————————\n${header.toUpperCase()}\n——————————————\n`, rows })));
@@ -687,9 +679,13 @@ export async function getAllStats(period: StatsPeriod): Promise<string> {
 export function createEverydayDaemon(time: string, daemon: () => void) {
   const daemonFunc = async () => {
     try {
+      console.log(`starting daemon ${daemon.name} at ${moment().format('YYYY-MM-DD HH:mm:ss.SSS')}`);
+
       await daemon();
+
+      console.log(`daemon ${daemon.name} finished successfully at ${moment().format('YYYY-MM-DD HH:mm:ss.SSS')}`);
     } catch (err) {
-      console.log(`${daemon.name} error`, err);
+      console.log(`daemon ${daemon.name} error`, err);
     }
   };
   const timeMoment = moment(time, 'HH:mm:ss');
@@ -729,24 +725,36 @@ export async function sendStatsMessage() {
   await sendVKMessage(config.targets.stats, await getAllStats('yesterday'));
 }
 
-export async function rotateClicks() {
-  const yesterday = moment().subtract(1, 'day').startOf('day');
-  const destroyDate = moment().subtract(10, 'days').startOf('day');
-  const yesterdayClicks = await Click.findAll({
-    where: getStatsPeriodWhere('yesterday', 'createdAt')
-  });
+export async function sendClickStatsMessage() {
+  if (moment().weekday() === 0) {
+    await sendVKMessage(config.targets.stats, await getClickStats('prev_week'));
+  }
+}
 
-  await Promise.all([
-    DailyClicks.create({
-      date: yesterday.toDate(),
-      clicks: getClickGroups(yesterdayClicks)
+export async function saveDailyStats() {
+  const yesterday = moment().subtract(1, 'day').startOf('day');
+  const [yesterdayClicks, subscriptions] = await Promise.all([
+    await Click.findAll({
+      where: getStatsPeriodWhere('yesterday', 'createdAt')
     }),
-    Click.destroy({
-      where: {
-        createdAt: {
-          [Sequelize.Op.lt]: destroyDate.toDate()
-        }
-      }
-    })
+    await getSubscriptionGroups()
   ]);
+  const userClicks = _.mapValues(_.groupBy(yesterdayClicks, 'userId'), (clicks) => clicks.length);
+
+  await DailyStats.add({
+    date: yesterday.toDate(),
+    clickGroups: getClickGroups(yesterdayClicks),
+    userClicks,
+    subscriptions
+  });
+}
+
+export async function rotateClicks() {
+  await Click.destroy({
+    where: {
+      createdAt: {
+        [Sequelize.Op.lt]: moment().subtract(10, 'days').startOf('day').toDate()
+      }
+    }
+  });
 }

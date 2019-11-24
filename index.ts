@@ -9,6 +9,8 @@ import {
   getAllConversations,
   refreshGoogleAccessToken,
   rotateClicks,
+  saveDailyStats,
+  sendClickStatsMessage,
   sendPosterMessage,
   sendStatsMessage,
   sendVKMessages,
@@ -110,6 +112,8 @@ async function main() {
   createEverydayDaemon('23:00:00', sendPosterMessage);
   createEverydayDaemon('05:00:00', sendStatsMessage);
   createEverydayDaemon('05:10:00', rotateClicks);
+  createEverydayDaemon('00:01:00', saveDailyStats);
+  createEverydayDaemon('01:00:00', sendClickStatsMessage);
 }
 
 (async () => {

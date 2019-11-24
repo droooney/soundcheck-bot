@@ -111,6 +111,13 @@ export default async (ctx: Context) => {
       && buttonPayload.command !== 'start'
       && buttonPayload.command !== 'back'
       && buttonPayload.command !== 'refresh_keyboard'
+      && buttonPayload.command !== 'poster/subscribe'
+      && buttonPayload.command !== 'playlists/subscribe'
+      && buttonPayload.command !== 'text_materials/subscribe'
+      && buttonPayload.command !== 'audio_materials/subscribe'
+      && buttonPayload.command !== 'drawings/subscribe'
+      && !buttonPayload.command.startsWith('subscriptions')
+      && !buttonPayload.command.startsWith('write_to_soundcheck')
       && !buttonPayload.command.startsWith('admin')
     ) {
       try {
@@ -123,8 +130,8 @@ export default async (ctx: Context) => {
           }
         });
 
-        if (userClicks.every((click) => _.isEqual(click.payload, payload))) {
-          await Click.create({
+        if (userClicks.every((click) => !_.isEqual(click.payload, payload))) {
+          await Click.add({
             vkId,
             payload: buttonPayload
           });
@@ -423,7 +430,7 @@ export default async (ctx: Context) => {
         const postId = getPostId(body.object);
 
         if (postId) {
-          await Drawing.create({
+          await Drawing.add({
             name: payload.name,
             postId
           });
@@ -605,7 +612,7 @@ export default async (ctx: Context) => {
           await groupUser.destroy({ transaction });
         }
       } else {
-        await GroupUser.create({ vkId, status }, { transaction });
+        await GroupUser.add({ vkId, status }, { transaction });
       }
     });
 
@@ -643,7 +650,7 @@ export default async (ctx: Context) => {
       });
 
       if (!existingPost) {
-        await Repost.create({ postId, originalPostId });
+        await Repost.add({ postId, originalPostId });
       }
     }
 

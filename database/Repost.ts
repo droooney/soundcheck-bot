@@ -2,16 +2,21 @@ import * as Sequelize from 'sequelize';
 
 import sequelize from './';
 
-export default interface Repost {
-  id: number;
+export interface RepostAddValues {
   postId: string;
   originalPostId: string;
+}
+
+export default interface Repost extends RepostAddValues {
+  id: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export default class Repost extends Sequelize.Model {
-
+  static async add(values: RepostAddValues, options?: Sequelize.CreateOptions): Promise<Repost> {
+    return this.create(values, options);
+  }
 }
 
 Repost.init({

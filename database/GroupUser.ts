@@ -2,16 +2,21 @@ import * as Sequelize from 'sequelize';
 
 import sequelize from './';
 
-export default interface GroupUser {
-  id: number;
+export interface GroupUserAddValues {
   vkId: number;
   status: boolean;
+}
+
+export default interface GroupUser extends GroupUserAddValues {
+  id: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export default class GroupUser extends Sequelize.Model {
-
+  static async add(values: GroupUserAddValues, options?: Sequelize.CreateOptions): Promise<GroupUser> {
+    return this.create(values, options);
+  }
 }
 
 GroupUser.init({

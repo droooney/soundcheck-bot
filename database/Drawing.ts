@@ -2,14 +2,21 @@ import * as Sequelize from 'sequelize';
 
 import sequelize from './';
 
-export default interface Drawing {
-  id: number;
-  active: boolean;
+export interface DrawingAddValues {
   name: string;
   postId: string;
 }
 
+export default interface Drawing extends DrawingAddValues {
+  id: number;
+  active: boolean;
+}
+
 export default class Drawing extends Sequelize.Model {
+  static async add(values: DrawingAddValues, options?: Sequelize.CreateOptions): Promise<Drawing> {
+    return this.create(values, options);
+  }
+
   static async getActiveDrawings(): Promise<Drawing[]> {
     return Drawing.findAll({
       where: {

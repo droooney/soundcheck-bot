@@ -3,15 +3,20 @@ import * as Sequelize from 'sequelize';
 import sequelize from './';
 import { ButtonPayload } from '../types';
 
-export default interface Click {
-  id: number;
+export interface ClickAddValues {
   vkId: number;
   payload: ButtonPayload;
+}
+
+export default interface Click extends ClickAddValues {
+  id: number;
   createdAt: Date;
 }
 
 export default class Click extends Sequelize.Model {
-
+  static async add(values: ClickAddValues, options?: Sequelize.CreateOptions): Promise<Click> {
+    return this.create(values, options);
+  }
 }
 
 Click.init({
