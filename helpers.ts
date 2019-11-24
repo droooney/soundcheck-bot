@@ -415,14 +415,7 @@ export async function getSubscriptionGroups(): Promise<Record<Subscription, numb
   ));
 }
 
-export async function getSubscriptionStats(): Promise<string> {
-  return _.map(
-    await getSubscriptionGroups(),
-    (count, subscription: Subscription) => `${subscriptionNames[subscription]}: ${count}`
-  ).join('\n');
-}
-
-export function getStatsPeriodWhere(period: StatsPeriod, columnName: 'createdAt' | 'date'): Sequelize.WhereAttributeHash {
+export function getStatsPeriodBounds(period: StatsPeriod): { start: moment.Moment; end: moment.Moment; } {
   const start = moment();
   const end = start.clone();
 
@@ -444,7 +437,19 @@ export function getStatsPeriodWhere(period: StatsPeriod, columnName: 'createdAt'
   } else if (period === 'prev_month') {
     start.subtract(1, 'month').startOf('month');
     end.subtract(1, 'month').endOf('month');
+  } else if (period === 'all_time') {
+    start.subtract(+start, 'ms');
   }
+
+  return { start, end };
+}
+
+export function getStatsPeriodWhere(period: StatsPeriod, columnName: 'createdAt' | 'date'): Sequelize.WhereAttributeHash {
+  if (period === 'all_time') {
+    return {};
+  }
+
+  const { start, end } = getStatsPeriodBounds(period);
 
   return {
     [columnName]: {
@@ -452,6 +457,38 @@ export function getStatsPeriodWhere(period: StatsPeriod, columnName: 'createdAt'
       [Sequelize.Op.lte]: end.toDate(),
     }
   };
+}
+
+export async function getSubscriptionStats(period: StatsPeriod): Promise<string> {
+  if (period === 'all_time') {
+    return _.map(
+      await getSubscriptionGroups(),
+      (count, subscription: Subscription) => `${subscriptionNames[subscription]}: ${count}`
+    ).join('\n');
+  }
+
+  const periodStart = getStatsPeriodBounds(period).start.subtract(1, 'day');
+  const periodEnd = periodStart.clone().endOf('day');
+  const [subscriptionsNow, dailyStatsThen] = await Promise.all([
+    getSubscriptionGroups(),
+    DailyStats.findOne({
+      where: {
+        date: {
+          [Sequelize.Op.gte]: periodStart.toDate(),
+          [Sequelize.Op.lte]: periodEnd.toDate()
+        }
+      }
+    })
+  ]);
+  const subscriptionsThen = dailyStatsThen
+    ? dailyStatsThen.subscriptions
+    : _.mapValues(Subscription, () => 0);
+
+  return _.map(subscriptionsNow, (count, subscription: Subscription) => {
+    const diff = count - (subscriptionsThen[subscription] || 0);
+
+    return `${subscriptionNames[subscription]}: ${diff >= 0 ? '+' : ''}${diff}`;
+  }).join('\n');
 }
 
 export function getClickGroups(clicks: Click[]): ClicksGroup[] {
@@ -512,8 +549,8 @@ export async function getClickStats(period: StatsPeriod): Promise<string> {
     clickGroups = mergeClickGroups(dailyClicks.map(({ clickGroups }) => clickGroups));
 
     if (
-      (period === 'this_month' || (period === 'prev_week' && !yesterday.isSame(today, 'week')))
-      && dailyClicks.every(({ date }) => +date !== +yesterday)
+      (period === 'all_time' || period === 'this_month' || (period === 'prev_week' && !yesterday.isSame(today, 'week')))
+      && dailyClicks.every(({ date }) => !yesterday.isSame(date, 'day'))
     ) {
       clickGroups = mergeClickGroups([
         clickGroups,
@@ -525,7 +562,7 @@ export async function getClickStats(period: StatsPeriod): Promise<string> {
       ]);
     }
 
-    if (period === 'this_month') {
+    if (period === 'all_time' || period === 'this_month') {
       clickGroups = mergeClickGroups([
         clickGroups,
         getClickGroups(
@@ -664,7 +701,7 @@ export async function getRepostStats(period: StatsPeriod): Promise<string> {
 
 export async function getAllStats(period: StatsPeriod): Promise<string> {
   const [subscriptionStats, groupStats, repostStats] = await Promise.all([
-    getSubscriptionStats(),
+    getSubscriptionStats(period),
     getGroupStats(period),
     getRepostStats(period),
   ]);

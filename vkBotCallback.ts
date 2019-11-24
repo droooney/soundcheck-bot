@@ -60,6 +60,7 @@ import {
   writeToSoundcheckKeyboard,
   adminKeyboard,
   adminStatsKeyboard,
+  adminSubscriptionStatsKeyboard,
   adminClickStatsKeyboard,
   adminGroupStatsKeyboard,
   adminRepostStatsKeyboard,
@@ -545,7 +546,9 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'admin/stats' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN_STATS)) {
         await respond(captions.stats_response, { keyboard: adminStatsKeyboard });
       } else if (payload.command === 'admin/stats/subscriptions') {
-        await respond(await getSubscriptionStats());
+        await respond(captions.choose_period, { keyboard: adminSubscriptionStatsKeyboard });
+      } else if (payload.command === 'admin/stats/subscriptions/period') {
+        await respond(await getSubscriptionStats(payload.period));
       } else if (payload.command === 'admin/stats/clicks') {
         await respond(captions.choose_period, { keyboard: adminClickStatsKeyboard });
       } else if (payload.command === 'admin/stats/clicks/period') {

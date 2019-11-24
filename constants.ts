@@ -136,6 +136,7 @@ export const captions = {
   clicks: 'Клики',
   group: 'Группа',
   reposts: 'Репосты',
+  all_time: 'За все время',
   today: 'Сегодня',
   yesterday: 'Вчера',
   prev_week: 'Прошлая неделя',

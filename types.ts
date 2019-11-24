@@ -314,6 +314,11 @@ export interface AdminSubscriptionStatsButtonPayload {
   command: 'admin/stats/subscriptions';
 }
 
+export interface AdminSubscriptionStatsPeriodButtonPayload {
+  command: 'admin/stats/subscriptions/period';
+  period: StatsPeriod;
+}
+
 export interface AdminClickStatsButtonPayload {
   command: 'admin/stats/clicks';
 }
@@ -399,6 +404,7 @@ export type ButtonPayload = (
   | AdminDeleteDrawingButtonPayload
   | AdminStatsButtonPayload
   | AdminSubscriptionStatsButtonPayload
+  | AdminSubscriptionStatsPeriodButtonPayload
   | AdminClickStatsButtonPayload
   | AdminClickStatsPeriodButtonPayload
   | AdminGroupStatsButtonPayload
@@ -592,4 +598,4 @@ export interface ServiceParams {
   attachments?: string[];
 }
 
-export type StatsPeriod = 'today' | 'yesterday' | 'this_week' | 'this_month' | 'prev_week' | 'prev_month';
+export type StatsPeriod = 'all_time' | 'today' | 'yesterday' | 'this_week' | 'this_month' | 'prev_week' | 'prev_month';

@@ -258,6 +258,30 @@ export const adminStatsKeyboard: Keyboard = {
   ]
 };
 
+export const adminSubscriptionStatsKeyboard: Keyboard = {
+  one_time: false,
+  buttons: [
+    [
+      generateButton(captions.all_time, { command: 'admin/stats/subscriptions/period', period: 'all_time' }),
+    ],
+    [
+      generateButton(captions.today, { command: 'admin/stats/subscriptions/period', period: 'today' }),
+      generateButton(captions.yesterday, { command: 'admin/stats/subscriptions/period', period: 'yesterday' }),
+    ],
+    [
+      generateButton(captions.this_week, { command: 'admin/stats/subscriptions/period', period: 'this_week' }),
+      generateButton(captions.prev_week, { command: 'admin/stats/subscriptions/period', period: 'prev_week' }),
+    ],
+    [
+      generateButton(captions.this_month, { command: 'admin/stats/subscriptions/period', period: 'this_month' }),
+      generateButton(captions.prev_month, { command: 'admin/stats/subscriptions/period', period: 'prev_month' }),
+    ],
+    [generateBackButton(BackButtonDest.ADMIN_STATS)],
+    [generateBackButton(BackButtonDest.ADMIN)],
+    [generateBackButton()],
+  ]
+};
+
 export const adminClickStatsKeyboard: Keyboard = {
   one_time: false,
   buttons: [
