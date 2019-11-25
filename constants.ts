@@ -122,7 +122,7 @@ export const captions = {
   // admin drawings
   add_drawing: 'Добавить розыгрыш',
   choose_or_add_drawing: 'Выберите или добавьте розыгрыш',
-  enter_drawing_name: 'Введине название',
+  enter_drawing_name: 'Введите название',
   send_drawing_post: 'Отправьте запись с розыгрышем',
   drawing_added: 'Розыгрыш успешно добавлен',
   edit_drawing_name: 'Изменить название',
