@@ -621,7 +621,7 @@ export type StatsPeriod = 'all_time' | 'today' | 'yesterday' | 'this_week' | 'th
 
 export interface DbConnection {
   dialect: 'postgres';
-  user: string;
+  username: string;
   password: string;
   host: string;
   port: number;

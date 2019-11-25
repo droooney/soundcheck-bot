@@ -3,7 +3,7 @@ import { Config } from '../types';
 const config: Config = {
   dbConnection: {
     dialect: 'postgres',
-    user: 'user',
+    username: 'user',
     password: 'password',
     host: 'localhost',
     port: 5432,
