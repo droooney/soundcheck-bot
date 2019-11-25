@@ -23,7 +23,8 @@ const config: Config = {
     other: [175810060],
     poster: [175810060],
     stats: [175810060],
-  }
+  },
+  googleDriveDumpsFolderName: 'dumps_dev',
 };
 
 export default config;

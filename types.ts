@@ -604,6 +604,7 @@ export interface Config {
   vkToken: string;
   confirmationCode: string;
   targets: Record<Target, number[]>;
+  googleDriveDumpsFolderName: string;
 }
 
 export interface ClicksGroup {

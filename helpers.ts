@@ -766,9 +766,9 @@ export async function getAllStats(period: StatsPeriod): Promise<string> {
 
 export async function createDbDump(): Promise<string> {
   const currentVersion = +await fs.readFile(versionFile, 'utf8');
-  const { user, host, database } = config.dbConnection;
-  const filename = `${dumpDir}/db_dump-v${currentVersion}-${moment().format('YYYY-MM-DD-HH-mm')}.sql`;
-  const command = `pg_dump -U ${user} -h ${host} ${database} > ${filename}`;
+  const { username, host, database } = config.dbConnection;
+  const filename = `${dumpDir}/db_dump-v${currentVersion}-${moment().format('YYYY-MM-DDTHH-mm')}.sql`;
+  const command = `pg_dump -U ${username} -h ${host} ${database} > ${filename}`;
 
   await executeCommand(command, { cwd: process.cwd() });
 
@@ -953,11 +953,17 @@ export async function rotateClicks() {
 
 export async function rotateDbDumps() {
   const filename = await createDbDump();
+  const allFiles = await getAllGoogleDriveFiles();
+  const dumpsFolder = allFiles.find(({ name }) => name === config.googleDriveDumpsFolderName);
 
-  try {
-    await uploadFile(filename, 'application/x-sql', '1kiqlsctnlOvIDo2vUpTLrZUx5yg14bKe');
-  } catch (err) {
-    console.log('upload file error', err);
+  if (dumpsFolder) {
+    try {
+      await uploadFile(filename, 'application/x-sql', dumpsFolder.id);
+    } catch (err) {
+      console.log('upload file error', err);
+    }
+  } else {
+    console.log('no dumps folder found');
   }
 
   const DUMPS_TO_KEEP = 7;
