@@ -963,7 +963,7 @@ export async function rotateDbDumps() {
       console.log('upload file error', err);
     }
   } else {
-    console.log('no dumps folder found');
+    console.warn('warning: no dumps folder found');
   }
 
   const DUMPS_TO_KEEP = 7;

@@ -1,0 +1,8 @@
+{
+  "uid": "soundcheck-bot",
+  "append": true,
+  "watch": false,
+  "command": "./node_modules/.bin/ts-node",
+  "script": "index.ts",
+  "logFile": "soundcheck-bot.log"
+}

@@ -564,7 +564,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'refresh_keyboard') {
         await respond(captions.refresh_keyboard_response, { keyboard: mainKeyboard });
       } else {
-        console.error('unknown payload', payload);
+        console.warn('warning: unknown payload', payload);
 
         await respond(captions.choose_action, { keyboard: mainKeyboard });
       }

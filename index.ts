@@ -65,11 +65,11 @@ app.use(async (ctx, next) => {
     await next();
   } catch (e) {
     if (e.isAxiosError) {
-      console.log(e.response.status, e.response.data);
+      console.log('request error', e.response.status, e.response.data);
     } else if (e instanceof VKError) {
       console.log('vk error', e.vkError);
     } else {
-      console.log(e);
+      console.log('error', e);
     }
 
     ctx.status = 500;
