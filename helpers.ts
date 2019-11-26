@@ -513,14 +513,14 @@ export async function getSubscriptionStats(period: StatsPeriod): Promise<string>
       where: {
         date: {
           [Sequelize.Op.gte]: periodStart.start.toDate(),
-          [Sequelize.Op.lte]: periodEnd.end.toDate()
+          [Sequelize.Op.lte]: periodStart.end.toDate()
         }
       }
     }),
     DailyStats.findOne({
       where: {
         date: {
-          [Sequelize.Op.gte]: periodStart.end.toDate(),
+          [Sequelize.Op.gte]: periodEnd.start.toDate(),
           [Sequelize.Op.lte]: periodEnd.end.toDate()
         }
       }
@@ -931,7 +931,7 @@ export async function saveDailyStats() {
     }),
     await getSubscriptionGroups()
   ]);
-  const userClicks = _.mapValues(_.groupBy(yesterdayClicks, 'userId'), (clicks) => clicks.length);
+  const userClicks = _.mapValues(_.groupBy(yesterdayClicks, 'vkId'), (clicks) => clicks.length);
 
   await DailyStats.add({
     date: yesterday.toDate(),
