@@ -89,7 +89,10 @@ export default async (ctx: Context) => {
     const isManager = ctx.managers.includes(vkId);
     const mainKeyboard = generateMainKeyboard(isManager);
     const respond = async (message: string, options: SendVkMessageOptions = {}) => {
-      await sendVKMessage(vkId, message, options);
+      await sendVKMessage(vkId, message, {
+        randomId: body.object.conversation_message_id,
+        ...options
+      });
     };
     const user = await User.findOne({ where: { vkId } }) || await User.add({ vkId });
     const userState = user.state;
@@ -151,7 +154,7 @@ export default async (ctx: Context) => {
 
     message: if (payload) {
       if ((payload.command.startsWith('admin') || (payload.command === 'back' && payload.dest.startsWith('admin'))) && !isManager) {
-        await respond(captions.you_re_not_a_manager, { keyboard: mainKeyboard, randomId: body.object.conversation_message_id });
+        await respond(captions.you_re_not_a_manager, { keyboard: mainKeyboard });
 
         break message;
       }
