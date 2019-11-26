@@ -538,7 +538,7 @@ export async function getSubscriptionStats(period: StatsPeriod): Promise<string>
   return _.map(Subscription, (subscription) => {
     const diff = (subscriptionsPeriodEnd[subscription] || 0) - (subscriptionsPeriodStart[subscription] || 0);
 
-    return `${subscriptionNames[subscription]}: ${diff >= 0 ? '+' : ''}${diff}`;
+    return `${subscriptionNames[subscription]}: ${diff > 0 ? '+' : ''}${diff}`;
   }).join('\n');
 }
 
