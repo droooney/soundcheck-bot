@@ -398,7 +398,7 @@ export function generateBackButton(dest: BackButtonDest = BackButtonDest.MAIN): 
 export function generateServiceButton(service: Service): KeyboardButton {
   return generateButton(services[service].name, {
     command: 'services/service',
-    service: 'stickers_design'
+    service
   });
 }
 
