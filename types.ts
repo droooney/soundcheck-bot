@@ -351,6 +351,15 @@ export interface AdminRepostStatsPeriodButtonPayload {
   period: StatsPeriod;
 }
 
+export interface AdminSendMessageToUsersButtonPayload {
+  command: 'admin/send_message_to_users';
+}
+
+export interface AdminSendMessageToUsersGroupButtonPayload {
+  command: 'admin/send_message_to_users/group';
+  group: SendMessageToUsersGroup;
+}
+
 export interface RefreshKeyboardButtonPayload {
   command: 'refresh_keyboard';
 }
@@ -417,6 +426,8 @@ export type ButtonPayload = (
   | AdminGroupStatsPeriodButtonPayload
   | AdminRepostStatsButtonPayload
   | AdminRepostStatsPeriodButtonPayload
+  | AdminSendMessageToUsersButtonPayload
+  | AdminSendMessageToUsersGroupButtonPayload
   | RefreshKeyboardButtonPayload
 );
 
@@ -582,6 +593,32 @@ export interface AdminDeleteDrawingUserState {
   drawingId: number;
 }
 
+export interface AdminSendMessageToUsersGroupSetTextUserState {
+  command: 'admin/send_message_to_users/group/set_text';
+  group: SendMessageToUsersGroup;
+}
+
+export interface AdminSendMessageToUsersGroupSetPostUserState {
+  command: 'admin/send_message_to_users/group/set_post';
+  group: SendMessageToUsersGroup;
+  text: string;
+}
+
+export interface AdminSendMessageToUsersGroupSetImageUserState {
+  command: 'admin/send_message_to_users/group/set_image';
+  group: SendMessageToUsersGroup;
+  text: string;
+  post: string | null;
+}
+
+export interface AdminSendMessageToUsersGroupSetRefreshKeyboardUserState {
+  command: 'admin/send_message_to_users/group/set_refresh_keyboard';
+  group: SendMessageToUsersGroup;
+  text: string;
+  post: string | null;
+  image: string | null;
+}
+
 export type UserState = (
   null
   | TellAboutGroupUserState
@@ -597,6 +634,10 @@ export type UserState = (
   | AdminEditDrawingPostUserState
   | AdminEditDrawingExpiresAtUserState
   | AdminDeleteDrawingUserState
+  | AdminSendMessageToUsersGroupSetTextUserState
+  | AdminSendMessageToUsersGroupSetPostUserState
+  | AdminSendMessageToUsersGroupSetImageUserState
+  | AdminSendMessageToUsersGroupSetRefreshKeyboardUserState
 );
 
 export enum Subscription {
@@ -609,6 +650,8 @@ export enum Subscription {
   // SERVICES = 'SERVICES',
   FOR_MUSICIANS = 'FOR_MUSICIANS',
 }
+
+export type SendMessageToUsersGroup = Subscription | 'all';
 
 export type Target = (
   'tellAboutGroup' | 'tellAboutRelease' | 'collaboration'

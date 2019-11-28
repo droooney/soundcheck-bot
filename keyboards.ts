@@ -238,6 +238,9 @@ export const adminKeyboard: Keyboard = {
       generateButton(captions.drawings, { command: 'admin/drawings' }),
       generateButton(captions.stats, { command: 'admin/stats' }),
     ],
+    [
+      generateButton(captions.send_message_to_users, { command: 'admin/send_message_to_users' })
+    ],
     [generateBackButton()],
   ]
 };
@@ -332,6 +335,23 @@ export const adminRepostStatsKeyboard: Keyboard = {
       generateButton(captions.prev_week, { command: 'admin/stats/reposts/period', period: 'prev_week' }),
     ],
     [generateBackButton(BackButtonDest.ADMIN_STATS)],
+    [generateBackButton(BackButtonDest.ADMIN)],
+    [generateBackButton()],
+  ]
+};
+
+export const adminSendMessageToUsersKeyboard: Keyboard = {
+  one_time: false,
+  buttons: [
+    [generateButton(captions.to_all, { command: 'admin/send_message_to_users/group', group: 'all' })],
+    ...subscriptionButtons.map((buttons) => (
+      buttons.map((subscription) => (
+        generateButton(subscriptionNames[subscription], {
+          command: 'admin/send_message_to_users/group',
+          group: subscription
+        })
+      ))
+    )),
     [generateBackButton(BackButtonDest.ADMIN)],
     [generateBackButton()],
   ]

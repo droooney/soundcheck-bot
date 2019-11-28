@@ -160,6 +160,15 @@ https://vk.com/wall${drawing.postId}. Успевай принять участи
   users_joined: (count: number) => `Вступило в группу: ${count}`,
   users_left: (count: number) => `Вышло из группы: ${count}`,
 
+  // admin send message to users
+  send_message_to_users: 'Разослать сообщение',
+  choose_group: 'Выберите группу',
+  to_all: 'Всем',
+  enter_message_text: 'Введите текст сообщения',
+  enter_message_post: 'Отправьте запись с розыгрышем (чтобы пропустить, отправьте "нет")',
+  enter_message_image: 'Отправьте картинку (чтобы пропустить, отправьте "нет")',
+  need_to_refresh_keyboard: 'Надо ли послать обновленную клавиатуру главного меню?',
+
   // rest
   group_history_message: 'Рассказ о группе',
   release_message: 'Релиз',
@@ -204,7 +213,8 @@ export const genresButtons = [
   [Genre.POP, Genre.FOLK, Genre.ABOUT_MUSIC],
 ];
 
-export const confirmPositiveAnswers = ['yes', 'да', '+', 'ok', 'ок'];
+export const positiveAnswers = ['yes', 'да', '+', 'ok', 'ок'];
+export const negativeAnswers = ['no', 'нет', '-'];
 
 export const subscriptionNames: Record<Subscription, string> = {
   [Subscription.POSTER]: captions.poster,

@@ -21,6 +21,7 @@ import {
   getSubscriptionStats,
   getWeeklyConcerts,
   sendVKMessage,
+  sendVkMessageToAllConversations,
   sendVkMessageToSubscribedUsers,
 } from './helpers';
 import {
@@ -37,7 +38,8 @@ import {
   genreNames,
   genreMatches,
   subscriptionHashtags,
-  confirmPositiveAnswers,
+  positiveAnswers,
+  negativeAnswers,
   services,
 } from './constants';
 import {
@@ -64,6 +66,7 @@ import {
   adminClickStatsKeyboard,
   adminGroupStatsKeyboard,
   adminRepostStatsKeyboard,
+  adminSendMessageToUsersKeyboard,
 } from './keyboards';
 import config from './config';
 import sequelize from './database';
@@ -592,7 +595,7 @@ export default async (ctx: Context) => {
         const drawing = await Drawing.findByPk(payload.drawingId);
 
         if (drawing) {
-          if (confirmPositiveAnswers.includes(text.toLowerCase())) {
+          if (positiveAnswers.includes(text.toLowerCase())) {
             drawing.active = false;
 
             await drawing.save();
@@ -621,6 +624,83 @@ export default async (ctx: Context) => {
         await respond(captions.choose_period, { keyboard: adminRepostStatsKeyboard });
       } else if (payload.command === 'admin/stats/reposts/period') {
         await respond(await getRepostStats(payload.period));
+      } else if (payload.command === 'admin/send_message_to_users') {
+        await respond(captions.choose_group, { keyboard: adminSendMessageToUsersKeyboard });
+      } else if (payload.command === 'admin/send_message_to_users/group') {
+        user.state = {
+          command: 'admin/send_message_to_users/group/set_text',
+          group: payload.group
+        };
+
+        await respond(captions.enter_message_text);
+      } else if (payload.command === 'admin/send_message_to_users/group/set_text') {
+        user.state = {
+          command: 'admin/send_message_to_users/group/set_post',
+          group: payload.group,
+          text
+        };
+
+        await respond(captions.enter_message_post);
+      } else if (payload.command === 'admin/send_message_to_users/group/set_post') {
+        const postId = getPostId(body.object);
+
+        if (postId || negativeAnswers.includes(text)) {
+          user.state = {
+            command: 'admin/send_message_to_users/group/set_image',
+            group: payload.group,
+            text: payload.text,
+            post: postId
+          };
+
+          await respond(captions.enter_message_image);
+        } else {
+          user.state = { ...payload };
+
+          await respond(captions.enter_message_post);
+        }
+      } else if (payload.command === 'admin/send_message_to_users/group/set_image') {
+        const photoAttachment = (body.object.attachments.find(({ type }) => type === 'photo') || null) as PhotoAttachment | null;
+
+        if (photoAttachment || negativeAnswers.includes(text)) {
+          user.state = {
+            command: 'admin/send_message_to_users/group/set_refresh_keyboard',
+            group: payload.group,
+            text: payload.text,
+            post: payload.post,
+            image: photoAttachment && `${photoAttachment.photo.owner_id}_${photoAttachment.photo.id}`
+          };
+
+          await respond(captions.need_to_refresh_keyboard);
+        } else {
+          user.state = { ...payload };
+
+          await respond(captions.enter_message_image);
+        }
+      } else if (payload.command === 'admin/send_message_to_users/group/set_refresh_keyboard') {
+        const isPositiveAnswer = positiveAnswers.includes(text);
+        const isNegativeAnswer = positiveAnswers.includes(text);
+
+        if (isPositiveAnswer || isNegativeAnswer) {
+          const sendOptions: SendVkMessageOptions = {
+            attachments: [
+              ...(payload.post ? [payload.post] : []),
+              ...(payload.image ? [payload.image] : [])
+            ],
+            keyboard: isPositiveAnswer
+              ? generateMainKeyboard(false)
+              : undefined
+          };
+
+          if (payload.group === 'all') {
+            await sendVkMessageToAllConversations(payload.text, sendOptions);
+          } else {
+            await sendVkMessageToSubscribedUsers([payload.group], payload.text, sendOptions);
+          }
+        } else {
+          user.state = { ...payload };
+
+          await respond(captions.need_to_refresh_keyboard);
+        }
       } else if (payload.command === 'refresh_keyboard') {
         await respond(captions.refresh_keyboard_response, { keyboard: mainKeyboard });
       } else {
