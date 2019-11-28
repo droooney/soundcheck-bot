@@ -441,21 +441,42 @@ export default async (ctx: Context) => {
         const postId = getPostId(body.object);
 
         if (postId) {
-          await Drawing.add({
+          user.state = {
+            command: 'admin/drawings/add/set_expires_at',
             name: payload.name,
             postId
-          });
-          await respond(captions.drawing_added, { keyboard: await generateAdminDrawingsKeyboard() });
+          };
+
+          await respond(captions.enter_drawing_expires_at, { keyboard: await generateAdminDrawingsKeyboard() });
         } else {
           user.state = { ...payload };
 
           await respond(captions.send_drawing_post);
         }
+      } else if (payload.command === 'admin/drawings/add/set_expires_at') {
+        const expiresAt = moment(text, 'DD.MM');
+
+        if (expiresAt.isBefore(requestTime)) {
+          expiresAt.add(1, 'year');
+        }
+
+        if (expiresAt.isValid() && expiresAt.isAfter(requestTime)) {
+          await Drawing.add({
+            name: payload.name,
+            postId: payload.postId,
+            expiresAt: expiresAt.toDate()
+          });
+          await respond(captions.drawing_added, { keyboard: await generateAdminDrawingsKeyboard() });
+        } else {
+          user.state = { ...payload };
+
+          await respond(captions.enter_drawing_expires_at);
+        }
       } else if (payload.command === 'admin/drawings/drawing') {
         const drawing = await Drawing.findByPk(payload.drawingId);
 
         if (drawing) {
-          await respond(drawing.name, {
+          await respond(`${drawing.name} (окончание розыгрыша - ${moment(drawing.expiresAt).format('DD MMMM YYYY')})`, {
             attachments: [`wall${drawing.postId}`],
             keyboard: generateAdminDrawingMenuKeyboard(drawing)
           });
@@ -482,7 +503,7 @@ export default async (ctx: Context) => {
           drawing.name = text;
 
           await drawing.save();
-          await respond(captions.drawing_edited, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
+          await respond(captions.drawing_edited);
         } else {
           await respond(captions.no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
         }
@@ -509,11 +530,47 @@ export default async (ctx: Context) => {
             drawing.postId = postId;
 
             await drawing.save();
-            await respond(captions.drawing_edited, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
+            await respond(captions.drawing_edited);
           } else {
             user.state = { ...payload };
 
             await respond(captions.send_drawing_post);
+          }
+        } else {
+          await respond(captions.no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
+        }
+      } else if (payload.command === 'admin/drawings/drawing/edit_expires_at') {
+        const drawing = await Drawing.findByPk(payload.drawingId);
+
+        if (drawing) {
+          user.state = {
+            command: 'admin/drawings/drawing/edit_expires_at/message',
+            drawingId: payload.drawingId
+          };
+
+          await respond(captions.enter_drawing_expires_at);
+        } else {
+          await respond(captions.no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
+        }
+      } else if (payload.command === 'admin/drawings/drawing/edit_expires_at/message') {
+        const drawing = await Drawing.findByPk(payload.drawingId);
+
+        if (drawing) {
+          const expiresAt = moment(text, 'DD.MM');
+
+          if (expiresAt.isBefore(requestTime)) {
+            expiresAt.add(1, 'year');
+          }
+
+          if (expiresAt.isValid() && expiresAt.isAfter(requestTime)) {
+            drawing.expiresAt = expiresAt.toDate();
+
+            await drawing.save();
+            await respond(captions.drawing_edited);
+          } else {
+            user.state = { ...payload };
+
+            await respond(captions.enter_drawing_expires_at);
           }
         } else {
           await respond(captions.no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });

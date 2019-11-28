@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "./node_modules/.bin/forever start forever.json",
+    "start-no-forever": "./node_modules/.bin/ts-node index.ts",
     "restart": "./node_modules/.bin/forever restart soundcheck-bot",
     "stop": "./node_modules/.bin/forever stop soundcheck-bot"
   },

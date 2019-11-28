@@ -5,6 +5,7 @@ import sequelize from './';
 export interface DrawingAddValues {
   name: string;
   postId: string;
+  expiresAt: Date;
 }
 
 export default interface Drawing extends DrawingAddValues {
@@ -45,6 +46,11 @@ Drawing.init({
   postId: {
     type: Sequelize.STRING,
     field: 'post_id',
+    allowNull: false,
+  },
+  expiresAt: {
+    type: Sequelize.DATE,
+    field: 'expires_at',
     allowNull: false,
   },
   createdAt: {

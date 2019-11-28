@@ -1,4 +1,5 @@
 import * as Sequelize from 'sequelize';
+import moment = require('moment-timezone');
 
 type Migration = (queryInterface: Sequelize.QueryInterface, sequelize: Sequelize.Sequelize, dbVersion: number) => void;
 
@@ -210,7 +211,16 @@ const migrations: Migration[] = [
         allowNull: false,
       },
     });
-  }
+  },
+
+  // add Drawing#expiresAt
+  async (queryInterface) => {
+    await queryInterface.addColumn('drawings', 'expires_at', {
+      type: Sequelize.DATE,
+      allowNull: false,
+      defaultValue: moment('2019-11-30', 'YYYY-MM-DD').toDate(),
+    });
+  },
 ];
 
 export default migrations;

@@ -301,6 +301,11 @@ export interface AdminEditDrawingPostButtonPayload {
   drawingId: number;
 }
 
+export interface AdminEditDrawingExpiresAtButtonPayload {
+  command: 'admin/drawings/drawing/edit_expires_at';
+  drawingId: number;
+}
+
 export interface AdminDeleteDrawingButtonPayload {
   command: 'admin/drawings/drawing/delete';
   drawingId: number;
@@ -401,6 +406,7 @@ export type ButtonPayload = (
   | AdminDrawingsAddButtonPayload
   | AdminEditDrawingNameButtonPayload
   | AdminEditDrawingPostButtonPayload
+  | AdminEditDrawingExpiresAtButtonPayload
   | AdminDeleteDrawingButtonPayload
   | AdminStatsButtonPayload
   | AdminSubscriptionStatsButtonPayload
@@ -550,6 +556,12 @@ export interface AdminAddDrawingSetPostUserState {
   name: string;
 }
 
+export interface AdminAddDrawingSetExpiresAtUserState {
+  command: 'admin/drawings/add/set_expires_at';
+  name: string;
+  postId: string;
+}
+
 export interface AdminEditDrawingNameUserState {
   command: 'admin/drawings/drawing/edit_name/message';
   drawingId: number;
@@ -557,6 +569,11 @@ export interface AdminEditDrawingNameUserState {
 
 export interface AdminEditDrawingPostUserState {
   command: 'admin/drawings/drawing/edit_post/message';
+  drawingId: number;
+}
+
+export interface AdminEditDrawingExpiresAtUserState {
+  command: 'admin/drawings/drawing/edit_expires_at/message';
   drawingId: number;
 }
 
@@ -575,8 +592,10 @@ export type UserState = (
   | WriteToSoundcheckOtherUserState
   | AdminAddDrawingSetNameUserState
   | AdminAddDrawingSetPostUserState
+  | AdminAddDrawingSetExpiresAtUserState
   | AdminEditDrawingNameUserState
   | AdminEditDrawingPostUserState
+  | AdminEditDrawingExpiresAtUserState
   | AdminDeleteDrawingUserState
 );
 

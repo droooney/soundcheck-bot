@@ -359,6 +359,7 @@ export function generateAdminDrawingMenuKeyboard(drawing: Drawing): Keyboard {
     buttons: [
       [generateButton(captions.edit_drawing_name, { command: 'admin/drawings/drawing/edit_name', drawingId: drawing.id })],
       [generateButton(captions.edit_drawing_post, { command: 'admin/drawings/drawing/edit_post', drawingId: drawing.id })],
+      [generateButton(captions.edit_drawing_expires_at, { command: 'admin/drawings/drawing/edit_expires_at', drawingId: drawing.id })],
       [generateButton(captions.delete_drawing, { command: 'admin/drawings/drawing/delete', drawingId: drawing.id }, ButtonColor.NEGATIVE)],
       [generateBackButton(BackButtonDest.ADMIN_DRAWINGS)],
       [generateBackButton(BackButtonDest.ADMIN)],
