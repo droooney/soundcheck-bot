@@ -21,7 +21,7 @@ import {
   getSubscriptionStats,
   getWeeklyConcerts,
   sendVKMessage,
-  sendVKMessages,
+  sendVkMessageToSubscribedUsers,
 } from './helpers';
 import {
   BackButtonDest,
@@ -699,11 +699,8 @@ export default async (ctx: Context) => {
       const subscriptions = _.filter(Subscription, (subscription) => (
         subscriptionHashtags[subscription].some((hashtag) => hashtags.includes(hashtag))
       ));
-      const subscribedUsers = (await User.findAll()).filter((user) => (
-        user.subscriptions.some((subscription) => subscriptions.includes(subscription))
-      ));
 
-      await sendVKMessages(subscribedUsers.map(({ vkId }) => vkId), '', {
+      await sendVkMessageToSubscribedUsers(subscriptions, '', {
         attachments: [`wall${postId}`],
         randomId: 2n ** 30n + BigInt(body.object.id),
       });
@@ -711,16 +708,17 @@ export default async (ctx: Context) => {
 
     ctx.body = 'ok';
   } else if (body.type === 'wall_repost') {
-    const postId = `${body.object.owner_id}_${body.object.id}`;
+    const ownerId = body.object.owner_id;
+    const postId = body.object.id;
     const originalPostId = getRepostPostId(body.object);
 
     if (originalPostId) {
       const existingPost = await Repost.findOne({
-        where: { postId, originalPostId }
+        where: { ownerId, postId, originalPostId }
       });
 
       if (!existingPost) {
-        await Repost.add({ postId, originalPostId });
+        await Repost.add({ ownerId, postId, originalPostId });
       }
     }
 

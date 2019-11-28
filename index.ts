@@ -7,7 +7,6 @@ import moment = require('moment-timezone');
 import {
   createEverydayDaemon,
   deactivateExpiredDrawings,
-  getAllConversations,
   refreshGoogleAccessToken,
   removeUnusedDumpsInDrive,
   rotateClicks,
@@ -16,7 +15,7 @@ import {
   sendClickStatsMessage,
   sendPosterMessage,
   sendStatsMessage,
-  sendVKMessages,
+  sendVkMessageToAllConversations,
   sendVKRequest,
 } from './helpers';
 import vkBotCallback from './vkBotCallback';
@@ -94,10 +93,8 @@ async function main() {
   managers = items.map(({ id }) => id);
 
   if (false) {
-    const userIds = await getAllConversations();
-
     console.log(
-      await sendVKMessages(userIds, 'test unique', {
+      await sendVkMessageToAllConversations('test unique', {
         keyboard: generateMainKeyboard(false),
         randomId: 2n ** 30n + 2n ** 29n,
       })

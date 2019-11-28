@@ -3,7 +3,8 @@ import * as Sequelize from 'sequelize';
 import sequelize from './';
 
 export interface RepostAddValues {
-  postId: string;
+  ownerId: number;
+  postId: number;
   originalPostId: string;
 }
 
@@ -26,8 +27,13 @@ Repost.init({
     primaryKey: true,
     autoIncrement: true,
   },
+  ownerId: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+    field: 'owner_id',
+  },
   postId: {
-    type: Sequelize.STRING,
+    type: Sequelize.INTEGER,
     allowNull: false,
     field: 'post_id',
   },

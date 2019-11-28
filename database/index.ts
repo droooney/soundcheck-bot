@@ -14,10 +14,12 @@ export async function migrate() {
   const queryInterface = sequelize.getQueryInterface();
 
   for (const [i, migration] of migrations.slice(currentVersion).entries()) {
-    await migration(queryInterface, sequelize, currentVersion + i);
+    console.log(`migration "${migration.name}" started`);
+
+    await migration.action(queryInterface, sequelize, currentVersion + i);
     await fs.writeFile(versionFile, currentVersion + i + 1, { encoding: 'utf8' });
 
-    console.log(`migration #${currentVersion + i} completed successfully`);
+    console.log(`migration "${migration.name}" completed successfully`);
   }
 }
 

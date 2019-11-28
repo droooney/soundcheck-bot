@@ -205,9 +205,9 @@ export async function sendVKMessage(dest: number | number[], message: string, op
   });
 }
 
-export async function sendVKMessages(dest: number[], message: string, options: SendVkMessageOptions = {}): Promise<SendMessageResponse> {
+export async function sendVKMessages(dest: number[], message: string, options?: SendVkMessageOptions): Promise<SendMessageResponse> {
   const response: SendMessageResponse = [];
-  const chunks = _.chunk(dest, 2);
+  const chunks = _.chunk(dest, 100);
 
   for (const chunk of chunks) {
     response.push(...await sendVKMessage(chunk, message, options));
@@ -216,6 +216,20 @@ export async function sendVKMessages(dest: number[], message: string, options: S
   }
 
   return response;
+}
+
+export async function sendVkMessageToSubscribedUsers(subscriptions: Subscription[], message: string, options?: SendVkMessageOptions): Promise<SendMessageResponse> {
+  const subscribedUsers = (await User.findAll()).filter((user) => (
+    user.subscriptions.some((subscription) => subscriptions.includes(subscription))
+  ));
+
+  return await sendVKMessages(subscribedUsers.map(({ vkId }) => vkId), message, options);
+}
+
+export async function sendVkMessageToAllConversations(message: string, options?: SendVkMessageOptions): Promise<SendMessageResponse> {
+  const vkIds = await getAllConversations();
+
+  return await sendVKMessages(vkIds, message, options);
 }
 
 export async function getAllConversations(): Promise<number[]> {
@@ -757,7 +771,7 @@ export async function getRepostStats(period: StatsPeriod): Promise<string> {
   return getSectionsString(
     _.map(groups, (reposts, postId) => ({
       header: `Пост: ${getPostLink(postId)}`,
-      rows: reposts.map(({ postId }) => getPostLink(postId))
+      rows: reposts.map(({ ownerId, postId }) => getPostLink(`${ownerId}_${postId}`))
     }))
   );
 }
