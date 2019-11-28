@@ -168,6 +168,7 @@ https://vk.com/wall${drawing.postId}. Успевай принять участи
   enter_message_post: 'Отправьте запись с розыгрышем (чтобы пропустить, отправьте "нет")',
   enter_message_image: 'Отправьте картинку (чтобы пропустить, отправьте "нет")',
   need_to_refresh_keyboard: 'Надо ли послать обновленную клавиатуру главного меню?',
+  message_successfully_sent: 'Сообщение успешно послано',
 
   // rest
   group_history_message: 'Рассказ о группе',

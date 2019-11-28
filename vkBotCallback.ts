@@ -678,7 +678,7 @@ export default async (ctx: Context) => {
         }
       } else if (payload.command === 'admin/send_message_to_users/group/set_refresh_keyboard') {
         const isPositiveAnswer = positiveAnswers.includes(text);
-        const isNegativeAnswer = positiveAnswers.includes(text);
+        const isNegativeAnswer = negativeAnswers.includes(text);
 
         if (isPositiveAnswer || isNegativeAnswer) {
           const sendOptions: SendVkMessageOptions = {
@@ -696,6 +696,8 @@ export default async (ctx: Context) => {
           } else {
             await sendVkMessageToSubscribedUsers([payload.group], payload.text, sendOptions);
           }
+
+          await respond(captions.message_successfully_sent);
         } else {
           user.state = { ...payload };
 
