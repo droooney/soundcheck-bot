@@ -160,7 +160,7 @@ export async function getHolidays(dateStart: moment.Moment, dateEnd: moment.Mome
 }
 
 export async function getConcerts(dateStart?: moment.Moment, dateEnd?: moment.Moment): Promise<Concert[]> {
-  return (await getEvents('soundcheck.ekb@gmail.com', dateStart, dateEnd)).map(getConcertFromEvent).filter(({ ready }) => ready);
+  return (await getEvents('soundcheck.ekb@gmail.com', dateStart, dateEnd)).map(getConcertFromEvent).filter(isConcertReady);
 }
 
 export function getConcertsByDays(concerts: Concert[]): Record<string, Concert[]> {
@@ -274,6 +274,17 @@ export function getConcertFromEvent(event: Event): Concert {
     location: (event.location || '').trim(),
     entry: fields.Вход || ''
   };
+}
+
+export function isConcertReady(concert: Concert): boolean {
+  return (
+    concert.ready
+    && !!concert.title
+    && !!concert.genres.length
+    && !!concert.description
+    && !!concert.location
+    && !!concert.entry
+  );
 }
 
 export async function getDailyConcerts(day: moment.Moment): Promise<Concert[]> {

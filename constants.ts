@@ -49,7 +49,7 @@ export const captions = {
   choose_playlists_type: 'Выберите тип плейлистов',
   playlists_all_response: 'Все плейлисты смотри тут: https://vk.com/soundcheck_ural/music_selections',
   playlists_thematic_response: 'Тематические плейлисты смотри тут: https://vk.com/soundcheck_ural/them_playlists',
-  playlists_genres_response: `Рок, Альтернатива: https://vk.com/wall-177574047_1342
+  playlists_genres_response: `Альтернатива: https://vk.com/wall-177574047_1342
 Панк: https://vk.com/wall-177574047_1617
 Хип-хоп: https://vk.com/wall-177574047_1295
 Инди: https://vk.com/wall-177574047_1142
@@ -72,7 +72,7 @@ export const captions = {
   audio_materials_response: 'Выберите тип аудиоматериалов',
   digests: 'Дайджесты',
   podcasts: 'Подкасты',
-  digests_response: 'Смотри дайджесты тут:',
+  digests_response: 'Смотри дайджесты тут: https://vk.com/soundcheck_ural/audio',
   podcasts_response: 'Смотри подкасты тут:',
 
   // write to soundcheck
@@ -223,7 +223,7 @@ export const subscriptionHashtags: Record<Subscription, string[]> = {
   [Subscription.POSTER]: ['#afisha_week@soundcheck_ural', '#afisha_today@soundcheck_ural', '#anons@soundcheck_ural'],
   [Subscription.PLAYLISTS]: ['#music_selections@soundcheck_ural'],
   [Subscription.RELEASES]: ['#new_release@soundcheck_ural'],
-  [Subscription.TEXT_MATERIALS]: [],
+  [Subscription.TEXT_MATERIALS]: ['#text@soundcheck_ural'],
   [Subscription.AUDIO_MATERIALS]: ['#audio@soundcheck_ural'],
   [Subscription.DRAWINGS]: ['#prize@soundcheck_ural'],
   // [Subscription.SERVICES]: ['#service@soundcheck_ural'],
