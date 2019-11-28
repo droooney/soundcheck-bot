@@ -279,6 +279,7 @@ export function getConcertFromEvent(event: Event): Concert {
 export function isConcertReady(concert: Concert): boolean {
   return (
     concert.ready
+    && concert.startTime.isValid()
     && !!concert.title
     && !!concert.genres.length
     && !!concert.description
