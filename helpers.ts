@@ -1039,3 +1039,34 @@ export async function deactivateExpiredDrawings() {
     })
   );
 }
+
+export async function notifyUsersAboutSoonToExpireDrawing() {
+  const tomorrow = moment().add(1, 'day');
+  const soonToExpireDrawing = await Drawing.findOne({
+    where: {
+      active: true,
+      expiresAt: {
+        [Sequelize.Op.lt]: tomorrow.toDate()
+      }
+    }
+  });
+
+  if (!soonToExpireDrawing) {
+    return;
+  }
+
+  const [reposts, users] = await Promise.all([
+    Repost.findAll({
+      where: {
+        originalPostId: soonToExpireDrawing.postId
+      }
+    }),
+    User.findAll()
+  ]);
+  const usersToSendMessage = users.filter((user) => (
+    user.subscriptions.includes(Subscription.DRAWINGS)
+    && reposts.every(({ ownerId }) => ownerId !== user.id)
+  ));
+
+  await sendVKMessages(usersToSendMessage.map(({ vkId }) => vkId), captions.drawing_soon_expires(soonToExpireDrawing));
+}

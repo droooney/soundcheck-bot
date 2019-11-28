@@ -60,6 +60,8 @@ export const captions = {
   choose_drawing: 'Выберите розыгрыш',
   no_drawings: 'В данный момент розыгрышей нет',
   no_drawing: 'Такого розыгрыша не существует, выберите другой',
+  drawing_soon_expires: (drawing: Drawing) => `Завтра - последний шанс поучаствовать в розыгрыше "${drawing.name}": \
+https://vk.com/wall${drawing.postId}. Успевай принять участие!`,
 
   // text materials
   text_materials_response: 'У нас есть широкий выбор текстовых материалов: интервью, репортажи, истории групп',
