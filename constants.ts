@@ -222,7 +222,7 @@ export const subscriptionButtons = [
 export const subscriptionHashtags: Record<Subscription, string[]> = {
   [Subscription.POSTER]: ['#afisha_week@soundcheck_ural', '#afisha_today@soundcheck_ural', '#anons@soundcheck_ural'],
   [Subscription.PLAYLISTS]: ['#music_selections@soundcheck_ural'],
-  [Subscription.RELEASES]: ['#new_release@soundcheck_ural'],
+  [Subscription.RELEASES]: ['#new_release@soundcheck_ural', '#audio@soundcheck_ural'],
   [Subscription.TEXT_MATERIALS]: ['#text@soundcheck_ural'],
   [Subscription.AUDIO_MATERIALS]: ['#audio@soundcheck_ural'],
   [Subscription.DRAWINGS]: ['#prize@soundcheck_ural'],
