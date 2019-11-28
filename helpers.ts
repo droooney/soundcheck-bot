@@ -1010,3 +1010,18 @@ export async function removeUnusedDumpsInDrive() {
     })
   );
 }
+
+export async function deactivateExpiredDrawings() {
+  const now = moment();
+  const drawings = await Drawing.getActiveDrawings();
+
+  await Promise.all(
+    drawings.map(async (drawing) => {
+      if (moment(drawing.expiresAt).isBefore(now)) {
+        drawing.active = false;
+
+        await drawing.save();
+      }
+    })
+  );
+}
