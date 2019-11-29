@@ -372,7 +372,7 @@ export interface AdminSendMessageToUsersButtonPayload {
 
 export interface AdminSendMessageToUsersGroupButtonPayload {
   command: 'admin/send_message_to_users/group';
-  group: SendMessageToUsersGroup;
+  group: Subscription | 'all' | 'pick';
 }
 
 export type SubscribeToSectionButtonPayload = (
@@ -603,27 +603,31 @@ export interface AdminDeleteDrawingUserState {
   drawingId: number;
 }
 
+export interface AdminSendMessageToUsersGroupSetGroupUserState {
+  command: 'admin/send_message_to_users/group/set_group';
+}
+
 export interface AdminSendMessageToUsersGroupSetTextUserState {
   command: 'admin/send_message_to_users/group/set_text';
-  group: SendMessageToUsersGroup;
+  group: Subscription | 'all' | number[];
 }
 
 export interface AdminSendMessageToUsersGroupSetPostUserState {
   command: 'admin/send_message_to_users/group/set_post';
-  group: SendMessageToUsersGroup;
+  group: Subscription | 'all' | number[];
   text: string;
 }
 
 export interface AdminSendMessageToUsersGroupSetImageUserState {
   command: 'admin/send_message_to_users/group/set_image';
-  group: SendMessageToUsersGroup;
+  group: Subscription | 'all' | number[];
   text: string;
   post: string | null;
 }
 
 export interface AdminSendMessageToUsersGroupSetRefreshKeyboardUserState {
   command: 'admin/send_message_to_users/group/set_refresh_keyboard';
-  group: SendMessageToUsersGroup;
+  group: Subscription | 'all' | number[];
   text: string;
   post: string | null;
   image: string | null;
@@ -644,6 +648,7 @@ export type UserState = (
   | AdminEditDrawingPostUserState
   | AdminEditDrawingExpiresAtUserState
   | AdminDeleteDrawingUserState
+  | AdminSendMessageToUsersGroupSetGroupUserState
   | AdminSendMessageToUsersGroupSetTextUserState
   | AdminSendMessageToUsersGroupSetPostUserState
   | AdminSendMessageToUsersGroupSetImageUserState
@@ -660,8 +665,6 @@ export enum Subscription {
   // SERVICES = 'SERVICES',
   FOR_MUSICIANS = 'FOR_MUSICIANS',
 }
-
-export type SendMessageToUsersGroup = Subscription | 'all';
 
 export type Target = (
   'tellAboutGroup' | 'tellAboutRelease' | 'collaboration'

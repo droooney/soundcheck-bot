@@ -340,7 +340,10 @@ export const adminRepostStatsKeyboard: Keyboard = {
 export const adminSendMessageToUsersKeyboard: Keyboard = {
   one_time: false,
   buttons: [
-    [generateButton(captions.to_all, { command: 'admin/send_message_to_users/group', group: 'all' })],
+    [
+      generateButton(captions.to_all, { command: 'admin/send_message_to_users/group', group: 'all' }),
+      generateButton(captions.to_group, { command: 'admin/send_message_to_users/group', group: 'pick' }),
+    ],
     ...subscriptionButtons.map((buttons) => (
       buttons.map((subscription) => (
         generateButton(subscriptionNames[subscription], {

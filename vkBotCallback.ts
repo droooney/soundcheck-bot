@@ -25,6 +25,7 @@ import {
   sendVKMessage,
   sendVkMessageToAllConversations,
   sendVkMessageToSubscribedUsers,
+  sendVKMessages,
 } from './helpers';
 import {
   BackButtonDest,
@@ -643,12 +644,35 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'admin/send_message_to_users') {
         await respond(captions.choose_group, { keyboard: adminSendMessageToUsersKeyboard });
       } else if (payload.command === 'admin/send_message_to_users/group') {
-        user.state = {
-          command: 'admin/send_message_to_users/group/set_text',
-          group: payload.group
-        };
+        if (payload.group === 'pick') {
+          user.state = {
+            command: 'admin/send_message_to_users/group/set_group'
+          };
 
-        await respond(captions.enter_message_text);
+          await respond(captions.enter_user_ids);
+        } else {
+          user.state = {
+            command: 'admin/send_message_to_users/group/set_text',
+            group: payload.group
+          };
+
+          await respond(captions.enter_message_text);
+        }
+      } else if (payload.command === 'admin/send_message_to_users/group/set_group') {
+        const userIds = text.split(/(?:\s*,\s*|\s+)/).filter((id) => /^\d+$/.test(id)).map((id) => +id);
+
+        if (userIds.length) {
+          user.state = {
+            command: 'admin/send_message_to_users/group/set_text',
+            group: userIds
+          };
+
+          await respond(captions.enter_message_text);
+        } else {
+          user.state = { ...payload };
+
+          await respond(captions.enter_user_ids);
+        }
       } else if (payload.command === 'admin/send_message_to_users/group/set_text') {
         user.state = {
           command: 'admin/send_message_to_users/group/set_post',
@@ -709,8 +733,10 @@ export default async (ctx: Context) => {
 
           if (payload.group === 'all') {
             await sendVkMessageToAllConversations(payload.text, sendOptions);
-          } else {
+          } else if (typeof payload.group === 'string') {
             await sendVkMessageToSubscribedUsers([payload.group], payload.text, sendOptions);
+          } else {
+            await sendVKMessages(payload.group, payload.text, sendOptions);
           }
 
           await respond(captions.message_successfully_sent);
