@@ -126,7 +126,6 @@ export default async (ctx: Context) => {
       && buttonPayload
       && buttonPayload.command !== 'start'
       && buttonPayload.command !== 'back'
-      && buttonPayload.command !== 'refresh_keyboard'
       && buttonPayload.command !== 'poster/subscribe'
       && buttonPayload.command !== 'playlists/subscribe'
       && buttonPayload.command !== 'text_materials/subscribe'
@@ -181,7 +180,7 @@ export default async (ctx: Context) => {
 
         await respond(generateRandomCaption(captions.back_to_main_menu, { user, buttonsCount }), { keyboard: mainKeyboard });
       } else if (payload.command === 'poster') {
-        await respond(captions.choose_poster_type, { keyboard: generatePosterKeyboard(user) });
+        await respond(generateRandomCaption(captions.choose_poster_type, { user }), { keyboard: generatePosterKeyboard(user) });
       } else if (payload.command === 'back' && payload.dest === BackButtonDest.POSTER) {
         await respond(generateRandomCaption(captions.back_to_poster, { user }), { keyboard: generatePosterKeyboard(user) });
       } else if (payload.command === 'poster/type') {
@@ -217,7 +216,7 @@ export default async (ctx: Context) => {
             );
           });
 
-          await respond(captions.choose_day, {
+          await respond(generateRandomCaption(captions.choose_day), {
             keyboard: {
               one_time: false,
               buttons: [
@@ -719,8 +718,6 @@ export default async (ctx: Context) => {
 
           await respond(captions.need_to_refresh_keyboard);
         }
-      } else if (payload.command === 'refresh_keyboard') {
-        await respond(captions.refresh_keyboard_response, { keyboard: mainKeyboard });
       } else {
         console.warn('warning: unknown payload', payload);
 

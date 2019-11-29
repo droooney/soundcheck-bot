@@ -82,9 +82,6 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
           ? [[generateButton(captions.admin_section, { command: 'admin' }, ButtonColor.POSITIVE)]]
           : []
       ),
-      [
-        generateButton(captions.refresh_keyboard, { command: 'refresh_keyboard' }, ButtonColor.POSITIVE),
-      ],
     ]
   };
 }

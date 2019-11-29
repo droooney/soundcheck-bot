@@ -375,10 +375,6 @@ export interface AdminSendMessageToUsersGroupButtonPayload {
   group: SendMessageToUsersGroup;
 }
 
-export interface RefreshKeyboardButtonPayload {
-  command: 'refresh_keyboard';
-}
-
 export type SubscribeToSectionButtonPayload = (
   SubscribeToPosterButtonPayload
   | SubscribeToPlaylistsButtonPayload
@@ -443,7 +439,6 @@ export type ButtonPayload = (
   | AdminRepostStatsPeriodButtonPayload
   | AdminSendMessageToUsersButtonPayload
   | AdminSendMessageToUsersGroupButtonPayload
-  | RefreshKeyboardButtonPayload
 );
 
 export enum BackButtonDest {
