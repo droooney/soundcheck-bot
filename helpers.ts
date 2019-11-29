@@ -979,13 +979,8 @@ export async function rotateClicks() {
 
 export async function rotateDbDumps() {
   const filename = await createDbDump();
-
-  console.log('dump file', filename);
-
   const allFiles = await getAllGoogleDriveFiles();
   const dumpsFolder = allFiles.find(({ name }) => name === config.googleDriveDumpsFolderName);
-
-  console.log('folder; google files', dumpsFolder, allFiles);
 
   if (dumpsFolder) {
     try {
@@ -996,8 +991,6 @@ export async function rotateDbDumps() {
   } else {
     console.warn('warning: no dumps folder found');
   }
-
-  console.log('dump uploaded');
 
   const DUMPS_TO_KEEP = 7;
 
