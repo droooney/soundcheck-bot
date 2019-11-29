@@ -1065,7 +1065,7 @@ export async function notifyUsersAboutSoonToExpireDrawing() {
   ]);
   const usersToSendMessage = users.filter((user) => (
     user.subscriptions.includes(Subscription.DRAWINGS)
-    && reposts.every(({ ownerId }) => ownerId !== user.id)
+    && reposts.every(({ ownerId }) => ownerId !== user.vkId)
   ));
 
   await sendVKMessages(usersToSendMessage.map(({ vkId }) => vkId), captions.drawing_soon_expires(soonToExpireDrawing));

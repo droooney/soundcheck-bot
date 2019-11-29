@@ -683,8 +683,8 @@ export default async (ctx: Context) => {
         if (isPositiveAnswer || isNegativeAnswer) {
           const sendOptions: SendVkMessageOptions = {
             attachments: [
-              ...(payload.post ? [payload.post] : []),
-              ...(payload.image ? [payload.image] : [])
+              ...(payload.post ? [`post${payload.post}`] : []),
+              ...(payload.image ? [`image${payload.image}`] : [])
             ],
             keyboard: isPositiveAnswer
               ? generateMainKeyboard(false)

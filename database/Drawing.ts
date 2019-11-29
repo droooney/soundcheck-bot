@@ -22,7 +22,8 @@ export default class Drawing extends Sequelize.Model {
     return Drawing.findAll({
       where: {
         active: true
-      }
+      },
+      order: ['createdAt', 'ASC']
     });
   }
 }
