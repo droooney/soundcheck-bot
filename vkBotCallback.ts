@@ -232,11 +232,12 @@ export default async (ctx: Context) => {
           await respond(captions.choose_genre, { keyboard: genresKeyboard });
         }
       } else if (payload.command === 'poster/type/day') {
-        const concerts = await getDailyConcerts(moment(payload.dayStart));
+        const date = moment(payload.dayStart);
+        const concerts = await getDailyConcerts(date);
 
         await respond(
           concerts.length
-            ? getConcertsString(concerts)
+            ? captions.concerts_at_day(date, getConcertsString(concerts))
             : captions.no_concerts_at_day
         );
       } else if (payload.command === 'poster/type/week') {

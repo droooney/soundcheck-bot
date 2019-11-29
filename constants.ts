@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import moment = require('moment-timezone');
 
 import { Genre, Service, ServiceParams, Subscription } from './types';
 import User, { Sex } from './database/User';
@@ -123,7 +124,9 @@ export const captions = {
   ],
   choose_week: 'Выберите неделю',
   choose_genre: 'Выберите жанр',
-  no_concerts_at_day: 'В этот день концертов нет',
+  concerts_at_day: (date: moment.Moment, concertsString: string) =>  `Афиша на ${date.format('D MMMM')}:\n\n${concertsString}`,
+  no_concerts_at_day: `К сожалению, на выбранное тобой число пока не назначено концертов. Рекомендуем вернуться ближе \
+к выбранной дате или рассмотреть другую.`,
   no_concerts_at_week: 'На эту неделю концертов нет',
   no_concerts_in_genre: (genre: Genre) => (
     genre === Genre.ABOUT_MUSIC
