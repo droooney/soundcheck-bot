@@ -1115,7 +1115,9 @@ export async function refreshUsersInfo() {
     users.map(async (user, index) => {
       Object.assign(user, User.getVkUserData(vkUsersData[index]));
 
-      await user.save();
+      if (user.changed()) {
+        await user.save();
+      }
     })
   );
 }
