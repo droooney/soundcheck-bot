@@ -25,6 +25,7 @@ import {
   Keyboard,
   ManagersResponse,
   Message,
+  MessageAttachment,
   Post,
   SendMessageResponse,
   Service,
@@ -190,7 +191,7 @@ export async function sendVKRequest<T extends keyof VKRequestMap>(method: T, que
 export interface SendVkMessageOptions {
   keyboard?: Keyboard;
   forwardMessages?: number[];
-  attachments?: string[];
+  attachments?: MessageAttachment[];
   randomId?: number | bigint;
 }
 
@@ -201,7 +202,7 @@ export async function sendVKMessage(dest: number | number[], message: string, op
     message,
     keyboard: JSON.stringify(options.keyboard),
     forward_messages: (options.forwardMessages || []).join(','),
-    attachment: (options.attachments || []).join(',')
+    attachment: (options.attachments || []).map(({ type, id }) => type + id).join(',')
   });
 }
 
@@ -1062,6 +1063,6 @@ export async function notifyUsersAboutSoonToExpireDrawing() {
   ));
 
   await sendVKMessages(usersToSendMessage.map(({ vkId }) => vkId), captions.drawing_soon_expires(soonToExpireDrawing), {
-    attachments: [`wall${soonToExpireDrawing.postId}`]
+    attachments: [{ type: 'wall', id: soonToExpireDrawing.postId }]
   });
 }

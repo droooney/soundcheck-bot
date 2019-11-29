@@ -286,7 +286,7 @@ export default async (ctx: Context) => {
 
         if (drawing) {
           await respond(drawing.name, {
-            attachments: [`wall${drawing.postId}`]
+            attachments: [{ type: 'wall', id: drawing.postId }]
           });
         } else {
           await respond(captions.no_drawing, { keyboard: await generateDrawingsKeyboard(user) });
@@ -480,7 +480,7 @@ export default async (ctx: Context) => {
 
         if (drawing) {
           await respond(`${drawing.name} (окончание розыгрыша - ${moment(drawing.expiresAt).format('DD MMMM YYYY')})`, {
-            attachments: [`wall${drawing.postId}`],
+            attachments: [{ type: 'wall', id: drawing.postId }],
             keyboard: generateAdminDrawingMenuKeyboard(drawing)
           });
         } else {
@@ -644,7 +644,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'admin/send_message_to_users/group/set_post') {
         const postId = getPostId(body.object);
 
-        if (postId || negativeAnswers.includes(text)) {
+        if (postId || negativeAnswers.includes(text.toLowerCase())) {
           user.state = {
             command: 'admin/send_message_to_users/group/set_image',
             group: payload.group,
@@ -661,7 +661,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'admin/send_message_to_users/group/set_image') {
         const photoAttachment = (body.object.attachments.find(({ type }) => type === 'photo') || null) as PhotoAttachment | null;
 
-        if (photoAttachment || negativeAnswers.includes(text)) {
+        if (photoAttachment || negativeAnswers.includes(text.toLowerCase())) {
           user.state = {
             command: 'admin/send_message_to_users/group/set_refresh_keyboard',
             group: payload.group,
@@ -677,14 +677,14 @@ export default async (ctx: Context) => {
           await respond(captions.enter_message_image);
         }
       } else if (payload.command === 'admin/send_message_to_users/group/set_refresh_keyboard') {
-        const isPositiveAnswer = positiveAnswers.includes(text);
-        const isNegativeAnswer = negativeAnswers.includes(text);
+        const isPositiveAnswer = positiveAnswers.includes(text.toLowerCase());
+        const isNegativeAnswer = negativeAnswers.includes(text.toLowerCase());
 
         if (isPositiveAnswer || isNegativeAnswer) {
           const sendOptions: SendVkMessageOptions = {
             attachments: [
-              ...(payload.post ? [`wall${payload.post}`] : []),
-              ...(payload.image ? [`image${payload.image}`] : [])
+              ...(payload.post ? [{ type: 'wall' as 'wall', id: payload.post }] : []),
+              ...(payload.image ? [{ type: 'photo' as 'photo', id: payload.image }] : []),
             ],
             keyboard: isPositiveAnswer
               ? generateMainKeyboard(false)
@@ -783,7 +783,7 @@ export default async (ctx: Context) => {
       ));
 
       await sendVkMessageToSubscribedUsers(subscriptions, '', {
-        attachments: [`wall${postId}`],
+        attachments: [{ type: 'wall', id: postId }],
         randomId: 2n ** 30n + BigInt(body.object.id),
       });
     }

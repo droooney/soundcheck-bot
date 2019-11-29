@@ -116,6 +116,11 @@ export interface PhotoAttachment {
 
 export type Attachment = WallAttachment | PhotoAttachment;
 
+export interface MessageAttachment {
+  type: 'market' | 'wall' | 'photo';
+  id: string;
+}
+
 export interface StartButtonPayload {
   command: 'start';
 }
@@ -677,7 +682,7 @@ export interface ClicksGroup {
 export interface ServiceParams {
   name: string;
   message: string;
-  attachments?: string[];
+  attachments?: MessageAttachment[];
 }
 
 export type StatsPeriod = 'all_time' | 'today' | 'yesterday' | 'this_week' | 'this_month' | 'prev_week' | 'prev_month';

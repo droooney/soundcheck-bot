@@ -248,11 +248,11 @@ export const services: Record<Service, ServiceParams> = {
   stickers_design: {
     name: 'Дизайн стикеров',
     message: '',
-    attachments: ['market-177574047_3113786']
+    attachments: [{ type: 'market', id: '-177574047_3113786' }]
   },
   soundcheck_ads: {
     name: 'Реклама в Soundcheck',
     message: '',
-    attachments: ['market-177574047_2685381']
+    attachments: [{ type: 'market', id: '-177574047_2685381' }]
   },
 };
