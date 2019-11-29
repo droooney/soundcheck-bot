@@ -91,7 +91,7 @@ User.init({
     type: Sequelize.STRING,
     allowNull: false,
     validate: {
-      isIn: Object.values(Sex)
+      isIn: [Object.values(Sex)]
     }
   },
   lastMessageDate: {
