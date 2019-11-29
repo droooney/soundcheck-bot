@@ -18,6 +18,14 @@ export interface Post {
   copy_history?: Post[];
 }
 
+export interface VkUser {
+  id: number;
+  first_name: string;
+  last_name: string;
+  sex: 0 | 1 | 2;
+  bdate: string | null;
+}
+
 export interface BaseBody {
   group_id: number;
 }
@@ -96,6 +104,8 @@ export type SendMessageResponse = (
   { peer_id: number; message_id: number; }
   | { peer_id: number; error: { code: number; description: string; }; }
 )[];
+
+export type GetUsersResponse = VkUser[];
 
 export interface WallAttachment {
   type: 'wall';

@@ -22,6 +22,7 @@ import {
   FileMetadata,
   FilesResponse,
   Genre,
+  GetUsersResponse,
   Keyboard,
   ManagersResponse,
   Message,
@@ -31,6 +32,7 @@ import {
   Service,
   StatsPeriod,
   Subscription,
+  VkUser,
   WallAttachment,
 } from './types';
 import { captions, services, subscriptionNames } from './constants';
@@ -172,6 +174,7 @@ export interface VKRequestMap {
   'groups.getMembers': ManagersResponse;
   'messages.getConversations': ConversationsResponse;
   'messages.send': SendMessageResponse;
+  'users.get': GetUsersResponse;
 }
 
 export async function sendVKRequest<T extends keyof VKRequestMap>(method: T, query: object = {}): Promise<VKRequestMap[T]> {
@@ -193,6 +196,8 @@ export interface SendVkMessageOptions {
   forwardMessages?: number[];
   attachments?: MessageAttachment[];
   randomId?: number | bigint;
+  lat?: number;
+  long?: number;
 }
 
 export async function sendVKMessage(dest: number | number[], message: string, options: SendVkMessageOptions = {}): Promise<SendMessageResponse> {
@@ -202,7 +207,9 @@ export async function sendVKMessage(dest: number | number[], message: string, op
     message,
     keyboard: JSON.stringify(options.keyboard),
     forward_messages: (options.forwardMessages || []).join(','),
-    attachment: (options.attachments || []).map(({ type, id }) => type + id).join(',')
+    attachment: (options.attachments || []).map(({ type, id }) => type + id).join(','),
+    lat: options.lat,
+    long: options.long
   });
 }
 
@@ -253,6 +260,29 @@ export async function getAllConversations(): Promise<number[]> {
   }
 
   return conversations;
+}
+
+export async function getVkUsers(vkIds: number[]): Promise<VkUser[]> {
+  const users: VkUser[] = [];
+  const count = 1000;
+  let offset = 0;
+
+  while (offset < vkIds.length) {
+    users.push(
+      ...await sendVKRequest('users.get', {
+        user_ids: vkIds.slice(offset, offset + count),
+        fields: ['sex', 'bdate'].join(',')
+      })
+    );
+
+    offset += count;
+  }
+
+  return users;
+}
+
+export async function getVkUser(vkId: number): Promise<VkUser> {
+  return (await getVkUsers([vkId]))[0];
 }
 
 export function getConcertFields(description?: string): Partial<Record<string, string>> {
@@ -895,6 +925,16 @@ export async function getSortedFiles(dir: string) {
     .map(({ ix }) => path.join(dir, files[ix]));
 }
 
+export function generateRandomCaption<T>(captions: string[]): string;
+export function generateRandomCaption<T>(captions: (string | ((options: T) => string))[], options: T): string;
+export function generateRandomCaption<T>(captions: (string | ((options: T) => string))[], options?: T): string {
+  const caption = captions[Math.floor(Math.random() * captions.length)];
+
+  return typeof caption === 'function'
+    ? caption(options!)
+    : caption || '';
+}
+
 export function createEverydayDaemon(time: string, daemon: () => void) {
   const daemonFunc = async () => {
     try {
@@ -972,7 +1012,7 @@ export async function rotateClicks() {
   await Click.destroy({
     where: {
       createdAt: {
-        [Sequelize.Op.lt]: moment().subtract(10, 'days').startOf('day').toDate()
+        [Sequelize.Op.lt]: moment().subtract(6, 'months').startOf('day').toDate()
       }
     }
   });
@@ -1065,4 +1105,17 @@ export async function notifyUsersAboutSoonToExpireDrawing() {
   await sendVKMessages(usersToSendMessage.map(({ vkId }) => vkId), captions.drawing_soon_expires(soonToExpireDrawing), {
     attachments: [{ type: 'wall', id: soonToExpireDrawing.postId }]
   });
+}
+
+export async function refreshUsersInfo() {
+  const users = await User.findAll();
+  const vkUsersData = await getVkUsers(users.map(({ vkId }) => vkId));
+
+  await Promise.all(
+    users.map(async (user, index) => {
+      Object.assign(user, User.getVkUserData(vkUsersData[index]));
+
+      await user.save();
+    })
+  );
 }

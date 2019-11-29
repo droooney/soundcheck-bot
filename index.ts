@@ -9,6 +9,7 @@ import {
   deactivateExpiredDrawings,
   notifyUsersAboutSoonToExpireDrawing,
   refreshGoogleAccessToken,
+  refreshUsersInfo,
   removeUnusedDumpsInDrive,
   rotateClicks,
   rotateDbDumps,
@@ -119,6 +120,7 @@ async function main() {
   createEverydayDaemon('06:00:00', removeUnusedDumpsInDrive);
   createEverydayDaemon('00:05:00', deactivateExpiredDrawings);
   createEverydayDaemon('15:00:00', notifyUsersAboutSoonToExpireDrawing);
+  createEverydayDaemon('05:15:00', refreshUsersInfo);
 }
 
 (async () => {

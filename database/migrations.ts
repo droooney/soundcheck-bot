@@ -354,6 +354,49 @@ const migrations: Migration[] = [
       await queryInterface.renameColumn('reposts', 'owner_post_id', 'post_id');
     }
   },
+
+  {
+    name: 'add User#firstName',
+    async action(queryInterface) {
+      await queryInterface.addColumn('users', 'first_name', {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue: '',
+      });
+    }
+  },
+
+  {
+    name: 'add User#lastName',
+    async action(queryInterface) {
+      await queryInterface.addColumn('users', 'last_name', {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue: '',
+      });
+    }
+  },
+
+  {
+    name: 'add User#sex',
+    async action(queryInterface) {
+      await queryInterface.addColumn('users', 'sex', {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue: 'UNKNOWN',
+      });
+    }
+  },
+
+  {
+    name: 'add User#bDate',
+    async action(queryInterface) {
+      await queryInterface.addColumn('users', 'b_date', {
+        type: Sequelize.STRING,
+        allowNull: true,
+      });
+    }
+  },
 ];
 
 export default migrations;

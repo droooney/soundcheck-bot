@@ -6,6 +6,7 @@ import { Op } from 'sequelize';
 import {
   SendVkMessageOptions,
 
+  generateRandomCaption,
   getClickStats,
   getGroupStats,
   getHolidays,
@@ -19,6 +20,7 @@ import {
   getRepostPostId,
   getRepostStats,
   getSubscriptionStats,
+  getVkUser,
   getWeeklyConcerts,
   sendVKMessage,
   sendVkMessageToAllConversations,
@@ -97,7 +99,17 @@ export default async (ctx: Context) => {
         ...options
       });
     };
-    const user = await User.findOne({ where: { vkId } }) || await User.add({ vkId });
+    let isNewUser = false;
+    const user = await User.findOne({ where: { vkId } }) || await (async () => {
+      const vkUser = await getVkUser(vkId);
+
+      isNewUser = true;
+
+      return User.add({
+        vkId,
+        ...User.getVkUserData(vkUser)
+      });
+    })();
     const userState = user.state;
     const newLastMessageDate = new Date(body.object.date * 1000);
     let buttonPayload: ButtonPayload | null = null;
@@ -163,11 +175,15 @@ export default async (ctx: Context) => {
       }
 
       if (payload.command === 'start') {
-        await respond(captions.welcome_text, { keyboard: mainKeyboard });
+        await respond(captions.welcome_text(user), { keyboard: mainKeyboard });
       } else if (payload.command === 'back' && payload.dest === BackButtonDest.MAIN) {
-        await respond(captions.choose_action, { keyboard: mainKeyboard });
-      } else if (payload.command === 'poster' || (payload.command === 'back' && payload.dest === BackButtonDest.POSTER)) {
+        const buttonsCount = mainKeyboard.buttons.reduce((count, buttons) => count + buttons.length, 0);
+
+        await respond(generateRandomCaption(captions.back_to_main_menu, { buttonsCount }), { keyboard: mainKeyboard });
+      } else if (payload.command === 'poster') {
         await respond(captions.choose_poster_type, { keyboard: generatePosterKeyboard(user) });
+      } else if (payload.command === 'back' && payload.dest === BackButtonDest.POSTER) {
+        await respond(generateRandomCaption(captions.back_to_poster), { keyboard: generatePosterKeyboard(user) });
       } else if (payload.command === 'poster/type') {
         if (payload.type === 'day') {
           const upcomingConcerts = await getConcerts(moment().startOf('day'));
@@ -710,6 +726,8 @@ export default async (ctx: Context) => {
 
         await respond(captions.choose_action, { keyboard: mainKeyboard });
       }
+    } else if (isNewUser) {
+      await respond(captions.welcome_text(user), { keyboard: mainKeyboard });
     }
 
     user.lastMessageDate = newLastMessageDate;
