@@ -23,7 +23,7 @@ export default class Drawing extends Sequelize.Model {
       where: {
         active: true
       },
-      order: ['createdAt', 'ASC']
+      order: [['createdAt', 'ASC']]
     });
   }
 }
