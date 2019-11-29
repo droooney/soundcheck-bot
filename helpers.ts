@@ -1062,6 +1062,6 @@ export async function notifyUsersAboutSoonToExpireDrawing() {
   ));
 
   await sendVKMessages(usersToSendMessage.map(({ vkId }) => vkId), captions.drawing_soon_expires(soonToExpireDrawing), {
-    attachments: [`post${soonToExpireDrawing.postId}`]
+    attachments: [`wall${soonToExpireDrawing.postId}`]
   });
 }
