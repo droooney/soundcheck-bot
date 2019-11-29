@@ -1061,5 +1061,7 @@ export async function notifyUsersAboutSoonToExpireDrawing() {
     && reposts.every(({ ownerId }) => ownerId !== user.vkId)
   ));
 
-  await sendVKMessages(usersToSendMessage.map(({ vkId }) => vkId), captions.drawing_soon_expires(soonToExpireDrawing));
+  await sendVKMessages(usersToSendMessage.map(({ vkId }) => vkId), captions.drawing_soon_expires(soonToExpireDrawing), {
+    attachments: [`post${soonToExpireDrawing.postId}`]
+  });
 }
