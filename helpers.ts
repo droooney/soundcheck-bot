@@ -270,7 +270,7 @@ export async function getVkUsers(vkIds: number[]): Promise<VkUser[]> {
   while (offset < vkIds.length) {
     users.push(
       ...await sendVKRequest('users.get', {
-        user_ids: vkIds.slice(offset, offset + count),
+        user_ids: vkIds.slice(offset, offset + count).join(','),
         fields: ['sex', 'bdate'].join(',')
       })
     );

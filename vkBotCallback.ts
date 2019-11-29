@@ -179,11 +179,11 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'back' && payload.dest === BackButtonDest.MAIN) {
         const buttonsCount = mainKeyboard.buttons.reduce((count, buttons) => count + buttons.length, 0);
 
-        await respond(generateRandomCaption(captions.back_to_main_menu, { buttonsCount }), { keyboard: mainKeyboard });
+        await respond(generateRandomCaption(captions.back_to_main_menu, { user, buttonsCount }), { keyboard: mainKeyboard });
       } else if (payload.command === 'poster') {
         await respond(captions.choose_poster_type, { keyboard: generatePosterKeyboard(user) });
       } else if (payload.command === 'back' && payload.dest === BackButtonDest.POSTER) {
-        await respond(generateRandomCaption(captions.back_to_poster), { keyboard: generatePosterKeyboard(user) });
+        await respond(generateRandomCaption(captions.back_to_poster, { user }), { keyboard: generatePosterKeyboard(user) });
       } else if (payload.command === 'poster/type') {
         if (payload.type === 'day') {
           const upcomingConcerts = await getConcerts(moment().startOf('day'));
