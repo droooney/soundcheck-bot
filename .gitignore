@@ -4,3 +4,6 @@ node_modules
 config/index.ts
 database/version
 database/dumps
+
+forever.json
+logrotate.conf
