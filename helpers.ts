@@ -832,6 +832,15 @@ export async function createDbDump(): Promise<string> {
   return filename;
 }
 
+export async function restoreDbDump(filename: string) {
+  const { username, host, database } = config.dbConnection;
+  const command = `psql -U ${username} -h ${host} ${database} < ${filename}`;
+
+  await executeCommand(command, { cwd: process.cwd() });
+
+  return filename;
+}
+
 export async function getAllGoogleDriveFiles(): Promise<File[]> {
   const {
     data: {
