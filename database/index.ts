@@ -7,11 +7,10 @@ import Logger from '../Logger';
 
 const sequelize = new Sequelize.Sequelize({
   ...config.dbConnection,
-  logging(...args) {
-    args.pop();
-
-    Logger.log(args.length, ...args);
+  logging(sql, timing) {
+    Logger.log(`sequelize: ${sql}, took ${timing} ms`);
   },
+  benchmark: true,
   logQueryParameters: true
 });
 const versionFile = `${__dirname}/version`;
