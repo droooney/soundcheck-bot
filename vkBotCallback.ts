@@ -72,6 +72,7 @@ import {
   adminSendMessageToUsersKeyboard,
 } from './keyboards';
 import config from './config';
+import Logger from './Logger';
 import sequelize from './database';
 import User from './database/User';
 import Drawing from './database/Drawing';
@@ -84,7 +85,7 @@ export default async (ctx: Context) => {
   const requestTime = moment();
   const latestClickTime = requestTime.clone().subtract(1, 'minute');
 
-  console.log('bot event', requestTime.format('YYYY-MM-DD HH:mm:ss.SSS'), body);
+  Logger.log('bot event', body);
 
   eventHandler: if (body.type === 'confirmation') {
     ctx.body = config.confirmationCode;
@@ -153,7 +154,7 @@ export default async (ctx: Context) => {
           });
         }
       } catch (err) {
-        console.log('save click error', err);
+        Logger.log(err, 'save click error');
       }
     }
 
@@ -659,7 +660,7 @@ export default async (ctx: Context) => {
           await respond(captions.enter_message_text);
         }
       } else if (payload.command === 'admin/send_message_to_users/group/set_group') {
-        const userIds = text.split(/(?:\s*,\s*|\s+)/).filter((id) => /^\d+$/.test(id)).map((id) => +id);
+        const userIds = text.split(/[,\s]+/).filter((id) => /^\d+$/.test(id)).map((id) => +id);
 
         if (userIds.length) {
           user.state = {
@@ -746,7 +747,7 @@ export default async (ctx: Context) => {
           await respond(captions.need_to_refresh_keyboard);
         }
       } else {
-        console.warn('warning: unknown payload', payload);
+        Logger.warn('warning: unknown payload', payload);
 
         await respond(captions.choose_action, { keyboard: mainKeyboard });
       }

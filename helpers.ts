@@ -38,6 +38,7 @@ import {
 import { captions, services, subscriptionNames } from './constants';
 import config from './config';
 import VKError from './VKError';
+import Logger from './Logger';
 import User from './database/User';
 import Drawing from './database/Drawing';
 import Click from './database/Click';
@@ -947,13 +948,13 @@ export function generateRandomCaption<T>(captions: (string | ((options: T) => st
 export function createEverydayDaemon(time: string, daemon: () => void) {
   const daemonFunc = async () => {
     try {
-      console.log(`starting daemon ${daemon.name} at ${moment().format('YYYY-MM-DD HH:mm:ss.SSS')}`);
+      Logger.log(`daemon "${daemon.name}" started`);
 
       await daemon();
 
-      console.log(`daemon ${daemon.name} finished successfully at ${moment().format('YYYY-MM-DD HH:mm:ss.SSS')}`);
+      Logger.log(`daemon "${daemon.name}" finished successfully`);
     } catch (err) {
-      console.log(`daemon ${daemon.name} error`, err);
+      Logger.error(err, `daemon "${daemon.name}" failed`);
     }
   };
   const timeMoment = moment(time, 'HH:mm:ss');
@@ -985,7 +986,7 @@ export async function sendPosterMessage() {
   if (posterText) {
     await sendVKMessage(config.targets.poster, `Афиша на ${
       posterDay.weekday() === 0 ? getWeekString(posterDay) : getDayString(posterDay)
-    }: https://all-chess.org/soundcheck-bot${config.port}/api/concerts?date=${posterDay.format('YYYY-MM-DD')}`);
+    }: https://tion.icu/soundcheck-bot${config.port}/api/concerts?date=${posterDay.format('YYYY-MM-DD')}`);
   }
 }
 
@@ -1036,10 +1037,10 @@ export async function rotateDbDumps() {
     try {
       await uploadFile(filename, 'application/x-sql', dumpsFolder.id);
     } catch (err) {
-      console.log('upload file error', err);
+      Logger.error(err, 'upload file error');
     }
   } else {
-    console.warn('warning: no dumps folder found');
+    Logger.warn('warning: no dumps folder found');
   }
 
   const DUMPS_TO_KEEP = 7;
@@ -1062,7 +1063,7 @@ export async function removeUnusedDumpsInDrive() {
           method: 'delete'
         });
 
-        console.log(`dump ${file.name} deleted`);
+        Logger.log(`dump ${file.name} deleted`);
       }
     })
   );

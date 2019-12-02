@@ -25,7 +25,7 @@ import getConcertsCallback from './getConcertsCallback';
 import { generateMainKeyboard } from './keyboards';
 import config from './config';
 import { migrate } from './database';
-import VKError from './VKError';
+import Logger from './Logger';
 
 declare module 'koa' {
   interface BaseContext {
@@ -53,12 +53,12 @@ router.get('/api/concerts', getConcertsCallback);
 router.post(config.endpoint, vkBotCallback);
 
 app.use(async (ctx, next) => {
-  console.log(ctx.method, ctx.type, ctx.url);
+  Logger.log(ctx.method, ctx.type, ctx.url);
 
   ctx.managers = managers;
   ctx.changeManagers = (newManagers) => {
-    console.log('old managers', managers);
-    console.log('new managers', newManagers);
+    Logger.log('old managers', managers);
+    Logger.log('new managers', newManagers);
 
     managers = newManagers;
   };
@@ -66,13 +66,7 @@ app.use(async (ctx, next) => {
   try {
     await next();
   } catch (e) {
-    if (e.isAxiosError) {
-      console.log('request error', e.response.status, e.response.data);
-    } else if (e instanceof VKError) {
-      console.log('vk error', e.vkError);
-    } else {
-      console.log('error', e);
-    }
+    Logger.error(e, 'failed at bot endpoint');
 
     ctx.status = 500;
   }
@@ -105,7 +99,7 @@ async function main() {
 
   await new Promise((resolve) => {
     server.listen(config.port, () => {
-      console.log('Listening...');
+      Logger.log('Listening...');
 
       resolve();
     });
@@ -127,7 +121,7 @@ async function main() {
   try {
     await main();
   } catch (e) {
-    console.log('init error', e);
+    Logger.error(e, 'init error');
 
     process.exit(1);
   }
