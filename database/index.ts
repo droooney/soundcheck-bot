@@ -3,8 +3,15 @@ import * as fs from 'fs-extra';
 
 import config from '../config';
 import migrations from './migrations';
+import Logger from '../Logger';
 
-const sequelize = new Sequelize.Sequelize(config.dbConnection);
+const sequelize = new Sequelize.Sequelize({
+  ...config.dbConnection,
+  logging(...args) {
+    Logger.log(...args);
+  },
+  logQueryParameters: true
+});
 const versionFile = `${__dirname}/version`;
 
 export async function migrate() {
