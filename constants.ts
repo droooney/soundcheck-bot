@@ -18,6 +18,10 @@ export interface ChoosePosterTypeCaptionOptions {
   user: User;
 }
 
+export interface WriteToSoundcheckResponseCaptionOptions {
+  user: User;
+}
+
 export const captions = {
   // main menu
   welcome_text: (user: User) => `Привет, ${user.firstName}. Ты ${user.sex === Sex.FEMALE ? 'активировала' : 'активировал'} чат-бота Soundcheck. \
@@ -180,25 +184,40 @@ export const captions = {
   podcasts_response: 'Смотри подкасты тут:',
 
   // write to soundcheck
-  write_to_soundcheck_response: 'Выберите характер обращения',
-  tell_about_group: 'Рассказать о группе',
+  write_to_soundcheck_response: [
+    ({ user }: WriteToSoundcheckResponseCaptionOptions) => `Привет, ${user.firstName}. Чем ты хочешь с нами поделиться?`,
+    `Привет, хочешь рассказать нам что-то интересное?`,
+    `Привет, как дела? Выбирай нужный раздел и рассказывай.`,
+    ({ user }: WriteToSoundcheckResponseCaptionOptions) => `Привет, ${user.firstName}. Давно не общались. Есть новости?`,
+    `Привет. А мы думали: про кого мы забыли...`,
+    ({ user }: WriteToSoundcheckResponseCaptionOptions) => `Привет, ${user.firstName}. Выбирай нужный раздел и рассказывай.`,
+    ({ user }: WriteToSoundcheckResponseCaptionOptions) => `Привет, ${user.firstName}. \
+А мы думали: куда ты ${user.sex === Sex.FEMALE ? 'пропала' : 'пропал'}...`,
+  ],
+  tell_about_group: 'Рассказать о себе',
   tell_about_release: 'Сообщить о релизе',
   collaboration: 'Сотрудничество',
-  tell_about_bug: 'Сообщить об ошибке',
-  want_to_participate: 'Хочу в Soundcheck!',
-  write_to_soundcheck_other: 'Другое',
-  tell_about_group_response: 'Напишите о себе пару слов, прикрепляйте ссылки на соцсети',
-  tell_about_release_response: 'Прикрепляйте пост, аудиозапись или ссылку и Ваш релиз будет рассмотрен',
+  tell_about_bug: 'Нашел ошибку',
+  want_to_participate: 'Хочу в Soundcheck',
+  write_to_soundcheck_other: 'Другой вопрос',
+  tell_about_group_response: `Просто расскажи о своей группе в диалоге, прикрепи ссылки на свои сообщества. \
+Вся информация должна быть отправлена одним сообщением!`,
+  tell_about_release_response: `У тебя вышел новый трек? Отправь нам ссылку на релиз и получи +10 к карме. \
+Вся информация должна быть отправлена одним сообщением!`,
   collaboration_response: 'Напишите предложение о сотрудничестве и мы его рассмотрим',
-  tell_about_bug_response: 'Опишите ошибку',
-  want_to_participate_response: 'Расскажите о себе и чем бы Вы хотели заниматься в Soundcheck',
-  write_to_soundcheck_other_response: 'Напишите нам и Вам вскоре ответят',
-  tell_about_group_message_response: 'Спасибо за то что рассказали о себе',
-  tell_about_release_message_response: 'Релиз принят',
+  tell_about_bug_response: `Расскажи об ошибке прямо в этом диалоге и нажми «Отправить». \
++10 к карме и благодарность Soundcheck гарантируется. Вся информация должна быть отправлена одним сообщением!`,
+  want_to_participate_response: `Хочешь в дружную и талантливую команду Soundcheck? \
+Расскажи о себе прямо в этом диалоге и нажми «Отправить». Вся информация должна быть отправлена одним сообщением!`,
+  write_to_soundcheck_other_response: `Напиши свое сообщения прямо в этом диалоге и нажми «Отправить». \
+Мы с нетерпением ждем, что ты нам расскажешь. Вся информация должна быть отправлена одним сообщением!`,
+  tell_about_group_message_response: (user: User) => `Спасибо за информацию, ${user.firstName}. \
+Мы обязательно изучим твое творчество и добавим в наш список музыкантов.`,
+  tell_about_release_message_response: (user: User) => `Спасибо, ${user.firstName}. Мы обязательно ознакомимся с треками.`,
   collaboration_message_response: 'Предложение о сотрудничестве принято',
-  tell_about_bug_message_response: 'Спасибо за помощь!',
-  want_to_participate_message_response: 'Спасибо за заявку, в ближайшее время с Вами свяжутся',
-  write_to_soundcheck_other_message_response: 'Спасибо, Вам в ближайшее время ответят',
+  tell_about_bug_message_response: (user: User) => `Спасибо, ${user.firstName}. Мы обязательно изучим и постараемся устранить проблему.`,
+  want_to_participate_message_response: (user: User) => `Спасибо, ${user.firstName}, и приятно познакомиться! Мы свяжемся с тобой в ближайшее время.`,
+  write_to_soundcheck_other_message_response: (user: User) => `Спасибо, ${user.firstName}. Мы уже читаем твое сообщение!)`,
 
   // services
   choose_service: 'Выберите услугу',

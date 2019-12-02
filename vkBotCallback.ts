@@ -322,7 +322,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'audio_materials/podcasts') {
         await respond(captions.podcasts_response);
       } else if (payload.command === 'write_to_soundcheck') {
-        await respond(captions.write_to_soundcheck_response, { keyboard: writeToSoundcheckKeyboard });
+        await respond(generateRandomCaption(captions.write_to_soundcheck_response, { user }), { keyboard: writeToSoundcheckKeyboard });
       } else if (payload.command === 'write_to_soundcheck/tell_about_group') {
         user.state = {
           command: 'write_to_soundcheck/tell_about_group/message'
@@ -331,7 +331,7 @@ export default async (ctx: Context) => {
         await respond(captions.tell_about_group_response);
       } else if (payload.command === 'write_to_soundcheck/tell_about_group/message') {
         await Promise.all([
-          respond(captions.tell_about_group_message_response),
+          respond(captions.tell_about_group_message_response(user)),
           sendVKMessage(config.targets.tellAboutGroup, captions.group_history_message, {
             forwardMessages: [messageId]
           })
@@ -344,7 +344,7 @@ export default async (ctx: Context) => {
         await respond(captions.tell_about_release_response);
       } else if (payload.command === 'write_to_soundcheck/tell_about_release/message') {
         await Promise.all([
-          respond(captions.tell_about_release_message_response),
+          respond(captions.tell_about_release_message_response(user)),
           sendVKMessage(config.targets.tellAboutRelease, captions.release_message, {
             forwardMessages: [messageId]
           })
@@ -370,7 +370,7 @@ export default async (ctx: Context) => {
         await respond(captions.tell_about_bug_response);
       } else if (payload.command === 'write_to_soundcheck/tell_about_bug/message') {
         await Promise.all([
-          respond(captions.tell_about_bug_message_response),
+          respond(captions.tell_about_bug_message_response(user)),
           sendVKMessage(config.targets.tellAboutBug, captions.tell_about_bug_message, {
             forwardMessages: [messageId]
           })
@@ -383,7 +383,7 @@ export default async (ctx: Context) => {
         await respond(captions.want_to_participate_response);
       } else if (payload.command === 'write_to_soundcheck/want_to_participate/message') {
         await Promise.all([
-          respond(captions.want_to_participate_message_response),
+          respond(captions.want_to_participate_message_response(user)),
           sendVKMessage(config.targets.wantToParticipate, captions.want_to_participate_message, {
             forwardMessages: [messageId]
           })
@@ -396,7 +396,7 @@ export default async (ctx: Context) => {
         await respond(captions.write_to_soundcheck_other_response);
       } else if (payload.command === 'write_to_soundcheck/other/message') {
         await Promise.all([
-          respond(captions.write_to_soundcheck_other_message_response),
+          respond(captions.write_to_soundcheck_other_message_response(user)),
           sendVKMessage(config.targets.other, captions.write_to_soundcheck_other_message, {
             forwardMessages: [body.object.id]
           })
