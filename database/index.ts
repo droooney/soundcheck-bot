@@ -8,7 +8,9 @@ import Logger from '../Logger';
 const sequelize = new Sequelize.Sequelize({
   ...config.dbConnection,
   logging(...args) {
-    Logger.log(...args);
+    args.pop();
+
+    Logger.log(args.length, ...args);
   },
   logQueryParameters: true
 });
