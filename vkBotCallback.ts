@@ -229,7 +229,7 @@ export default async (ctx: Context) => {
             }
           });
         } else if (payload.type === 'week') {
-          await respond(captions.choose_week, { keyboard: generateWeekPosterKeyboard() });
+          await respond(generateRandomCaption(captions.choose_week), { keyboard: generateWeekPosterKeyboard() });
         } else if (payload.type === 'genres') {
           await respond(captions.choose_genre, { keyboard: genresKeyboard });
         }
@@ -237,11 +237,19 @@ export default async (ctx: Context) => {
         const date = moment(payload.dayStart);
         const concerts = await getDailyConcerts(date);
 
-        await respond(
-          concerts.length
-            ? captions.concerts_at_day(date, getConcertsString(concerts))
-            : captions.no_concerts_at_day
-        );
+        if (!concerts.length) {
+          await respond(captions.no_concerts_at_day);
+
+          break message;
+        }
+
+        const dateString = getDayString(date);
+        const concertsString = getConcertsString(concerts);
+        const caption = concerts.length > 1
+          ? generateRandomCaption(captions.concerts_at_day, { user, dateString, concertsCount: concerts.length })
+          : generateRandomCaption(captions.concert_at_day, { dateString });
+
+        await respond(`${caption}\n\n${concertsString}`);
       } else if (payload.command === 'poster/type/week') {
         const today = +moment().startOf('day');
         const concerts = (await getWeeklyConcerts(moment(payload.weekStart))).filter(({ startTime }) => +startTime >= today);
