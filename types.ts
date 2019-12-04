@@ -662,8 +662,21 @@ export enum Subscription {
   TEXT_MATERIALS = 'TEXT_MATERIALS',
   AUDIO_MATERIALS = 'AUDIO_MATERIALS',
   DRAWINGS = 'DRAWINGS',
-  // SERVICES = 'SERVICES',
   FOR_MUSICIANS = 'FOR_MUSICIANS',
+}
+
+export enum Hashtag {
+  POSTER_WEEK = '#afisha_week@soundcheck_ural',
+  POSTER_DAY = '#afisha_today@soundcheck_ural',
+  CONCERT_ANNOUNCEMENT = '#anons@soundcheck_ural',
+  GROUP_PLAYLIST = '#group_playlist@soundcheck_ural',
+  THEMATIC_PLAYLIST = '#them_playlists@soundcheck_ural',
+  CHART = '#chart@soundcheck_ural',
+  DIGEST = '#audio@soundcheck_ural',
+  NEW_RELEASE = '#new_release@soundcheck_ural',
+  TEXT = '#text@soundcheck_ural',
+  DRAWING = '#prize@soundcheck_ural',
+  FOR_MUSICIANS = '#for_musicians@soundcheck_ural',
 }
 
 export type Target = (

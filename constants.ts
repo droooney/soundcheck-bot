@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 
-import { Genre, Service, ServiceParams, Subscription } from './types';
+import { Genre, Hashtag, Service, ServiceParams, Subscription } from './types';
 import User, { Sex } from './database/User';
 import Drawing from './database/Drawing';
 
@@ -31,6 +31,10 @@ export interface WriteToSoundcheckResponseCaptionOptions {
   user: User;
 }
 
+export interface SubscriptionMessageCaptionOptions {
+  user: User;
+}
+
 export const captions = {
   // main menu
   welcome_text: (user: User) => `Привет, ${user.firstName}. Ты ${user.sex === Sex.FEMALE ? 'активировала' : 'активировал'} чат-бота Soundcheck. \
@@ -55,7 +59,7 @@ export const captions = {
     ({ user }: BackToMainMenuCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'вернулась' : 'вернулся'} в Главное меню. Куда отправимся дальше?`,
     ({ user }: BackToMainMenuCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'вернулась' : 'вернулся'} в Главное меню. \
 Не забывай, что ты всегда можешь поддержать нас лайком, отзывом или монетой.`,
-    ({ user }: BackToMainMenuCaptionOptions) => `И снова Главное меню... а ты ${user.sex === Sex.FEMALE ? 'любопытная' : 'любопытный'}.`,
+    ({ user }: BackToMainMenuCaptionOptions) => `И снова Главное меню… а ты ${user.sex === Sex.FEMALE ? 'любопытная' : 'любопытный'}.`,
     'Главное меню – это начало нового пути.',
     ({ user }: BackToMainMenuCaptionOptions) => `Ты снова ${user.sex === Sex.FEMALE ? 'перешла' : 'перешел'} в Главное меню. Пойдем за новым материалом?`,
     'Главное меню. Если бы количество лайков равнялось количеству переходов в главное меню, мы бы давно догнали МДК.',
@@ -65,10 +69,10 @@ export const captions = {
 Уже все ${user.sex === Sex.FEMALE ? 'прочитала' : 'прочитал'}?`,
     'Снова Главное меню. Как хорошо, что у нас еще много материалов.',
     'Главное меню. Мы поняли, в следующий раз сделаем эту кнопку побольше.',
-    'Нужно больше... переходов в Главное меню.',
+    'Нужно больше… переходов в Главное меню.',
     'Если бы нам платили по рублю за каждый переход в Главное меню, мы бы уже давно разбогатели.',
     'Главное меню. Если тебе нравится бот, ты всегда можешь оставить сердечко под нашими постами.',
-    'Мы понимаем: нельзя так просто взять... и не вернуться в Главное меню.',
+    'Мы понимаем: нельзя так просто взять… и не вернуться в Главное меню.',
     'Вжух, и ты снова в Главном меню!',
   ],
 
@@ -212,7 +216,7 @@ export const captions = {
     'Снова меню выбора формата Афиши. Если тебе что-то понравится, не поскупись на лайки, нас это очень поддерживает.',
     ({ user }: BackToPosterCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'вернулась' : 'вернулся'} к выбору формата Афиши. \
 Да, выбор концерта – дело непростое.`,
-    'Нельзя так просто взять... и не вернуться к выбору формата Афиши.',
+    'Нельзя так просто взять… и не вернуться к выбору формата Афиши.',
     'Выбор формата Афиши. День, Неделя или Жанр?',
   ],
 
@@ -256,10 +260,10 @@ export const captions = {
     `Привет, хочешь рассказать нам что-то интересное?`,
     `Привет, как дела? Выбирай нужный раздел и рассказывай.`,
     ({ user }: WriteToSoundcheckResponseCaptionOptions) => `Привет, ${user.firstName}. Давно не общались. Есть новости?`,
-    `Привет. А мы думали: про кого мы забыли...`,
+    `Привет. А мы думали: про кого мы забыли…`,
     ({ user }: WriteToSoundcheckResponseCaptionOptions) => `Привет, ${user.firstName}. Выбирай нужный раздел и рассказывай.`,
     ({ user }: WriteToSoundcheckResponseCaptionOptions) => `Привет, ${user.firstName}. \
-А мы думали: куда ты ${user.sex === Sex.FEMALE ? 'пропала' : 'пропал'}...`,
+А мы думали: куда ты ${user.sex === Sex.FEMALE ? 'пропала' : 'пропал'}…`,
   ],
   tell_about_group: 'Рассказать о себе',
   tell_about_release: 'Сообщить о релизе',
@@ -303,6 +307,169 @@ export const captions = {
   you_re_already_subscribed: 'Вы уже подписаны',
   subscribe_response: (subscription: Subscription) => `Вы подписались на категорию "${subscriptionNames[subscription]}"`,
   unsubscribe_response: (subscription: Subscription) => `Вы отписались от категории "${subscriptionNames[subscription]}"`,
+  subscription_message: {
+    [Hashtag.POSTER_WEEK]: [
+      ({ user }: SubscriptionMessageCaptionOptions) => `А вот и афиша на новую неделю! \
+Признайся, ты с нетерпением ${user.sex === Sex.FEMALE ? 'ждала' : 'ждал'} ее.`,
+      `Хэй, тут твои планы на неделю подъехали.`,
+      `Нельзя так просто взять… и не заценить недельную афишу от Soundcheck.`,
+      ({ user }: SubscriptionMessageCaptionOptions) => `Афиша на неделю. Признайся, ты ${user.sex === Sex.FEMALE ? 'рада' : 'рад'}, \
+что у Soundcheck появилась рассылка!`,
+      `А вот и афиша на новую неделю. Если найдешь подходящий концерт, не забудь поделиться с нами своим сердечком.`,
+      `Вжух… и афиша на неделю от Soundcheck в твоих сообщениях.`,
+      `Как узнать свои планы на неделю? Все просто: читай нашу новую афишу.`,
+      `Афиша на неделю. Твой лайк – лучшая благодарность.`,
+      `Привет. Что может быть лучше новой порции концертов на неделю? Сами концерты!`,
+      `Афиша на неделю от Soundcheck в твоих сообщениях.`,
+      `Афиша на новую неделю. А тут есть неплохие мероприятия…`,
+      `Привет. Мы тут тебе афишу на неделю принесли.`,
+      `Привет. Как насчет новой порции концертов на неделю?`,
+      `Привет. Давно не виделись. Впрочем, можем увидеться на одном из этих концертов на неделе.`,
+      `Привет, тут твои планы на неделю подъехали.`,
+      `Псс… тут афиша на неделю подъехала прямо в твои сообщения!`,
+    ],
+    [Hashtag.POSTER_DAY]: [
+      ({ user }: SubscriptionMessageCaptionOptions) => `А вот и афиша на сегодняшний вечер! \
+Признайся, ты с нетерпением ${user.sex === Sex.FEMALE ? 'ждала' : 'ждал'} ее.`,
+      `Хэй, тут твои планы на сегодняшний вечер подъехали.`,
+      `Нельзя так просто взять… и не заценить дневную афишу от Soundcheck.`,
+      ({ user }: SubscriptionMessageCaptionOptions) => `Афиша на сегодняшний вечер. Признайся, ты \
+${user.sex === Sex.FEMALE ? 'рада' : 'рад'}, что у Soundcheck появилась рассылка!`,
+      `А вот и афиша на сегодняшний вечер. Если найдешь подходящий концерт, не забудь поделиться с нами своим сердечком.`,
+      `Вжух… и афиша на сегодняшний вечер от Soundcheck в твоих сообщениях.`,
+      `Как узнать свои планы на сегодняшний вечер? Все просто: читай нашу новую афишу.`,
+      `Афиша на сегодняшний вечер. Твой лайк – лучшая благодарность.`,
+      `Привет. Что может быть лучше новой порции концертов на сегодняшний вечер? Сами концерты!`,
+      `Афиша на сегодняшний вечер от Soundcheck уже в твоих сообщениях.`,
+      `Афиша на сегодняшний вечер. А тут есть неплохие мероприятия…`,
+      `Привет. Мы тут тебе афишу на вечер принесли.`,
+      `Привет. Как насчет новой порции концертов на сегодняшний вечер?`,
+      `Привет. Давно не виделись. Впрочем, можем увидеться на одном из этих концертов сегодня вечером.`,
+      `Привет, тут твои планы на сегодняшний вечер подъехали.`,
+      `Псс… тут афиша на сегодняшний вечер подъехала прямо в твои сообщения!`,
+    ],
+    [Hashtag.CONCERT_ANNOUNCEMENT]: [
+      `Хэй, мы тут решили рассказать тебе о крутом концерте.`,
+      `Вжух… и мы снова рассказываем тебе о крутом мероприятии.`,
+      `Привет. Давно не виделись. Впрочем, можем увидеться на этом концерте.`,
+    ],
+    [Hashtag.GROUP_PLAYLIST]: [
+      ({ user }: SubscriptionMessageCaptionOptions) => `А вот и новый Плейлист от группы! Признайся, \
+ты с нетерпением ${user.sex === Sex.FEMALE ? 'ждала' : 'ждал'} его.`,
+      `Хэй, тут новый плейлист от группы подъехали.`,
+      `Нельзя так просто взять… и не заценить новый Плейлист от группы на Soundcheck`,
+      ({ user }: SubscriptionMessageCaptionOptions) => `Новый плейлист от группы. Признайся, ты \
+${user.sex === Sex.FEMALE ? 'рада' : 'рад'}, что у Soundcheck появилась рассылка!`,
+      `А вот и новый Плейлист от группы. Если найдешь крутой трек, не забудь поделиться с нами своим сердечком.`,
+      `Вжух… и новый Плейлист от группы в твоих сообщениях.`,
+      `Новый Плейлист от группы. Твой лайк – лучшая благодарность.`,
+      `Новый Плейлист от группы и Soundcheck уже в твоих сообщениях.`,
+      `Новый Плейлист от группы. А тут есть неплохие треки…`,
+      `Привет. Мы тут тебе новый Плейлист от группы принесли.`,
+      `Привет. Как насчет нового Плейлиста от группы?`,
+      `Привет, тут новый Плейлист от группы подъехал.`,
+      `Псс… тут новый Плейлист от группы подъехал прямо в твои сообщения!`,
+    ],
+    [Hashtag.THEMATIC_PLAYLIST]: [
+      ({ user }: SubscriptionMessageCaptionOptions) => `А вот и новый Тематический плейлист! Признайся, \
+ты с нетерпением ${user.sex === Sex.FEMALE ? 'ждала' : 'ждал'} его.`,
+      `Хэй, тут новый Тематический плейлист подъехал.`,
+      `Нельзя так просто взять… и не заценить новый Тематический плейлист на Soundcheck.`,
+      ({ user }: SubscriptionMessageCaptionOptions) => `Новый Тематический плейлист. Признайся, \
+ты ${user.sex === Sex.FEMALE ? 'рада' : 'рад'}, что у Soundcheck появилась рассылка!`,
+      `А вот и новый Тематический плейлист. Если найдешь крутой трек, не забудь поделиться с нами своим сердечком.`,
+      `Вжух… и новый Тематический плейлист в твоих сообщениях.`,
+      `Новый Тематический плейлист. Твой лайк – лучшая благодарность.`,
+      `Новый Тематический плейлист уже в твоих сообщениях.`,
+      `Новый Тематический плейлист. А тут есть неплохие треки…`,
+      `Привет. Мы тут тебе новый Тематический плейлист принесли.`,
+      `Привет. Как насчет нового Тематического плейлиста?`,
+      `Привет, тут новый Тематический плейлист подъехал.`,
+      `Псс… тут новый Тематический плейлист подъехал прямо в твои сообщения!`,
+    ],
+    [Hashtag.CHART]: [
+      ({ user }: SubscriptionMessageCaptionOptions) => `А вот и новый ТОП-12 Чарта iTunes! \
+Признайся, ты с нетерпением ${user.sex === Sex.FEMALE ? 'ждала' : 'ждал'} его.`,
+      `Хэй, тут новый ТОП-12 Чарта iTunes подъехал.`,
+      `Нельзя так просто взять… и не заценить новый ТОП-12 Чарта iTunes на Soundcheck.`,
+      ({ user }: SubscriptionMessageCaptionOptions) => `Новый ТОП-12 Чарта iTunes. Признайся, ты \
+${user.sex === Sex.FEMALE ? 'рада' : 'рад'}, что у Soundcheck появилась рассылка!`,
+      `А вот и новый ТОП-12 Чарта iTunes. Если найдешь крутой трек, не забудь поделиться с нами своим сердечком.`,
+      `Вжух… и новый ТОП-12 Чарта iTunes в твоих сообщениях.`,
+      `Новый ТОП-12 Чарта iTunes. Твой лайк – лучшая благодарность.`,
+      `Новый ТОП-12 Чарта iTunes уже в твоих сообщениях.`,
+      `Новый ТОП-12 Чарта iTunes. А тут есть неплохие треки…`,
+      `Привет. Мы тут тебе новый ТОП-12 Чарта iTunes принесли.`,
+      `Привет, тут новый ТОП-12 Чарта iTunes подъехал.`,
+      `Псс… тут новый ТОП-12 Чарта iTunes подъехал прямо в твои сообщения!`,
+    ],
+    [Hashtag.NEW_RELEASE]: [
+      ({ user }: SubscriptionMessageCaptionOptions) => `А вот и новые релизы! Признайся, ты с нетерпением их ${user.sex === Sex.FEMALE ? 'ждала' : 'ждал'}.`,
+      `Хэй, а тут новые релизы подъехали.`,
+      `Нельзя так просто взять… и не заценить новые релизы от Soundcheck.`,
+      ({ user }: SubscriptionMessageCaptionOptions) => `Новые релизы за прошлую неделю. Признайся, ты \
+${user.sex === Sex.FEMALE ? 'рада' : 'рад'}, что у Soundcheck появилась рассылка!`,
+      `А вот и новые релизы. Если найдешь подходящий трек, не забудь поделиться с нами своим сердечком.`,
+      `Вжух… и новый релизы от Soundcheck в твоих сообщениях.`,
+      `Как узнать, что ты будешь слушать сегодняшним вечером? Все просто: новые релизы от Soundcheck.`,
+      `Новые релизы прямо в твоих сообщениях. Твой лайк – лучшая благодарность.`,
+      `Новые релизы от Soundcheck уже в твоих сообщениях.`,
+      `Новые релизы местных музыкантов. А тут есть неплохие треки…`,
+      `Привет. Как насчет порции новых релизов?`,
+      `Привет. Мы тут тебе новые релизы принесли.`,
+      `Привет, тут новые релизы в твой плейлист подъехали.`,
+      `Псс… тут новые релизы подъехали.`,
+    ],
+    [Hashtag.DIGEST]: [
+      `Привет, тут новый выпуск Soundcheck Music Digest подъехал.`,
+      `Лучшие треки местных музыкантов в новом Soundcheck Music Digest.`,
+    ],
+    [Hashtag.TEXT]: [
+      ({ user }: SubscriptionMessageCaptionOptions) => `А вот и новый Текстовый материал от Soundcheck! Признайся, \
+ты с нетерпением ${user.sex === Sex.FEMALE ? 'ждала' : 'ждал'} его.`,
+      `Хэй, тут новый Текстовый материал от Soundcheck подъехал.`,
+      `Нельзя так просто взять… и не заценить новый Текстовый материал от Soundcheck.`,
+      ({ user }: SubscriptionMessageCaptionOptions) => `Новый Текстовый материал от Soundcheck. Признайся, ты \
+${user.sex === Sex.FEMALE ? 'рада' : 'рад'}, что у нас появилась рассылка!`,
+      `А вот и новый Текстовый материал от Soundcheck. Если тебе понравится, не забудь поделиться с нами своим сердечком.`,
+      `Вжух… и новый Текстовый материал от Soundcheck в твоих сообщениях.`,
+      `Новый Текстовый материал от Soundcheck. Твой лайк – лучшая благодарность.`,
+      `Новый Текстовый материал от Soundcheck уже в твоих сообщениях.`,
+      `Привет. Мы тут тебе новый Текстовый материал от Soundcheck принесли.`,
+      `Привет, тут новый Текстовый материал от Soundcheck подъехал.`,
+      `Псс… тут новый Текстовый материал от Soundcheck подъехал прямо в твои сообщения!`,
+    ],
+    [Hashtag.DRAWING]: [
+      ({ user }: SubscriptionMessageCaptionOptions) => `А вот и новый Розыгрыш от Soundcheck! Признайся, \
+ты с нетерпением ${user.sex === Sex.FEMALE ? 'ждала' : 'ждал'} его.`,
+      `Хэй, тут новый Розыгрыш от Soundcheck подъехал.`,
+      `Нельзя так просто взять… и не заценить новый Розыгрыш от Soundcheck.`,
+      ({ user }: SubscriptionMessageCaptionOptions) => `Новый Розыгрыш от Soundcheck. Признайся, ты \
+${user.sex === Sex.FEMALE ? 'рада' : 'рад'}, что у нас появилась рассылка!`,
+      `А вот и новый Розыгрыш от Soundcheck. Не забудь поделиться с нами своим сердечком.`,
+      `Вжух… и новый Розыгрыш от Soundcheck в твоих сообщениях.`,
+      `Новый Розыгрыш от Soundcheck. Твой лайк – лучшая благодарность.`,
+      `Новый Розыгрыш от Soundcheck уже в твоих сообщениях.`,
+      `Привет. Мы тут тебе новый Розыгрыш от Soundcheck принесли.`,
+      `Привет, тут новый Розыгрыш от Soundcheck подъехал.`,
+      `Псс… тут новый Розыгрыш от Soundcheck подъехал прямо в твои сообщения!`,
+    ],
+    [Hashtag.FOR_MUSICIANS]: [
+      ({ user }: SubscriptionMessageCaptionOptions) => `А вот и новый Материал для музыкантов от Soundcheck! \
+Признайся, ты с нетерпением ${user.sex === Sex.FEMALE ? 'ждала' : 'ждал'} его.`,
+      `Хэй, тут новый Материал для музыкантов от Soundcheck подъехал.`,
+      `Нельзя так просто взять… и не заценить новый Материал для музыкантов от Soundcheck.`,
+      ({ user }: SubscriptionMessageCaptionOptions) => `Новый Материал для музыкантов от Soundcheck. Признайся, ты \
+${user.sex === Sex.FEMALE ? 'рада' : 'рад'}, что у нас появилась рассылка!`,
+      `А вот и новый Материал для музыкантов от Soundcheck. Не забудь поделиться с нами своим сердечком.`,
+      `Вжух… и новый Материал для музыкантов от Soundcheck в твоих сообщениях.`,
+      `Новый Материал для музыкантов от Soundcheck. Твой лайк – лучшая благодарность.`,
+      `Новый Материал для музыкантов от Soundcheck уже в твоих сообщениях.`,
+      `Привет. Мы тут тебе новый Материал для музыкантов от Soundcheck принесли.`,
+      `Привет, тут новый Материал для музыкантов от Soundcheck подъехал.`,
+      `Псс… тут новый Материал для музыкантов от Soundcheck подъехал прямо в твои сообщения!`,
+    ],
+  } as Record<Hashtag, (string | ((options: SubscriptionMessageCaptionOptions) => string))[]>,
 
   // admin
   you_re_not_a_manager: 'Вы не являетесь администратором',
@@ -414,7 +581,6 @@ export const subscriptionNames: Record<Subscription, string> = {
   [Subscription.TEXT_MATERIALS]: captions.text_materials,
   [Subscription.AUDIO_MATERIALS]: captions.audio_materials,
   [Subscription.DRAWINGS]: captions.drawings,
-  // [Subscription.SERVICES]: captions.services,
   [Subscription.FOR_MUSICIANS]: captions.for_musicians,
 };
 
@@ -424,15 +590,14 @@ export const subscriptionButtons = [
   [Subscription.DRAWINGS, Subscription.FOR_MUSICIANS],
 ];
 
-export const subscriptionHashtags: Record<Subscription, string[]> = {
-  [Subscription.POSTER]: ['#afisha_week@soundcheck_ural', '#afisha_today@soundcheck_ural', '#anons@soundcheck_ural'],
-  [Subscription.PLAYLISTS]: ['#music_selections@soundcheck_ural'],
-  [Subscription.RELEASES]: ['#new_release@soundcheck_ural', '#audio@soundcheck_ural'],
-  [Subscription.TEXT_MATERIALS]: ['#text@soundcheck_ural'],
-  [Subscription.AUDIO_MATERIALS]: ['#audio@soundcheck_ural'],
-  [Subscription.DRAWINGS]: ['#prize@soundcheck_ural'],
-  // [Subscription.SERVICES]: ['#service@soundcheck_ural'],
-  [Subscription.FOR_MUSICIANS]: ['#for_musicians@soundcheck_ural'],
+export const subscriptionHashtags: Record<Subscription, Hashtag[]> = {
+  [Subscription.POSTER]: [Hashtag.POSTER_WEEK, Hashtag.POSTER_DAY, Hashtag.CONCERT_ANNOUNCEMENT],
+  [Subscription.PLAYLISTS]: [Hashtag.CHART, Hashtag.GROUP_PLAYLIST, Hashtag.THEMATIC_PLAYLIST],
+  [Subscription.RELEASES]: [Hashtag.NEW_RELEASE, Hashtag.DIGEST],
+  [Subscription.TEXT_MATERIALS]: [Hashtag.TEXT],
+  [Subscription.AUDIO_MATERIALS]: [Hashtag.DIGEST],
+  [Subscription.DRAWINGS]: [Hashtag.DRAWING],
+  [Subscription.FOR_MUSICIANS]: [Hashtag.FOR_MUSICIANS],
 };
 
 export const services: Record<Service, ServiceParams> = {

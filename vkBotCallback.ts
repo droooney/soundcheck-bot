@@ -32,6 +32,7 @@ import {
   Body,
   ButtonColor,
   ButtonPayload,
+  Hashtag,
   PhotoAttachment,
   Subscription,
   UserState,
@@ -163,8 +164,6 @@ export default async (ctx: Context) => {
     }
 
     if (user.lastMessageDate > newLastMessageDate) {
-      ctx.body = 'ok';
-
       break eventHandler;
     }
 
@@ -769,8 +768,6 @@ export default async (ctx: Context) => {
       : user.state;
 
     await user.save();
-
-    ctx.body = 'ok';
   } else if (body.type === 'group_officers_edit') {
     const {
       user_id,
@@ -784,8 +781,6 @@ export default async (ctx: Context) => {
     }
 
     ctx.changeManagers(newManagers);
-
-    ctx.body = 'ok';
   } else if (
     body.type === 'group_leave'
     || (body.type === 'group_join' && (body.object.join_type === 'join' || body.object.join_type === 'accepted'))
@@ -818,8 +813,6 @@ export default async (ctx: Context) => {
         await GroupUser.add({ vkId, status }, { transaction });
       }
     });
-
-    ctx.body = 'ok';
   } else if (body.type === 'wall_post_new') {
     const photoAttachment = (body.object.attachments || []).find(({ type }) => type === 'photo') as PhotoAttachment | undefined;
 
@@ -829,17 +822,39 @@ export default async (ctx: Context) => {
         .split(/\s+/)
         .map((hashtag) => hashtag.trim())
         .filter(Boolean);
-      const subscriptions = _.filter(Subscription, (subscription) => (
-        subscriptionHashtags[subscription].some((hashtag) => hashtags.includes(hashtag))
-      ));
+      const hashtag = _.find(Hashtag, (hashtag) => hashtags.includes(hashtag));
 
-      await sendVkMessageToSubscribedUsers(subscriptions, '', {
-        attachments: [{ type: 'wall', id: postId }],
-        randomId: 2n ** 30n + BigInt(body.object.id),
-      });
+      if (hashtag) {
+        const subscriptionCaptions = captions.subscription_message[hashtag];
+        const subscriptions = _.filter(Subscription, (subscription) => (
+          subscriptionHashtags[subscription].some((hashtag) => hashtags.includes(hashtag))
+        ));
+        const caption = subscriptionCaptions[Math.floor(Math.random() * subscriptionCaptions.length)];
+        const messageOptions: SendVkMessageOptions = {
+          attachments: [{ type: 'wall', id: postId }],
+          randomId: 2n ** 30n + BigInt(body.object.id),
+        };
+
+        if (typeof caption === 'string') {
+          await sendVkMessageToSubscribedUsers(subscriptions, caption, messageOptions);
+
+          break eventHandler;
+        }
+
+        const subscribedUsers = (await User.findAll()).filter((user) => (
+          user.subscriptions.some((subscription) => subscriptions.includes(subscription))
+        ));
+        const messageGroups = _.groupBy(subscribedUsers, (user) => (caption as Exclude<typeof caption, string>)({ user }));
+
+        for (const message in messageGroups) {
+          if (messageGroups.hasOwnProperty(message)) {
+            const vkIds = messageGroups[message].map(({ vkId }) => vkId);
+
+            await sendVKMessages(vkIds, message, messageOptions);
+          }
+        }
+      }
     }
-
-    ctx.body = 'ok';
   } else if (body.type === 'wall_repost') {
     const ownerId = body.object.owner_id;
     const postId = body.object.id;
@@ -854,9 +869,7 @@ export default async (ctx: Context) => {
         await Repost.add({ ownerId, postId, originalPostId });
       }
     }
-
-    ctx.body = 'ok';
-  } else {
-    ctx.body = 'ok';
   }
+
+  ctx.body = 'ok';
 }
