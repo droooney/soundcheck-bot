@@ -42,6 +42,7 @@ import {
   genreNames,
   genreMatches,
   hashtagCombinations,
+  links,
   subscriptionHashtags,
   positiveAnswers,
   negativeAnswers,
@@ -336,11 +337,11 @@ export default async (ctx: Context) => {
           );
         }
       } else if (payload.command === 'text_materials') {
-        await respond(captions.text_materials_response, { keyboard: generateTextMaterialsKeyboard(user) });
+        await respond(generateRandomCaption(captions.text_materials_response, { user }), { keyboard: generateTextMaterialsKeyboard(user) });
       } else if (payload.command === 'text_materials/longread') {
-        await respond(captions.longreads_response);
+        await respond(`${generateRandomCaption(captions.longreads_response, { user })}\n\n${links.longreads}`);
       } else if (payload.command === 'text_materials/group_history') {
-        await respond(captions.group_history_response);
+        await respond(`${generateRandomCaption(captions.group_history_response, { user })}\n\n${links.group_history}`);
       } else if (payload.command === 'audio_materials') {
         await respond(captions.audio_materials_response, { keyboard: generateAudioMaterialsKeyboard(user) });
       } else if (payload.command === 'audio_materials/digests') {
