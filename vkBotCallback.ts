@@ -41,6 +41,7 @@ import {
   captions,
   genreNames,
   genreMatches,
+  hashtagCombinations,
   subscriptionHashtags,
   positiveAnswers,
   negativeAnswers,
@@ -88,9 +89,13 @@ export default async (ctx: Context) => {
 
   Logger.log('bot event', body);
 
-  eventHandler: if (body.type === 'confirmation') {
+  if (body.type === 'confirmation') {
     ctx.body = config.confirmationCode;
-  } else if (body.type === 'message_new') {
+
+    return;
+  }
+
+  eventHandler: if (body.type === 'message_new') {
     const messageId = body.object.id;
     const vkId = body.object.peer_id;
     const text = body.object.text;
@@ -303,18 +308,32 @@ export default async (ctx: Context) => {
         ));
 
         await respond(
-          hasDrawings ? captions.choose_drawing : captions.no_drawings,
-          { keyboard: await generateDrawingsKeyboard(user) }
+          hasDrawings
+            ? generateRandomCaption(captions.drawings_response, { user })
+            : generateRandomCaption(captions.no_drawings),
+          { keyboard }
         );
       } else if (payload.command === 'drawings/drawing') {
         const drawing = await Drawing.findByPk(payload.drawingId);
 
         if (drawing) {
-          await respond(drawing.name, {
+          await respond(generateRandomCaption(captions.drawing_response, { drawing }), {
             attachments: [{ type: 'wall', id: drawing.postId }]
           });
         } else {
-          await respond(captions.no_drawing, { keyboard: await generateDrawingsKeyboard(user) });
+          const [keyboard, drawings] = await Promise.all([
+            generateDrawingsKeyboard(user),
+            Drawing.getActiveDrawings(),
+          ]);
+
+          await respond(
+            drawings.length > 1
+              ? captions.no_drawing['>1'](drawings)
+              : drawings.length
+                ? captions.no_drawing[1](drawings[0])
+                : captions.no_drawing[0],
+            { keyboard }
+          );
         }
       } else if (payload.command === 'text_materials') {
         await respond(captions.text_materials_response, { keyboard: generateTextMaterialsKeyboard(user) });
@@ -509,7 +528,7 @@ export default async (ctx: Context) => {
             keyboard: generateAdminDrawingMenuKeyboard(drawing)
           });
         } else {
-          await respond(captions.no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
+          await respond(captions.admin_no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
         }
       } else if (payload.command === 'admin/drawings/drawing/edit_name') {
         const drawing = await Drawing.findByPk(payload.drawingId);
@@ -522,7 +541,7 @@ export default async (ctx: Context) => {
 
           await respond(captions.enter_drawing_name);
         } else {
-          await respond(captions.no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
+          await respond(captions.admin_no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
         }
       } else if (payload.command === 'admin/drawings/drawing/edit_name/message') {
         const drawing = await Drawing.findByPk(payload.drawingId);
@@ -533,7 +552,7 @@ export default async (ctx: Context) => {
           await drawing.save();
           await respond(captions.drawing_edited);
         } else {
-          await respond(captions.no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
+          await respond(captions.admin_no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
         }
       } else if (payload.command === 'admin/drawings/drawing/edit_post') {
         const drawing = await Drawing.findByPk(payload.drawingId);
@@ -546,7 +565,7 @@ export default async (ctx: Context) => {
 
           await respond(captions.send_drawing_post);
         } else {
-          await respond(captions.no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
+          await respond(captions.admin_no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
         }
       } else if (payload.command === 'admin/drawings/drawing/edit_post/message') {
         const drawing = await Drawing.findByPk(payload.drawingId);
@@ -565,7 +584,7 @@ export default async (ctx: Context) => {
             await respond(captions.send_drawing_post);
           }
         } else {
-          await respond(captions.no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
+          await respond(captions.admin_no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
         }
       } else if (payload.command === 'admin/drawings/drawing/edit_expires_at') {
         const drawing = await Drawing.findByPk(payload.drawingId);
@@ -578,7 +597,7 @@ export default async (ctx: Context) => {
 
           await respond(captions.enter_drawing_expires_at);
         } else {
-          await respond(captions.no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
+          await respond(captions.admin_no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
         }
       } else if (payload.command === 'admin/drawings/drawing/edit_expires_at/message') {
         const drawing = await Drawing.findByPk(payload.drawingId);
@@ -601,7 +620,7 @@ export default async (ctx: Context) => {
             await respond(captions.enter_drawing_expires_at);
           }
         } else {
-          await respond(captions.no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
+          await respond(captions.admin_no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
         }
       } else if (payload.command === 'admin/drawings/drawing/delete') {
         const drawing = await Drawing.findByPk(payload.drawingId);
@@ -614,7 +633,7 @@ export default async (ctx: Context) => {
 
           await respond(captions.confirm_drawing_delete(drawing));
         } else {
-          await respond(captions.no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
+          await respond(captions.admin_no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
         }
       } else if (payload.command === 'admin/drawings/drawing/delete/confirmation') {
         const drawing = await Drawing.findByPk(payload.drawingId);
@@ -629,7 +648,7 @@ export default async (ctx: Context) => {
             await respond(captions.choose_action, { keyboard: generateAdminDrawingMenuKeyboard(drawing) });
           }
         } else {
-          await respond(captions.no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
+          await respond(captions.admin_no_drawing, { keyboard: await generateAdminDrawingsKeyboard() });
         }
       } else if (payload.command === 'admin/stats' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN_STATS)) {
         await respond(captions.stats_response, { keyboard: adminStatsKeyboard });
@@ -756,7 +775,7 @@ export default async (ctx: Context) => {
       } else {
         Logger.warn('warning: unknown payload', payload);
 
-        await respond(captions.choose_action, { keyboard: mainKeyboard });
+        await respond(generateRandomCaption(captions.unknown_payload), { keyboard: mainKeyboard });
       }
     } else if (isNewUser) {
       await respond(captions.welcome_text(user), { keyboard: mainKeyboard });
@@ -822,7 +841,12 @@ export default async (ctx: Context) => {
         .split(/\s+/)
         .map((hashtag) => hashtag.trim())
         .filter(Boolean);
-      const hashtag = _.find(Hashtag, (hashtag) => hashtags.includes(hashtag));
+      const hashtagFromCombination = _.find(hashtagCombinations, ([combination]) => (
+        combination.every((hashtag) => hashtags.includes(hashtag))
+      ));
+      const hashtag = hashtagFromCombination
+        ? hashtagFromCombination[1]
+        : _.find(Hashtag, (hashtag) => hashtags.includes(hashtag));
 
       if (hashtag) {
         const subscriptionCaptions = captions.subscription_message[hashtag];
