@@ -17,7 +17,6 @@ const config: Config = {
   targets: {
     tellAboutGroup: [175810060],
     tellAboutRelease: [175810060],
-    collaboration: [175810060],
     tellAboutBug: [175810060],
     wantToParticipate: [175810060],
     other: [175810060],

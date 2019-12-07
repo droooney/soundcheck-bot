@@ -250,10 +250,6 @@ export interface TellAboutReleaseButtonPayload {
   command: 'write_to_soundcheck/tell_about_release';
 }
 
-export interface CollaborationButtonPayload {
-  command: 'write_to_soundcheck/collaboration';
-}
-
 export interface TellAboutBugButtonPayload {
   command: 'write_to_soundcheck/tell_about_bug';
 }
@@ -419,7 +415,6 @@ export type ButtonPayload = (
   | WriteToSoundcheckButtonPayload
   | TellAboutGroupButtonPayload
   | TellAboutReleaseButtonPayload
-  | CollaborationButtonPayload
   | TellAboutBugButtonPayload
   | WantToParticipateInSoundcheckButtonPayload
   | WriteToSoundcheckOtherButtonPayload
@@ -562,10 +557,6 @@ export interface TellAboutReleaseUserState {
   command: 'write_to_soundcheck/tell_about_release/message';
 }
 
-export interface CollaborationUserState {
-  command: 'write_to_soundcheck/collaboration/message';
-}
-
 export interface TellAboutBugUserState {
   command: 'write_to_soundcheck/tell_about_bug/message';
 }
@@ -647,7 +638,6 @@ export type UserState = (
   null
   | TellAboutGroupUserState
   | TellAboutReleaseUserState
-  | CollaborationUserState
   | TellAboutBugUserState
   | WantToParticipateUserState
   | WriteToSoundcheckOtherUserState
@@ -690,8 +680,7 @@ export enum Hashtag {
 }
 
 export type Target = (
-  'tellAboutGroup' | 'tellAboutRelease' | 'collaboration'
-  | 'tellAboutBug' | 'wantToParticipate' | 'other' | 'poster' | 'stats'
+  'tellAboutGroup' | 'tellAboutRelease' | 'tellAboutBug' | 'wantToParticipate' | 'other' | 'poster' | 'stats'
 );
 
 export interface Config {

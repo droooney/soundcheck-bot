@@ -375,20 +375,7 @@ export default async (ctx: Context) => {
             forwardMessages: [messageId]
           })
         ]);
-      } else if (payload.command === 'write_to_soundcheck/collaboration') {
-        user.state = {
-          command: 'write_to_soundcheck/collaboration/message'
-        };
-
-        await respond(captions.collaboration_response);
-      } else if (payload.command === 'write_to_soundcheck/collaboration/message') {
-        await Promise.all([
-          respond(captions.collaboration_message_response),
-          sendVKMessage(config.targets.collaboration, captions.collaboration_message, {
-            forwardMessages: [messageId]
-          })
-        ]);
-      } else if (payload.command === 'write_to_soundcheck/tell_about_bug') {
+      } if (payload.command === 'write_to_soundcheck/tell_about_bug') {
         user.state = {
           command: 'write_to_soundcheck/tell_about_bug/message'
         };

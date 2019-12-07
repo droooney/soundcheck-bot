@@ -476,7 +476,6 @@ ${user.sex === Sex.FEMALE ? 'первой' : 'первым'}!`,
 Вся информация должна быть отправлена одним сообщением!`,
   tell_about_release_response: `У тебя вышел новый трек? Отправь нам ссылку на релиз и получи +10 к карме. \
 Вся информация должна быть отправлена одним сообщением!`,
-  collaboration_response: 'Напишите предложение о сотрудничестве и мы его рассмотрим',
   tell_about_bug_response: `Расскажи об ошибке прямо в этом диалоге и нажми «Отправить». \
 +10 к карме и благодарность Soundcheck гарантируется. Вся информация должна быть отправлена одним сообщением!`,
   want_to_participate_response: `Хочешь в дружную и талантливую команду Soundcheck? \
@@ -771,7 +770,6 @@ Soundfest American Style. Весь вечер на сцене Blues Bastards, Nu
   // rest
   group_history_message: 'Рассказ о группе',
   release_message: 'Релиз',
-  collaboration_message: 'Предложение о сотрудничестве',
   tell_about_bug_message: 'Баг',
   want_to_participate_message: 'Заявка в Soundcheck',
   write_to_soundcheck_other_message: 'Сообщение',

@@ -199,11 +199,10 @@ export const writeToSoundcheckKeyboard: Keyboard = {
       generateButton(captions.tell_about_release, { command: 'write_to_soundcheck/tell_about_release' }),
     ],
     [
-      generateButton(captions.collaboration, { command: 'write_to_soundcheck/collaboration' }),
       generateButton(captions.want_to_participate, { command: 'write_to_soundcheck/want_to_participate' }),
+      generateButton(captions.tell_about_bug, { command: 'write_to_soundcheck/tell_about_bug' }),
     ],
     [
-      generateButton(captions.tell_about_bug, { command: 'write_to_soundcheck/tell_about_bug' }),
       generateButton(captions.write_to_soundcheck_other, { command: 'write_to_soundcheck/other' }),
     ],
     [generateBackButton()],
