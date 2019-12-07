@@ -668,6 +668,7 @@ ${user.sex === Sex.FEMALE ? 'рада' : 'рад'}, что у нас появи�
   } as Record<Hashtag, (string | ((options: SubscriptionMessageCaptionOptions) => string))[]>,
 
   // soundfest
+  soundfest: 'Soundfest American Style',
   soundfest_response: (user: User) => `Привет, ${user.firstName}. Отмечаем 1 год сообществу Soundcheck уже 1 Февраля на \
 Soundfest American Style. Весь вечер на сцене Blues Bastards, Nuggers, Jack Jack. Первые 50 билетов по 300 рублей. \
 Приходи праздновать День рождения Soundcheck в Американском стиле!`,

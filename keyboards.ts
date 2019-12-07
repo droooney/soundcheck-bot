@@ -78,7 +78,7 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
         generateButton(captions.write_to_soundcheck, { command: 'write_to_soundcheck' }),
       ],
       [
-        generateButton(captions.services, { command: 'soundfest' }, ButtonColor.POSITIVE),
+        generateButton(captions.soundfest, { command: 'soundfest' }, ButtonColor.POSITIVE),
       ],
       ...(
         isManager
