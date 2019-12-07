@@ -429,24 +429,42 @@ export default async (ctx: Context) => {
           })
         ]);
       } else if (payload.command === 'services') {
-        await respond(captions.choose_service, { keyboard: servicesKeyboard });
+        await respond(captions.services_response(user), { keyboard: servicesKeyboard });
       } else if (payload.command === 'services/service') {
         const { message, attachments } = services[payload.service];
 
-        await respond(message, { attachments });
+        await respond(generateRandomCaption(message, { user }), { attachments });
       } else if (payload.command === 'subscriptions') {
-        await respond(captions.subscriptions_response(user), { keyboard: generateSubscriptionsKeyboard(user) });
+        const subscriptions = user.getActualSubscriptions();
+        const allSubscriptions = _.map(Subscription);
+
+        await respond(
+          subscriptions.length === allSubscriptions.length
+            ? captions.subscriptions_response.all(user)
+            : subscriptions.length > 1
+              ? captions.subscriptions_response['>1'](user, subscriptions)
+              : subscriptions.length
+                ? captions.subscriptions_response[1](user, subscriptions[0])
+                : generateRandomCaption(captions.subscriptions_response[0], { user }),
+          { keyboard: generateSubscriptionsKeyboard(user) }
+        );
       } else if (payload.command === 'subscriptions/subscription') {
         if (payload.subscribed) {
           user.unsubscribe(payload.subscription);
 
           await user.save();
-          await respond(captions.unsubscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(user) });
+          await respond(
+            `${captions.unsubscribe_response(user, payload.subscription)} ${captions.subscribeOrUnsubscribeFooter(user)}`,
+            { keyboard: generateSubscriptionsKeyboard(user) }
+          );
         } else {
           user.subscribe(payload.subscription);
 
           await user.save();
-          await respond(captions.subscribe_response(payload.subscription), { keyboard: generateSubscriptionsKeyboard(user) });
+          await respond(
+            `${captions.subscribe_response(user, payload.subscription)} ${captions.subscribeOrUnsubscribeFooter(user)}`,
+            { keyboard: generateSubscriptionsKeyboard(user) }
+          );
         }
       } else if (
         payload.command === 'poster/subscribe'
@@ -461,12 +479,18 @@ export default async (ctx: Context) => {
           user.unsubscribe(subscription);
 
           await user.save();
-          await respond(captions.unsubscribe_response(subscription), { keyboard: await generateKeyboard(user) });
+          await respond(
+            `${captions.unsubscribe_response(user, subscription)} ${captions.subscribeOrUnsubscribeFooter(user)}`,
+            { keyboard: await generateKeyboard(user) }
+          );
         } else {
           user.subscribe(subscription);
 
           await user.save();
-          await respond(captions.subscribe_response(subscription), { keyboard: await generateKeyboard(user) });
+          await respond(
+            `${captions.subscribe_response(user, subscription)} ${captions.subscribeOrUnsubscribeFooter(user)}`,
+            { keyboard: await generateKeyboard(user) }
+          );
         }
       } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
         await respond(captions.choose_action, { keyboard: adminKeyboard });

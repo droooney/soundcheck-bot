@@ -700,12 +700,6 @@ export interface ClicksGroup {
   count: number;
 }
 
-export interface ServiceParams {
-  name: string;
-  message: string;
-  attachments?: MessageAttachment[];
-}
-
 export type StatsPeriod = 'all_time' | 'today' | 'yesterday' | 'this_week' | 'this_month' | 'prev_week' | 'prev_month';
 
 export interface DbConnection {

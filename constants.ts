@@ -1,8 +1,12 @@
-import * as _ from 'lodash';
-
-import { Genre, Hashtag, Service, ServiceParams, Subscription } from './types';
+import { Genre, Hashtag, MessageAttachment, Service, Subscription } from './types';
 import User, { Sex } from './database/User';
 import Drawing from './database/Drawing';
+
+interface ServiceParams {
+  name: string;
+  message: (string | ((options: ServiceResponseCaptionOptions) => string))[];
+  attachments?: MessageAttachment[];
+}
 
 export interface BackToMainMenuCaptionOptions {
   user: User;
@@ -52,6 +56,14 @@ export interface LongreadsCaptionOptions {
 }
 
 export interface GroupHistoryCaptionOptions {
+  user: User;
+}
+
+export interface ServiceResponseCaptionOptions {
+  user: User;
+}
+
+export interface SubscriptionsResponseCaptionOptions {
   user: User;
 }
 
@@ -409,22 +421,50 @@ ${drawing.name}. Переходи и участвуй!`,
   write_to_soundcheck_other_message_response: (user: User) => `Спасибо, ${user.firstName}. Мы уже читаем твое сообщение!)`,
 
   // services
-  choose_service: 'Выберите услугу',
+  services_response: (user: User) => `Ты ${user.sex === Sex.FEMALE ? 'перешла' : 'перешел'} в раздел Услуг от Soundcheck. В данный момент \
+доступны Реклама и Дизайн стикеров. Что интереснее тебе в данный момент, Стильный мерч, Увеличение продаж билетов на концерт или Реклама продукта?`,
 
   // subscriptions
-  subscriptions_response: (user: User) => {
-    const subscriptions = _.filter(Subscription, (subscription) => user.subscriptions.includes(subscription));
-
-    return subscriptions.length
-      ? `Вы уже подписаны на следующие категории: ${subscriptions.map((subscription) => `"${subscriptionNames[subscription]}"`).join(', ')}. \
-Для того, чтобы подписаться или отписаться от категории, нажмите на соответствующую кнопку`
-      : 'Для того, чтобы подписаться на категорию, нажмите на соответствующую кнопку';
+  subscriptions_response: {
+    0: [
+      ({ user }: SubscriptionsResponseCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'перешла' : 'перешел'} в раздел Рассылок. \
+В данный момент ты не ${user.sex === Sex.FEMALE ? 'подписана' : 'подписан'} ни на одну рассылку. Подпишись на интересующие тебя рубрики и \
+получай новые материалы в числе первых.`,
+      ({ user }: SubscriptionsResponseCaptionOptions) => `Раздел рассылок от Soundcheck. В данный момент ты не \
+${user.sex === Sex.FEMALE ? 'подписана' : 'подписан'} ни на одну рассылку. Подпишись на интересующие тебя рубрики и \
+получай новые материалы в числе первых.`,
+      ({ user }: SubscriptionsResponseCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'перешла' : 'перешел'} в раздел Рассылок. \
+В данный момент ты не ${user.sex === Sex.FEMALE ? 'подписана' : 'подписан'} ни на одну рассылку. Подпишись на интересующие тебя рубрики и \
+будь в курсе музыкальной жизни города в режиме онлайн.`,
+      ({ user }: SubscriptionsResponseCaptionOptions) => `Раздел рассылок от Soundcheck. В данный момент ты не \
+${user.sex === Sex.FEMALE ? 'подписана' : 'подписан'} ни на одну рассылку. Подпишись на интересующие тебя рубрики и \
+будь в курсе музыкальной жизни города в режиме онлайн.`,
+    ],
+    1: (user: User, subscription: Subscription) => `Ты ${user.sex === Sex.FEMALE ? 'перешла' : 'перешел'} в раздел Рассылок. В данный момент ты \
+${user.sex === Sex.FEMALE ? 'подписана' : 'подписан'} на одну рассылку «${subscriptionNames[subscription]}». Подпишись на еще больше рубрик и \
+будь в курсе музыкальной жизни города в режиме онлайн.`,
+    '>1': (user: User, subscriptions: Subscription[]) => `Ты ${user.sex === Sex.FEMALE ? 'перешла' : 'перешел'} в раздел Рассылок. В данный момент ты \
+${user.sex === Sex.FEMALE ? 'подписана' : 'подписан'} на несколько рассылок \
+${subscriptions.map((subscription) => `«${subscriptionNames[subscription]}»`).join(', ')}. Подпишись на еще больше рубрик и будь \
+в курсе музыкальной жизни города в режиме онлайн.`,
+    all: (user: User) => `Привет, наш герой. Ты ${user.sex === Sex.FEMALE ? 'подписана' : 'подписан'} уже на все рассылки, и мы с гордостью \
+можем назвать тебя Магистром уральской музыки. Да прибудет с тобой сила музыки, ${user.firstName}!`
   },
   subscribe: 'Подписаться',
   unsubscribe: 'Отписаться',
   you_re_already_subscribed: 'Вы уже подписаны',
-  subscribe_response: (subscription: Subscription) => `Вы подписались на категорию "${subscriptionNames[subscription]}"`,
-  unsubscribe_response: (subscription: Subscription) => `Вы отписались от категории "${subscriptionNames[subscription]}"`,
+  subscribe_response: (user: User, subscription: Subscription) => `Поздравляем, ты ${user.sex === Sex.FEMALE ? 'подписалась' : 'подписался'} \
+на рассылку «${subscriptionNames[subscription]}»`,
+  unsubscribe_response: (user: User, subscription: Subscription) => `Ты ${user.sex === Sex.FEMALE ? 'отписалась' : 'отписался'} \
+от рассылки «${subscriptionNames[subscription]}».`,
+  subscribeOrUnsubscribeFooter: (user: User) => {
+    const subscriptions = user.getActualSubscriptions();
+
+    return subscriptions.length
+      ? `В данный момент ты ${user.sex === Sex.FEMALE ? 'подписана' : 'подписан'} на следующие рассылки: \
+${subscriptions.map((subscription) => `«${subscriptionNames[subscription]}»`).join(', ')}.`
+      : `В данный момент ты ни на что не ${user.sex === Sex.FEMALE ? 'подписана' : 'подписан'}.`
+  },
   subscription_message: {
     [Hashtag.POSTER_WEEK]: [
       ({ user }: SubscriptionMessageCaptionOptions) => `А вот и афиша на новую неделю! \
@@ -735,12 +775,21 @@ export const hashtagCombinations: [Hashtag[], Hashtag][] = [
 export const services: Record<Service, ServiceParams> = {
   stickers_design: {
     name: 'Дизайн стикеров',
-    message: '',
+    message: [
+      `Мы уже сделали стикеры для более, чем 10 музыкантов. Переходи в товар и представь, какой стикер мы можем сделать для тебя!`,
+      ({ user }) => `Стикеры для музыкантов. ${user.sex === Sex.FEMALE ? 'Задумалась' : 'Задумался'} о крутом мерче? Ты по адресу! \
+Переходи в товар за своей порцией стикеров.`,
+      `Стикеры от Soundcheck. Более 10 музыкантов уже оценили на себе мультяшную магию Soundcheck. Настала твоя очередь.`,
+    ],
     attachments: [{ type: 'market', id: '-177574047_3113786' }]
   },
   soundcheck_ads: {
     name: 'Реклама в Soundcheck',
-    message: '',
+    message: [
+      `Хочешь прорекламировать свое мероприятие или продукт? Переходи в товар и узнай, как это можно сделать.`,
+      `Реклама концертов или твоего продукта. В музыкальной среде музыкальная продукция заходит, как надо.`,
+      `Не знаешь, где прорекламировать свой концерт или продукт? Тогда тебе к нам. Переходи в товар и получи свою порцию дополнительного охвата.`,
+    ],
     attachments: [{ type: 'market', id: '-177574047_2685381' }]
   },
 };

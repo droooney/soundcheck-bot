@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import * as Sequelize from 'sequelize';
 
 import sequelize from './';
@@ -44,6 +45,10 @@ export default class User extends Sequelize.Model {
       sex,
       bDate: vkUser.bdate
     };
+  }
+
+  getActualSubscriptions(): Subscription[] {
+    return _.filter(Subscription, (subscription) => this.subscriptions.includes(subscription));
   }
 
   subscribe(subscription: Subscription) {
