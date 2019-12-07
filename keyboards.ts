@@ -77,6 +77,9 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
         generateButton(captions.subscriptions, { command: 'subscriptions' }),
         generateButton(captions.write_to_soundcheck, { command: 'write_to_soundcheck' }),
       ],
+      [
+        generateButton(captions.services, { command: 'soundfest' }, ButtonColor.POSITIVE),
+      ],
       ...(
         isManager
           ? [[generateButton(captions.admin_section, { command: 'admin' }, ButtonColor.POSITIVE)]]
@@ -201,6 +204,19 @@ export const writeToSoundcheckKeyboard: Keyboard = {
     [
       generateButton(captions.tell_about_bug, { command: 'write_to_soundcheck/tell_about_bug' }),
       generateButton(captions.write_to_soundcheck_other, { command: 'write_to_soundcheck/other' }),
+    ],
+    [generateBackButton()],
+  ]
+};
+
+export const soundfestKeyboard: Keyboard = {
+  one_time: false,
+  buttons: [
+    [
+      generateButton(captions.soundfest_go_to_event, { command: 'soundfest/go_to_event' }),
+    ],
+    [
+      generateButton(captions.soundfest_buy_ticket, { command: 'soundfest/buy_ticket' }),
     ],
     [generateBackButton()],
   ]

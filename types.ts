@@ -289,6 +289,18 @@ export interface SubscriptionButtonPayload {
   subscribed: boolean;
 }
 
+export interface SoundfestButtonPayload {
+  command: 'soundfest';
+}
+
+export interface SoundfestGoToEventButtonPayload {
+  command: 'soundfest/go_to_event';
+}
+
+export interface SoundfestBuyTicketButtonPayload {
+  command: 'soundfest/buy_ticket';
+}
+
 export interface AdminButtonPayload {
   command: 'admin';
 }
@@ -420,6 +432,9 @@ export type ButtonPayload = (
   | ServiceButtonPayload
   | SubscriptionsButtonPayload
   | SubscriptionButtonPayload
+  | SoundfestButtonPayload
+  | SoundfestGoToEventButtonPayload
+  | SoundfestBuyTicketButtonPayload
   | AdminButtonPayload
   | AdminDrawingsButtonPayload
   | AdminDrawingButtonPayload
