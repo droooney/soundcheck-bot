@@ -53,6 +53,10 @@ export interface DrawingResponseCaptionOptions {
   drawing: Drawing;
 }
 
+export interface NoDrawingsResponseCaptionOptions {
+  user: User;
+}
+
 export interface TextMaterialsCaptionOptions {
   user: User;
 }
@@ -70,6 +74,14 @@ export interface ServiceResponseCaptionOptions {
 }
 
 export interface SubscriptionsResponseCaptionOptions {
+  user: User;
+}
+
+export interface ReleasesResponseCaptionOptions {
+  user: User;
+}
+
+export interface WeekReleasesResponseCaptionOptions {
   user: User;
 }
 
@@ -91,7 +103,6 @@ export const captions = {
   subscriptions: 'Рассылки',
   admin_section: 'Админка',
   choose_action: 'Выберите действие',
-  releases_response: 'Смотри релизы тут: https://vk.com/soundcheck_ural/new_release',
   refresh_keyboard_response: 'Клавиатура обновлена',
   back_to_main_menu: [
     ({ user }: BackToMainMenuCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'вернулась' : 'вернулся'} в Главное меню. Куда отправимся дальше?`,
@@ -303,6 +314,31 @@ export const captions = {
 Электроника: https://vk.com/wall-177574047_1508
 Фолк: https://vk.com/wall-177574047_1397`,
 
+  // releases
+  releases_response: [
+    ({ user }: ReleasesResponseCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'выбрала' : 'выбрал'} раздел Новых релизов. \
+Новые релизы публикуются на Soundcheck каждую неделю. Лучшие из них попадают в подкаст Soundcheck Music Digest, который выходит раз в пару недель.`,
+    `Раздел Новых релизов. Плейлист из лучших релизов недели или подкаст о новинках Soundcheck Music Digest?`,
+    ({ user }: ReleasesResponseCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'перешла' : 'перешел'} в раздел Новых релизов. \
+Если тебе нравятся материалы, не забывай: наш чат-бот работает на твоих «лайках». `,
+    `Новые релизы от Soundcheck. Если ты хочешь постоянно быть в курсе музыкальных новинок, подписывайся на рассылку и не \
+пропусти ни один хит нового сезона.`,
+  ],
+  week_releases: 'Лучшие релизы недели:',
+  digests: 'Подкаст о новинках',
+  week_releases_response: [
+    `Лучшие релизы недели. Пошли смотреть.`,
+    `Релизы прошлой недели от Soundcheck. Если тебе что-то понравится, не забудь поставить лайк.`,
+    `Релизы на Soundcheck. С нами ты не пропустишь ни одной новинки.`,
+    ({ user }: WeekReleasesResponseCaptionOptions) => `Музыкальные новинки от Soundcheck. Переходи и слушай \
+${user.sex === Sex.FEMALE ? 'первой' : 'первым'}.`,
+  ],
+  digests_response: [
+    `Soundcheck Music Digest. За несколько минут мы расскажем тебе о лучших новинках последних недель.`,
+    `Soundcheck Music Digest. Лучшие треки последних недель у тебя в наушниках.`,
+    `Soundcheck Music Digest. Мы давно хотим рассказать тебе о лучших треках. Пошли…`,
+  ],
+
   // drawings
   drawings_response: [
     ({ user }: DrawingsResponseCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'выбрала' : 'выбрал'} раздел Розыгрышей. \
@@ -320,7 +356,8 @@ export const captions = {
     ({ drawing }: DrawingResponseCaptionOptions) => `${drawing.name}. Любишь розыгрыши? Подпишись на рассылку розыгрышей от Soundcheck.`,
   ],
   no_drawings: [
-    `К сожалению в данный момент нет активных розыгрышей. Приходи позже, а лучше подпишись на рассылку розыгрышей от Soundcheck и узнавай о них первым.`,
+    ({ user }: NoDrawingsResponseCaptionOptions) => `К сожалению в данный момент нет активных розыгрышей. Приходи позже, а лучше подпишись \
+на рассылку розыгрышей от Soundcheck и узнавай о них ${user.sex === Sex.FEMALE ? 'первой' : 'первым'}.`,
     `Сейчас нет активных розыгрышей. Но ты можешь подписаться на рассылку розыгрышей от Soundcheck и узнать о каждом в числе первых.`,
   ],
   no_drawing: {
@@ -331,7 +368,8 @@ ${drawings.map(({ name, postId }) => `${name}: https://vk.com/wall${postId}`).jo
 Переходи и участвуй!`,
     1: (drawing: Drawing) => `К сожалению этот розыгрыш уже закончился. Но прямо сейчас в Soundcheck проходит другой: \
 ${drawing.name}. Переходи и участвуй!`,
-    0: `К сожалению, этот розыгрыш уже подошел к концу. Подпишись на рассылку Розыгрышей от Soundcheck и узнай о новом розыгрыше первым!`
+    0: (user: User) => `К сожалению, этот розыгрыш уже подошел к концу. Подпишись на рассылку Розыгрышей от Soundcheck и узнай о \
+новом розыгрыше ${user.sex === Sex.FEMALE ? 'первой' : 'первым'}!`
   },
   drawing_soon_expires: (drawing: Drawing) => `Завтра - последний шанс поучаствовать в розыгрыше "${drawing.name}". Успевай принять участие!`,
 
@@ -394,15 +432,17 @@ ${drawing.name}. Переходи и участвуй!`,
     ({ user }: GroupHistoryCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'выбрала' : 'выбрал'} Истории групп. \
 Если честно, мы уже сбились со счету, сколько таких материалов мы написали за год. Но у тебя есть шанс посчитать.`,
     `Истории групп. Хороший выбор, не забывай, что наш чат-бот работает на твоих лайках.`,
-    `Хочешь узнать больше о местных группах? Подписывайся на рассылку текстовых материалов и читай новую Историю группы первым!`,
+    ({ user }: GroupHistoryCaptionOptions) => `Хочешь узнать больше о местных группах? Подписывайся на рассылку текстовых материалов и читай новую Историю группы \
+${user.sex === Sex.FEMALE ? 'первой' : 'первым'}!`,
     `Любишь местные группы? Ты по адресу! Переходи по ссылке и получи доступ к нескольким десяткам Историй групп!`,
     ({ user }: GroupHistoryCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'выбрала' : 'выбрал'} Истории групп. \
 Хороший выбор, не забывай, что наш чат-бот работает на твоих лайках.`,
     ({ user }: GroupHistoryCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'выбрала' : 'выбрал'} Истории групп. \
-Подписывайся на рассылку текстовых материалов и читай новую Историю группы первым!`,
+Подписывайся на рассылку текстовых материалов и читай новую Историю группы ${user.sex === Sex.FEMALE ? 'первой' : 'первым'}!`,
     ({ user }: GroupHistoryCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'выбрала' : 'выбрал'} Истории групп. \
 Переходи по ссылке и получи доступ к нескольким десяткам Историй групп!`,
-    `Истории групп. Подписывайся на рассылку текстовых материалов и читай новую Историю группы первым!`,
+    ({ user }: GroupHistoryCaptionOptions) => `Истории групп. Подписывайся на рассылку текстовых материалов и читай новую Историю группы \
+${user.sex === Sex.FEMALE ? 'первой' : 'первым'}!`,
     `Истории групп. Переходи по ссылке и получи доступ к нескольким десяткам Историй групп!`,
     `Хочешь узнать больше о местных группах? Если честно, мы уже сбились со счету, сколько таких материалов мы написали за год. \
 Но у тебя есть шанс посчитать.`,
@@ -411,15 +451,9 @@ ${drawing.name}. Переходи и участвуй!`,
     `Любишь местные группы? Ты по адресу! Если честно, мы уже сбились со счету, сколько таких материалов мы написали за год. \
 Но у тебя есть шанс посчитать.`,
     `Любишь местные группы? Ты по адресу! Хороший выбор, не забывай, что наш чат-бот работает на твоих лайках.`,
-    `Любишь местные группы? Ты по адресу! Подписывайся на рассылку текстовых материалов и читай новую Историю группы первым!`,
+    ({ user }: GroupHistoryCaptionOptions) => `Любишь местные группы? Ты по адресу! Подписывайся на рассылку текстовых материалов и читай \
+новую Историю группы ${user.sex === Sex.FEMALE ? 'первой' : 'первым'}!`,
   ],
-
-  // audio_materials
-  audio_materials_response: 'Выберите тип аудиоматериалов',
-  digests: 'Дайджесты',
-  podcasts: 'Подкасты',
-  digests_response: 'Смотри дайджесты тут: https://vk.com/soundcheck_ural/audio',
-  podcasts_response: 'Смотри подкасты тут:',
 
   // write to soundcheck
   write_to_soundcheck_response: [
@@ -844,6 +878,7 @@ export const services: Record<Service, ServiceParams> = {
 export const links = {
   longreads: 'https://vk.com/@soundcheck_ural',
   group_history: 'https://vk.com/soundcheck_ural/music_history',
+  releases: 'https://vk.com/soundcheck_ural/new_release',
   digests: 'https://vk.com/soundcheck_ural/audio',
   soundfest_event: 'https://vk.com/soundfest_as_01_february',
   soundfest_buy_ticket: 'https://vk.com/soundcheck_ural',

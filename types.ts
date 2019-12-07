@@ -207,25 +207,21 @@ export interface SubscribeToTextMaterialsButtonPayload {
   subscribed: boolean;
 }
 
-export interface AudioMaterialsButtonPayload {
-  command: 'audio_materials';
+export interface ReleasesButtonPayload {
+  command: 'releases';
+}
+
+export interface WeekReleasesButtonPayload {
+  command: 'releases/week_releases';
 }
 
 export interface DigestsButtonPayload {
-  command: 'audio_materials/digests';
+  command: 'releases/digests';
 }
 
-export interface PodcastsButtonPayload {
-  command: 'audio_materials/podcasts';
-}
-
-export interface SubscribeToAudioMaterialsButtonPayload {
-  command: 'audio_materials/subscribe';
+export interface SubscribeToReleaseButtonPayload {
+  command: 'releases/subscribe';
   subscribed: boolean;
-}
-
-export interface ReleasesButtonPayload {
-  command: 'releases';
 }
 
 export interface DrawingsButtonPayload {
@@ -391,7 +387,7 @@ export type SubscribeToSectionButtonPayload = (
   SubscribeToPosterButtonPayload
   | SubscribeToPlaylistsButtonPayload
   | SubscribeToTextMaterialsButtonPayload
-  | SubscribeToAudioMaterialsButtonPayload
+  | SubscribeToReleaseButtonPayload
   | SubscribeToDrawingsButtonPayload
 );
 
@@ -410,14 +406,13 @@ export type ButtonPayload = (
   | PlaylistsGenreButtonPayload
   | SubscribeToPlaylistsButtonPayload
   | ReleasesButtonPayload
+  | WeekReleasesButtonPayload
+  | DigestsButtonPayload
+  | SubscribeToReleaseButtonPayload
   | TextMaterialsButtonPayload
   | LongreadButtonPayload
   | GroupHistoryButtonPayload
   | SubscribeToTextMaterialsButtonPayload
-  | AudioMaterialsButtonPayload
-  | DigestsButtonPayload
-  | PodcastsButtonPayload
-  | SubscribeToAudioMaterialsButtonPayload
   | DrawingsButtonPayload
   | DrawingButtonPayload
   | SubscribeToDrawingsButtonPayload

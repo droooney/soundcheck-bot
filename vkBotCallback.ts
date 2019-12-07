@@ -56,7 +56,7 @@ import {
   generateWeekPosterKeyboard,
   generatePlaylistsKeyboard,
   generateTextMaterialsKeyboard,
-  generateAudioMaterialsKeyboard,
+  generateReleasesKeyboard,
   generateDrawingsKeyboard,
   generateSubscriptionsKeyboard,
   generateAdminDrawingsKeyboard,
@@ -139,7 +139,7 @@ export default async (ctx: Context) => {
       && buttonPayload.command !== 'poster/subscribe'
       && buttonPayload.command !== 'playlists/subscribe'
       && buttonPayload.command !== 'text_materials/subscribe'
-      && buttonPayload.command !== 'audio_materials/subscribe'
+      && buttonPayload.command !== 'releases/subscribe'
       && buttonPayload.command !== 'drawings/subscribe'
       && !buttonPayload.command.startsWith('subscriptions')
       && !buttonPayload.command.startsWith('write_to_soundcheck')
@@ -300,7 +300,11 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'playlists/genre') {
         await respond(captions.playlists_genres_response);
       } else if (payload.command === 'releases') {
-        await respond(captions.releases_response);
+        await respond(generateRandomCaption(captions.releases_response, { user }), { keyboard: generateReleasesKeyboard(user) });
+      } else if (payload.command === 'releases/week_releases') {
+        await respond(`${generateRandomCaption(captions.week_releases_response, { user })}\n\n➡ ${links.releases}`);
+      } else if (payload.command === 'releases/digests') {
+        await respond(`${generateRandomCaption(captions.digests_response)}\n\n➡ ${links.digests}`);
       } else if (payload.command === 'drawings') {
         const keyboard = await generateDrawingsKeyboard(user);
         const hasDrawings = keyboard.buttons.some((buttons) => (
@@ -312,7 +316,7 @@ export default async (ctx: Context) => {
         await respond(
           hasDrawings
             ? generateRandomCaption(captions.drawings_response, { user })
-            : generateRandomCaption(captions.no_drawings),
+            : generateRandomCaption(captions.no_drawings, { user }),
           { keyboard }
         );
       } else if (payload.command === 'drawings/drawing') {
@@ -333,7 +337,7 @@ export default async (ctx: Context) => {
               ? captions.no_drawing['>1'](drawings)
               : drawings.length
                 ? captions.no_drawing[1](drawings[0])
-                : captions.no_drawing[0],
+                : captions.no_drawing[0](user),
             { keyboard }
           );
         }
@@ -343,12 +347,6 @@ export default async (ctx: Context) => {
         await respond(`${generateRandomCaption(captions.longreads_response, { user })}\n\n➡ ${links.longreads}`);
       } else if (payload.command === 'text_materials/group_history') {
         await respond(`${generateRandomCaption(captions.group_history_response, { user })}\n\n➡ ${links.group_history}`);
-      } else if (payload.command === 'audio_materials') {
-        await respond(captions.audio_materials_response, { keyboard: generateAudioMaterialsKeyboard(user) });
-      } else if (payload.command === 'audio_materials/digests') {
-        await respond(captions.digests_response);
-      } else if (payload.command === 'audio_materials/podcasts') {
-        await respond(captions.podcasts_response);
       } else if (payload.command === 'write_to_soundcheck') {
         await respond(generateRandomCaption(captions.write_to_soundcheck_response, { user }), { keyboard: writeToSoundcheckKeyboard });
       } else if (payload.command === 'write_to_soundcheck/tell_about_group') {
@@ -471,7 +469,7 @@ export default async (ctx: Context) => {
         payload.command === 'poster/subscribe'
         || payload.command === 'playlists/subscribe'
         || payload.command === 'text_materials/subscribe'
-        || payload.command === 'audio_materials/subscribe'
+        || payload.command === 'releases/subscribe'
         || payload.command === 'drawings/subscribe'
       ) {
         const { subscription, generateKeyboard } = subscriptionMap[payload.command];

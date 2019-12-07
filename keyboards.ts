@@ -48,9 +48,9 @@ export const subscriptionMap: Record<SubscribeToSectionButtonPayload['command'],
     subscription: Subscription.TEXT_MATERIALS,
     generateKeyboard: generateTextMaterialsKeyboard
   },
-  'audio_materials/subscribe': {
-    subscription: Subscription.AUDIO_MATERIALS,
-    generateKeyboard: generateAudioMaterialsKeyboard
+  'releases/subscribe': {
+    subscription: Subscription.RELEASES,
+    generateKeyboard: generateReleasesKeyboard
   },
   'drawings/subscribe': {
     subscription: Subscription.DRAWINGS,
@@ -70,7 +70,6 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
       [
         generateButton(captions.drawings, { command: 'drawings' }),
         generateButton(captions.text_materials, { command: 'text_materials' }),
-        generateButton(captions.audio_materials, { command: 'audio_materials' }),
       ],
       [
         generateButton(captions.services, { command: 'services' }),
@@ -140,6 +139,22 @@ export function generatePlaylistsKeyboard(user: User): Keyboard {
   };
 }
 
+export function generateReleasesKeyboard(user: User): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      [
+        generateButton(captions.week_releases, { command: 'releases/week_releases' }),
+      ],
+      [
+        generateButton(captions.digests, { command: 'releases/digests' }),
+      ],
+      [generateSubscribeButton(user, 'releases/subscribe')],
+      [generateBackButton()],
+    ]
+  };
+}
+
 export const genresKeyboard: Keyboard = {
   one_time: false,
   buttons: [
@@ -171,20 +186,6 @@ export function generateTextMaterialsKeyboard(user: User): Keyboard {
         generateButton(captions.group_history, { command: 'text_materials/group_history' }),
       ],
       [generateSubscribeButton(user, 'text_materials/subscribe')],
-      [generateBackButton()],
-    ]
-  };
-}
-
-export function generateAudioMaterialsKeyboard(user: User): Keyboard {
-  return {
-    one_time: false,
-    buttons: [
-      [
-        generateButton(captions.digests, { command: 'audio_materials/digests' }),
-        // generateButton(captions.podcasts, { command: 'audio_materials/podcasts' }),
-      ],
-      [generateSubscribeButton(user, 'audio_materials/subscribe')],
       [generateBackButton()],
     ]
   };

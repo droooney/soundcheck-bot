@@ -709,6 +709,8 @@ export async function getClickStats(period: StatsPeriod): Promise<string> {
     { payload: { command: 'playlists/genre' }, caption: `${captions.playlists} (${captions.playlists_genre})` },
     null,
     { payload: { command: 'releases' }, caption: captions.releases },
+    { payload: { command: 'releases/week_releases' }, caption: captions.week_releases },
+    { payload: { command: 'releases/digests' }, caption: captions.digests },
     null,
     { payload: { command: 'drawings' }, caption: captions.drawings },
     ...drawings.map((drawing) => (
@@ -718,9 +720,6 @@ export async function getClickStats(period: StatsPeriod): Promise<string> {
     { payload: { command: 'text_materials' }, caption: captions.text_materials },
     { payload: { command: 'text_materials/longread' }, caption: captions.longreads },
     { payload: { command: 'text_materials/group_history' }, caption: captions.group_history },
-    null,
-    { payload: { command: 'audio_materials' }, caption: captions.audio_materials },
-    { payload: { command: 'audio_materials/digests' }, caption: captions.digests },
     null,
     { payload: { command: 'services' }, caption: captions.services },
     ..._.map(services, ({ name }, service) => (
