@@ -34,6 +34,7 @@ import {
   ButtonPayload,
   Hashtag,
   PhotoAttachment,
+  PlaylistGenre,
   Subscription,
   UserState,
 } from './types';
@@ -43,10 +44,11 @@ import {
   genreMatches,
   hashtagCombinations,
   links,
-  subscriptionHashtags,
-  positiveAnswers,
   negativeAnswers,
+  playlistsGenreNames,
+  positiveAnswers,
   services,
+  subscriptionHashtags,
 } from './constants';
 import {
   generateButton,
@@ -64,6 +66,7 @@ import {
 
   subscriptionMap,
   genresKeyboard,
+  playlistsGenresKeyboard,
   servicesKeyboard,
   writeToSoundcheckKeyboard,
   soundfestKeyboard,
@@ -292,13 +295,24 @@ export default async (ctx: Context) => {
           await respond(concertsString);
         }
       } else if (payload.command === 'playlists') {
-        await respond(captions.choose_playlists_type, { keyboard: generatePlaylistsKeyboard(user) });
+        await respond(generateRandomCaption(captions.playlists_response, { user }), { keyboard: generatePlaylistsKeyboard(user) });
       } else if (payload.command === 'playlists/all') {
-        await respond(captions.playlists_all_response);
+        await respond(`${generateRandomCaption(captions.playlists_all_response)}\n\n➡ ${links.playlists_all}`);
       } else if (payload.command === 'playlists/thematic') {
-        await respond(captions.playlists_thematic_response);
+        await respond(`${generateRandomCaption(captions.playlists_thematic_response)}\n\n➡ ${links.playlists_thematic}`);
       } else if (payload.command === 'playlists/genre') {
-        await respond(captions.playlists_genres_response);
+        const playlists = _.map(PlaylistGenre, (genre) => ({ name: playlistsGenreNames[genre] }));
+
+        await respond(generateRandomCaption(captions.playlists_genres_response, { playlists }), { keyboard: playlistsGenresKeyboard });
+      } else if (payload.command === 'playlists/genre/type') {
+        const playlist = {
+          name: playlistsGenreNames[payload.genre],
+          link: links.playlists_genre[payload.genre]
+        };
+
+        await respond(`${generateRandomCaption(captions.playlists_genre_response, { user, playlist })}\n\n➡ ${playlist.link}`);
+      } else if (payload.command === 'back' && payload.dest === BackButtonDest.PLAYLISTS) {
+        await respond(generateRandomCaption(captions.back_to_playlists, { user }), { keyboard: generatePlaylistsKeyboard(user) });
       } else if (payload.command === 'releases') {
         await respond(generateRandomCaption(captions.releases_response, { user }), { keyboard: generateReleasesKeyboard(user) });
       } else if (payload.command === 'releases/week_releases') {

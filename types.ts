@@ -185,6 +185,11 @@ export interface PlaylistsGenreButtonPayload {
   command: 'playlists/genre';
 }
 
+export interface PlaylistsGenreTypeButtonPayload {
+  command: 'playlists/genre/type';
+  genre: PlaylistGenre;
+}
+
 export interface SubscribeToPlaylistsButtonPayload {
   command: 'playlists/subscribe';
   subscribed: boolean;
@@ -400,6 +405,7 @@ export type ButtonPayload = (
   | PlaylistsAllButtonPayload
   | PlaylistsThematicButtonPayload
   | PlaylistsGenreButtonPayload
+  | PlaylistsGenreTypeButtonPayload
   | SubscribeToPlaylistsButtonPayload
   | ReleasesButtonPayload
   | WeekReleasesButtonPayload
@@ -449,6 +455,7 @@ export type ButtonPayload = (
 export enum BackButtonDest {
   MAIN = 'main',
   POSTER = 'poster',
+  PLAYLISTS = 'playlists',
   ADMIN = 'admin',
   ADMIN_DRAWINGS = 'admin/drawings',
   ADMIN_STATS = 'admin/stats',
@@ -545,6 +552,15 @@ export enum Genre {
   POP = 'POP',
   FOLK = 'FOLK',
   ABOUT_MUSIC = 'ABOUT_MUSIC',
+}
+
+export enum PlaylistGenre {
+  ALTERNATIVE = 'ALTERNATIVE',
+  PUNK = 'PUNK',
+  HIP_HOP = 'HIP_HOP',
+  INDIE = 'INDIE',
+  ELECTRONIC = 'ELECTRONIC',
+  FOLK = 'FOLK',
 }
 
 export type Service = 'stickers_design' | 'soundcheck_ads';

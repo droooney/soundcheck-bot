@@ -12,8 +12,10 @@ import {
 } from './types';
 import {
   captions,
+  genreButtons,
   genreNames,
-  genresButtons,
+  playlistsGenreButtons,
+  playlistsGenreNames,
   services,
   subscriptionNames,
   subscriptionButtons,
@@ -30,6 +32,7 @@ export interface SubscriptionParams {
 export const backButtonText: Record<BackButtonDest, string> = {
   [BackButtonDest.MAIN]: captions.main_menu,
   [BackButtonDest.POSTER]: captions.poster,
+  [BackButtonDest.PLAYLISTS]: captions.playlists,
   [BackButtonDest.ADMIN]: captions.admin_section,
   [BackButtonDest.ADMIN_DRAWINGS]: captions.drawings,
   [BackButtonDest.ADMIN_STATS]: captions.stats,
@@ -70,9 +73,9 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
       [
         generateButton(captions.drawings, { command: 'drawings' }),
         generateButton(captions.text_materials, { command: 'text_materials' }),
+        generateButton(captions.services, { command: 'services' }),
       ],
       [
-        generateButton(captions.services, { command: 'services' }),
         generateButton(captions.subscriptions, { command: 'subscriptions' }),
         generateButton(captions.write_to_soundcheck, { command: 'write_to_soundcheck' }),
       ],
@@ -158,8 +161,19 @@ export function generateReleasesKeyboard(user: User): Keyboard {
 export const genresKeyboard: Keyboard = {
   one_time: false,
   buttons: [
-    ...genresButtons.map((buttons) => (
+    ...genreButtons.map((buttons) => (
       buttons.map((genre) => generateButton(genreNames[genre], { command: 'poster/type/genre', genre }))
+    )),
+    [generateBackButton(BackButtonDest.POSTER)],
+    [generateBackButton()],
+  ]
+};
+
+export const playlistsGenresKeyboard: Keyboard = {
+  one_time: false,
+  buttons: [
+    ...playlistsGenreButtons.map((buttons) => (
+      buttons.map((genre) => generateButton(playlistsGenreNames[genre], { command: 'playlists/genre/type', genre }))
     )),
     [generateBackButton(BackButtonDest.POSTER)],
     [generateBackButton()],

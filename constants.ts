@@ -1,4 +1,4 @@
-import { Genre, Hashtag, MessageAttachment, Service, Subscription } from './types';
+import { Genre, Hashtag, MessageAttachment, PlaylistGenre, Service, Subscription } from './types';
 import User, { Sex } from './database/User';
 import Drawing from './database/Drawing';
 
@@ -82,6 +82,23 @@ export interface ReleasesResponseCaptionOptions {
 }
 
 export interface WeekReleasesResponseCaptionOptions {
+  user: User;
+}
+
+export interface PlaylistsResponseCaptionOptions {
+  user: User;
+}
+
+export interface PlaylistsGenreResponseCaptionOptions {
+  playlists: { name: string; }[];
+}
+
+export interface PlaylistsGenreTypeResponseCaptionOptions {
+  user: User;
+  playlist: { name: string; };
+}
+
+export interface BackToPlaylistsCaptionOptions {
   user: User;
 }
 
@@ -301,18 +318,79 @@ export const captions = {
   ],
 
   // playlists
+  playlists_response: [
+    ({ user }: PlaylistsResponseCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'выбрала' : 'выбрал'} раздел Плейлистов. \
+Плейлисты выходят на Soundcheck около 2-х раз в неделю, поэтому можешь смело возвращаться через несколько дней.`,
+    `Раздел Плейлистов. Какие плейлисты тебе наиболее интересны? Ты можешь выбрать «Все плейлисты» от Soundcheck, «Тематические», \
+собранные нашими редакторами, или же послушать плейлисты в твоих любимых жанрах.`,
+    ({ user }: PlaylistsResponseCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'перешла' : 'перешел'} в раздел Плейлистов. \
+Если ты найдешь то, что придется тебе по вкусу, не забудь поставить нам лайк, это снабжает нашего чат-бота энергией.`,
+    `Плейлисты от Soundcheck. Новые плейлисты появляются в сообществе пару раз в неделю. Ты можешь подписаться на рассылку и тогда \
+точно не пропустишь ни один из них!`,
+    ({ user }: PlaylistsResponseCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'выбрала' : 'выбрал'} раздел Плейлистов. Какие плейлисты \
+тебе наиболее интересны? Ты можешь выбрать «Все плейлисты» от Soundcheck, «Тематические», собранные нашими редакторами, или же \
+послушать плейлисты в твоих любимых жанрах.`,
+    ({ user }: PlaylistsResponseCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'выбрала' : 'выбрал'} раздел Плейлистов. Если ты найдешь \
+то, что придется тебе по вкусу, не забудь поставить нам лайк, это снабжает нашего чат-бота энергией.`,
+    ({ user }: PlaylistsResponseCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'выбрала' : 'выбрал'} раздел Плейлистов. \
+Новые плейлисты появляются в сообществе пару раз в неделю. Ты можешь подписаться на рассылку и тогда точно не пропустишь ни один из них!`,
+    `Раздел Плейлистов. Плейлисты выходят на Soundcheck около 2-х раз в неделю, поэтому можешь смело возвращаться через несколько дней.`,
+    ({ user }: PlaylistsResponseCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'перешла' : 'перешел'} в раздел Плейлистов. \
+Плейлисты выходят на Soundcheck около 2-х раз в неделю, поэтому можешь смело возвращаться через несколько дней.`,
+    ({ user }: PlaylistsResponseCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'перешла' : 'перешел'} в раздел Плейлистов. \
+Какие плейлисты тебе наиболее интересны? Ты можешь выбрать «Все плейлисты» от Soundcheck, «Тематические», собранные нашими редакторами, \
+или же послушать плейлисты в твоих любимых жанрах.`,
+    ({ user }: PlaylistsResponseCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'перешла' : 'перешел'} в раздел Плейлистов. \
+Новые плейлисты появляются в сообществе пару раз в неделю. Ты можешь подписаться на рассылку и тогда точно не пропустишь ни один из них!`,
+    `Плейлисты от Soundcheck. Плейлисты выходят на Soundcheck около 2-х раз в неделю, поэтому можешь смело возвращаться через несколько дней.`,
+    `Плейлисты от Soundcheck. Какие плейлисты тебе наиболее интересны? Ты можешь выбрать «Все плейлисты» от Soundcheck, «Тематические», \
+собранные нашими редакторами, или же послушать плейлисты в твоих любимых жанрах.`,
+    `Плейлисты от Soundcheck. Если ты найдешь то, что придется тебе по вкусу, не забудь поставить нам лайк, это снабжает нашего чат-бота энергией.`,
+  ],
   playlists_all: 'Все',
   playlists_thematic: 'Тематические',
   playlists_genre: 'По жанрам',
-  choose_playlists_type: 'Выберите тип плейлистов',
-  playlists_all_response: 'Все плейлисты смотри тут: https://vk.com/soundcheck_ural/music_selections',
-  playlists_thematic_response: 'Тематические плейлисты смотри тут: https://vk.com/soundcheck_ural/them_playlists',
-  playlists_genres_response: `Альтернатива: https://vk.com/wall-177574047_1342
-Панк: https://vk.com/wall-177574047_1617
-Хип-хоп: https://vk.com/wall-177574047_1295
-Инди: https://vk.com/wall-177574047_1142
-Электроника: https://vk.com/wall-177574047_1508
-Фолк: https://vk.com/wall-177574047_1397`,
+  playlists_all_response: [
+    `Все плейлисты. А ты похоже слушаешь очень много музыки. Что ж, в этом разделе плейлистов на полгода вперед.`,
+    `Все плейлисты. У нас их столько, что мы давно сбились со счета.`,
+    `Все плейлисты Soundcheck. Здесь собраны все тематические плейлисты, плейлисты от групп и плейлисты отдельных жанров.`,
+    `Все плейлисты. А ты не мелочишься…`,
+  ],
+  playlists_thematic_response: [
+    `Наши тематические плейлисты на каждое Твое настроение. Переходи и слушай.`,
+    `Тематические плейлисты от Soundcheck. Что бы с тобой ни происходило в данный момент, \
+мы уверены: один из этих плейлистов понравится тебе сегодня, другой – завтра…`,
+    `На Soundcheck много тематических плейлистов. Осталось закрыть глаза, почувствовать свое настроение и выбрать один.`,
+    `Тематические плейлисты от Soundcheck. Осталось закрыть глаза, почувствовать свое настроение и выбрать один.`,
+    `На Soundcheck много тематических плейлистов. Что бы с тобой ни происходило в данный момент, \
+мы уверены: один из этих плейлистов понравится тебе сегодня, другой – завтра.`,
+  ],
+  playlists_genres_response: [
+    ({ playlists }: PlaylistsGenreResponseCaptionOptions) => `Плейлисты по жанрам. ${playlists.map(({ name }) => name)}. Что послушаем сегодня?`,
+    `Жанры объединяют не только музыку, но и настроение: на каком остановимся сегодня?`,
+    `Жанровые плейлисты от Soundcheck. Пока их у нас не так много, но они активно пополняются.`,
+    `Плейлисты по жанрам. Что бы ты ни слушал, у нас найдутся треки для твоих плейлистов.`,
+    `Жанровые плейлисты. Не терпится узнать, что ты выберешь.`,
+    `Плейлисты по жанрам. Кажется, мы знаем, что ты выберешь.`,
+  ],
+  playlists_genre_response: [
+    `Отличный выбор. Переходим и слушаем.`,
+    ({ user, playlist }: PlaylistsGenreTypeResponseCaptionOptions) => `${playlist.name}… конечно, что еще ты \
+${user.sex === Sex.FEMALE ? 'могла' : 'мог'} выбрать.`,
+    ({ playlist }: PlaylistsGenreTypeResponseCaptionOptions) => `А мы подозревали, что ты выберешь ${playlist.name}.`,
+    ({ playlist }: PlaylistsGenreTypeResponseCaptionOptions) => `${playlist.name} - хороший выбор. Переходим и слушаем.`,
+    `Чайковский перевернулся бы в гробу… но мы поддерживаем твой выбор.`,
+    ({ playlist }: PlaylistsGenreTypeResponseCaptionOptions) => `${playlist.name}. Помни, наш чат-бот работает на лайках.`,
+  ],
+  back_to_playlists: [
+    ({ user }: BackToPlaylistsCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'вернулась' : 'вернулся'} к выбору Плейлистов. \
+Как хорошо, что у каждого формата есть свои преимущества.`,
+    `Снова выбора формата Плейлистов. Если тебе что-то понравится, не поскупись на лайки, нас это очень поддерживает.`,
+    ({ user }: BackToPlaylistsCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'вернулась' : 'вернулся'} к выбору формата Плейлистов. \
+Да, выбор плейлиста – дело непростое.`,
+    `Нельзя так просто взять… и не вернуться к выбору формата Плейлистов.`,
+    `Выбор формата Плейлистов. Все плейлисты, Тематические или По жанрам?`,
+  ],
 
   // releases
   releases_response: [
@@ -324,7 +402,7 @@ export const captions = {
     `Новые релизы от Soundcheck. Если ты хочешь постоянно быть в курсе музыкальных новинок, подписывайся на рассылку и не \
 пропусти ни один хит нового сезона.`,
   ],
-  week_releases: 'Лучшие релизы недели:',
+  week_releases: 'Лучшие релизы недели',
   digests: 'Подкаст о новинках',
   week_releases_response: [
     `Лучшие релизы недели. Пошли смотреть.`,
@@ -432,8 +510,8 @@ ${drawing.name}. Переходи и участвуй!`,
     ({ user }: GroupHistoryCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'выбрала' : 'выбрал'} Истории групп. \
 Если честно, мы уже сбились со счету, сколько таких материалов мы написали за год. Но у тебя есть шанс посчитать.`,
     `Истории групп. Хороший выбор, не забывай, что наш чат-бот работает на твоих лайках.`,
-    ({ user }: GroupHistoryCaptionOptions) => `Хочешь узнать больше о местных группах? Подписывайся на рассылку текстовых материалов и читай новую Историю группы \
-${user.sex === Sex.FEMALE ? 'первой' : 'первым'}!`,
+    ({ user }: GroupHistoryCaptionOptions) => `Хочешь узнать больше о местных группах? Подписывайся на рассылку текстовых материалов и читай \
+новую Историю группы ${user.sex === Sex.FEMALE ? 'первой' : 'первым'}!`,
     `Любишь местные группы? Ты по адресу! Переходи по ссылке и получи доступ к нескольким десяткам Историй групп!`,
     ({ user }: GroupHistoryCaptionOptions) => `Ты ${user.sex === Sex.FEMALE ? 'выбрала' : 'выбрал'} Истории групп. \
 Хороший выбор, не забывай, что наш чат-бот работает на твоих лайках.`,
@@ -787,7 +865,16 @@ export const genreNames: Record<Genre, string> = {
   [Genre.JAZZ]: 'Джаз',
   [Genre.POP]: 'Поп',
   [Genre.FOLK]: 'Фолк',
-  [Genre.ABOUT_MUSIC]: 'На тему музыки'
+  [Genre.ABOUT_MUSIC]: 'На тему музыки',
+};
+
+export const playlistsGenreNames: Record<PlaylistGenre, string> = {
+  [PlaylistGenre.ALTERNATIVE]: 'Альтернатива',
+  [PlaylistGenre.PUNK]: 'Панк',
+  [PlaylistGenre.INDIE]: 'Инди',
+  [PlaylistGenre.HIP_HOP]: 'Хип-хоп',
+  [PlaylistGenre.ELECTRONIC]: 'Электроника',
+  [PlaylistGenre.FOLK]: 'Фолк',
 };
 
 export const genreMatches: Record<Genre, string[]> = {
@@ -807,10 +894,16 @@ export const genreMatches: Record<Genre, string[]> = {
   [Genre.ABOUT_MUSIC]: ['лекция', 'выставка', 'кино']
 };
 
-export const genresButtons = [
+export const genreButtons = [
   [Genre.ROCK, Genre.INDIE, Genre.HIP_HOP],
   [Genre.ELECTRONIC, Genre.COVERS, Genre.JAZZ],
   [Genre.POP, Genre.FOLK, Genre.ABOUT_MUSIC],
+];
+
+export const playlistsGenreButtons = [
+  [PlaylistGenre.ALTERNATIVE, PlaylistGenre.PUNK],
+  [PlaylistGenre.HIP_HOP, PlaylistGenre.INDIE],
+  [PlaylistGenre.ELECTRONIC, PlaylistGenre.FOLK],
 ];
 
 export const positiveAnswers = ['yes', 'да', '+', 'ok', 'ок'];
@@ -878,6 +971,16 @@ export const links = {
   group_history: 'https://vk.com/soundcheck_ural/music_history',
   releases: 'https://vk.com/soundcheck_ural/new_release',
   digests: 'https://vk.com/soundcheck_ural/audio',
+  playlists_all: 'https://vk.com/soundcheck_ural/music_selections',
+  playlists_thematic: 'https://vk.com/soundcheck_ural/them_playlists',
+  playlists_genre: {
+    [PlaylistGenre.ALTERNATIVE]: 'https://vk.com/wall-177574047_1342',
+    [PlaylistGenre.PUNK]: 'https://vk.com/wall-177574047_1617',
+    [PlaylistGenre.HIP_HOP]: 'https://vk.com/wall-177574047_1295',
+    [PlaylistGenre.INDIE]: 'https://vk.com/wall-177574047_1142',
+    [PlaylistGenre.ELECTRONIC]: 'https://vk.com/wall-177574047_1508',
+    [PlaylistGenre.FOLK]: 'https://vk.com/wall-177574047_1397',
+  } as Record<PlaylistGenre, string>,
   soundfest_event: 'https://vk.com/soundfest_as_01_february',
-  soundfest_buy_ticket: 'https://vk.com/soundcheck_ural',
+  soundfest_buy_ticket: 'https://vk.com/soundfest_as_01_february?w=app5575136_-189351237',
 };
