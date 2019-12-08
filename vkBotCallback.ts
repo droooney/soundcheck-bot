@@ -9,7 +9,6 @@ import {
   generateRandomCaption,
   getClickStats,
   getGroupStats,
-  getHolidays,
   getConcerts,
   getConcertsByDays,
   getConcertsByDaysStrings,
@@ -21,7 +20,9 @@ import {
   getRepostStats,
   getSubscriptionStats,
   getVkUser,
+  getWeekString,
   getWeeklyConcerts,
+  isConcertInGenre,
   sendVKMessage,
   sendVkMessageToAllConversations,
   sendVkMessageToSubscribedUsers,
@@ -30,7 +31,6 @@ import {
 import {
   BackButtonDest,
   Body,
-  ButtonColor,
   ButtonPayload,
   Hashtag,
   PhotoAttachment,
@@ -40,8 +40,6 @@ import {
 } from './types';
 import {
   captions,
-  genreNames,
-  genreMatches,
   hashtagCombinations,
   links,
   negativeAnswers,
@@ -51,11 +49,11 @@ import {
   subscriptionHashtags,
 } from './constants';
 import {
-  generateButton,
-  generateBackButton,
   generateMainKeyboard,
   generatePosterKeyboard,
   generateWeekPosterKeyboard,
+  generateDayPosterKeyboard,
+  generateGenrePosterKeyboard,
   generatePlaylistsKeyboard,
   generateTextMaterialsKeyboard,
   generateReleasesKeyboard,
@@ -65,7 +63,6 @@ import {
   generateAdminDrawingMenuKeyboard,
 
   subscriptionMap,
-  genresKeyboard,
   playlistsGenresKeyboard,
   servicesKeyboard,
   writeToSoundcheckKeyboard,
@@ -205,42 +202,14 @@ export default async (ctx: Context) => {
           }
 
           const concertsByDays = getConcertsByDays(upcomingConcerts);
-          const days: number[] = [];
 
-          _.forEach(concertsByDays, (_, day) => {
-            if (days.length === 28) {
-              return false;
-            }
-
-            days.push(+day);
-          });
-
-          const holidays = await getHolidays(moment(days[0]), moment(_.last(days)));
-          const buttons = days.map((day) => {
-            const dayMoment = moment(+day);
-            const dayOfTheWeek = dayMoment.weekday();
-
-            return generateButton(
-              getDayString(dayMoment),
-              { command: 'poster/type/day', dayStart: +day },
-              dayOfTheWeek > 4 || holidays.some((holiday) => holiday.isSame(dayMoment, 'day')) ? ButtonColor.POSITIVE : ButtonColor.PRIMARY
-            );
-          });
-
-          await respond(generateRandomCaption(captions.choose_day), {
-            keyboard: {
-              one_time: false,
-              buttons: [
-                ..._.chunk(buttons, 4),
-                [generateBackButton(BackButtonDest.POSTER)],
-                [generateBackButton()],
-              ]
-            }
-          });
+          await respond(generateRandomCaption(captions.choose_day), { keyboard: await generateDayPosterKeyboard(concertsByDays) });
         } else if (payload.type === 'week') {
           await respond(generateRandomCaption(captions.choose_week), { keyboard: generateWeekPosterKeyboard() });
         } else if (payload.type === 'genres') {
-          await respond(captions.choose_genre, { keyboard: genresKeyboard });
+          const allConcerts = await getConcerts(moment().startOf('day'));
+
+          await respond(captions.choose_genre, { keyboard: generateGenrePosterKeyboard(allConcerts) });
         }
       } else if (payload.command === 'poster/type/day') {
         const date = moment(payload.dayStart);
@@ -261,7 +230,8 @@ export default async (ctx: Context) => {
         await respond(`${caption}\n\n${concertsString}`);
       } else if (payload.command === 'poster/type/week') {
         const today = +moment().startOf('day');
-        const concerts = (await getWeeklyConcerts(moment(payload.weekStart))).filter(({ startTime }) => +startTime >= today);
+        const weekStart = moment(payload.weekStart);
+        const concerts = (await getWeeklyConcerts(weekStart)).filter(({ startTime }) => +startTime >= today);
 
         if (!concerts.length) {
           await respond(captions.no_concerts_at_week);
@@ -269,8 +239,16 @@ export default async (ctx: Context) => {
           break message;
         }
 
+        if (concerts.length === 1) {
+          await respond(captions.concert_at_week(getWeekString(weekStart)));
+        }
+
         const groups = getConcertsByDays(concerts);
-        const concertsStrings = getConcertsByDaysStrings(groups);
+        const concertsStrings = getConcertsByDaysStrings(groups, generateRandomCaption(captions.concerts_at_week, {
+          user,
+          weekString: getWeekString(weekStart),
+          concertsCount: concerts.length
+        }));
 
         for (const concertsString of concertsStrings) {
           await respond(concertsString);
@@ -278,9 +256,7 @@ export default async (ctx: Context) => {
       } else if (payload.command === 'poster/type/genre') {
         const genre = payload.genre;
         const allConcerts = await getConcerts(moment().startOf('day'));
-        const genreConcerts = allConcerts.filter(({ genres }) => (
-          genres.some((g) => g.toLowerCase() === genreNames[genre].toLowerCase() || genreMatches[genre].includes(g.toLowerCase()))
-        ));
+        const genreConcerts = allConcerts.filter((concert) => isConcertInGenre(concert, genre));
 
         if (!genreConcerts.length) {
           await respond(captions.no_concerts_in_genre(genre));
@@ -289,7 +265,7 @@ export default async (ctx: Context) => {
         }
 
         const groups = getConcertsByDays(genreConcerts);
-        const concertsStrings = getConcertsByDaysStrings(groups);
+        const concertsStrings = getConcertsByDaysStrings(groups, '');
 
         for (const concertsString of concertsStrings) {
           await respond(concertsString);

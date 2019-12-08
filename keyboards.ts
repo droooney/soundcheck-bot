@@ -1,9 +1,11 @@
+import * as _ from 'lodash';
 import moment = require('moment-timezone');
 
 import {
   BackButtonDest,
   ButtonColor,
   ButtonPayload,
+  Concert,
   Keyboard,
   KeyboardButton,
   Service,
@@ -20,7 +22,7 @@ import {
   subscriptionNames,
   subscriptionButtons,
 } from './constants';
-import { getWeekString } from './helpers';
+import { getDayString, getHolidays, getWeekString, isConcertInGenre } from './helpers';
 import User from './database/User';
 import Drawing from './database/Drawing';
 
@@ -127,6 +129,60 @@ export function generateWeekPosterKeyboard(): Keyboard {
   };
 }
 
+export async function generateDayPosterKeyboard(concertGroups: Record<string, Concert[]>): Promise<Keyboard> {
+  const days: number[] = [];
+
+  _.forEach(concertGroups, (_, day) => {
+    if (days.length === 28) {
+      return false;
+    }
+
+    days.push(+day);
+  });
+
+  const holidays = await getHolidays(moment(days[0]), moment(_.last(days)));
+  const buttons = days.map((day) => {
+    const dayMoment = moment(+day);
+    const dayOfTheWeek = dayMoment.weekday();
+
+    return generateButton(
+      getDayString(dayMoment),
+      { command: 'poster/type/day', dayStart: +day },
+      dayOfTheWeek > 4 || holidays.some((holiday) => holiday.isSame(dayMoment, 'day')) ? ButtonColor.POSITIVE : ButtonColor.PRIMARY
+    );
+  });
+
+  return {
+    one_time: false,
+    buttons: [
+      ..._.chunk(buttons, 4),
+      [generateBackButton(BackButtonDest.POSTER)],
+      [generateBackButton()],
+    ]
+  };
+}
+
+export function generateGenrePosterKeyboard(allConcerts: Concert[]): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      ...genreButtons.map((buttons) => (
+        buttons.map((genre) => {
+          const hasConcerts = allConcerts.some((concert) => isConcertInGenre(concert, genre));
+
+          return generateButton(
+            genreNames[genre],
+            { command: 'poster/type/genre', genre },
+            hasConcerts ? ButtonColor.PRIMARY : ButtonColor.SECONDARY
+          );
+        })
+      )),
+      [generateBackButton(BackButtonDest.POSTER)],
+      [generateBackButton()],
+    ]
+  };
+}
+
 export function generatePlaylistsKeyboard(user: User): Keyboard {
   return {
     one_time: false,
@@ -157,17 +213,6 @@ export function generateReleasesKeyboard(user: User): Keyboard {
     ]
   };
 }
-
-export const genresKeyboard: Keyboard = {
-  one_time: false,
-  buttons: [
-    ...genreButtons.map((buttons) => (
-      buttons.map((genre) => generateButton(genreNames[genre], { command: 'poster/type/genre', genre }))
-    )),
-    [generateBackButton(BackButtonDest.POSTER)],
-    [generateBackButton()],
-  ]
-};
 
 export const playlistsGenresKeyboard: Keyboard = {
   one_time: false,

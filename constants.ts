@@ -1,4 +1,14 @@
-import { Genre, Hashtag, MessageAttachment, PlaylistGenre, Service, Subscription } from './types';
+import {
+  Genre,
+  Hashtag,
+  MessageAttachment,
+  PlaylistGenre,
+  Service,
+  Subscription,
+  Word,
+  WordCase,
+  WordPluralForm,
+} from './types';
 import User, { Sex } from './database/User';
 import Drawing from './database/Drawing';
 
@@ -238,65 +248,83 @@ export const captions = {
     ({ dateString }: ConcertAtDayCaptionOptions) => `На ${dateString} известно только об одном концерте. \
 Рекомендуем вернуться ближе к выбранной дате, концерты пополняются раз в пару дней.`,
   ],
-  // TODO: fix concert word case
   concerts_at_day: [
-    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `${dateString} ты можешь сходить на следующие ${concertsCount} концертов.`,
+    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `${dateString} ты можешь сходить на следующие ${concertsCount} \
+${getWordForm('концерт', 'accusative', concertsCount)}.`,
     ({ user, dateString }: ConcertsAtDayCaptionOptions) => `Концерты на ${dateString}. Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} \
 подходящие концерты, рекомендуем вернуться ближе к выбранной дате.`,
-    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `${dateString} тебя ждут ${concertsCount} концертов. \
-Если тебе нравится то, что мы делаем, не забывай поддерживать нас лайком, это ведь так просто.`,
-    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `На ${dateString} уже известно о ${concertsCount} концертах. \
-Если среди них тебе ничего не приглянулось, рекомендуем вернуться ближе к выбранной дате, концерты пополняются раз в пару дней.`,
+    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `${dateString} тебя ждут ${concertsCount} \
+${getWordForm('концерт', 'nominative', concertsCount)}. Если тебе нравится то, что мы делаем, не забывай \
+поддерживать нас лайком, это ведь так просто.`,
+    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `На ${dateString} уже известно о ${concertsCount} \
+${getWordForm('концерт', 'prepositional', concertsCount)}. Если среди них тебе ничего не приглянулось, рекомендуем \
+вернуться ближе к выбранной дате, концерты пополняются раз в пару дней.`,
     ({ user, dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `${dateString} ты можешь сходить на следующие ${concertsCount} \
-концертов. Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} подходящие концерты, рекомендуем вернуться ближе к выбранной дате.`,
-    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `${dateString} ты можешь сходить на следующие ${concertsCount} концертов. \
-Если тебе нравится то, что мы делаем, не забывай поддерживать нас лайком, это ведь так просто.`,
-    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `${dateString} ты можешь сходить на следующие ${concertsCount} концертов. \
-Если среди них тебе ничего не приглянулось, рекомендуем вернуться ближе к выбранной дате, концерты пополняются раз в пару дней.`,
+${getWordForm('концерт', 'accusative', concertsCount)}. Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} \
+подходящие концерты, рекомендуем вернуться ближе к выбранной дате.`,
+    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `${dateString} ты можешь сходить на следующие ${concertsCount} \
+${getWordForm('концерт', 'accusative', concertsCount)}. Если тебе нравится то, что мы делаем, не забывай \
+поддерживать нас лайком, это ведь так просто.`,
+    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `${dateString} ты можешь сходить на следующие ${concertsCount} \
+${getWordForm('концерт', 'accusative', concertsCount)}. Если среди них тебе ничего не приглянулось, рекомендуем \
+вернуться ближе к выбранной дате, концерты пополняются раз в пару дней.`,
     ({ dateString }: ConcertsAtDayCaptionOptions) => `Концерты на ${dateString}. Если тебе нравится то, что мы делаем, \
 не забывай поддерживать нас лайком, это ведь так просто.`,
     ({ dateString }: ConcertsAtDayCaptionOptions) => `Концерты на ${dateString}. Если среди них тебе ничего не приглянулось, \
 рекомендуем вернуться ближе к выбранной дате, концерты пополняются раз в пару дней.`,
-    ({ user, dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `${dateString} тебя ждут ${concertsCount} концертов. \
-Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} подходящие концерты, рекомендуем вернуться ближе к выбранной дате.`,
-    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `${dateString} тебя ждут ${concertsCount} концертов. \
-Если среди них тебе ничего не приглянулось, рекомендуем вернуться ближе к выбранной дате, концерты пополняются раз в пару дней.`,
-    ({ user, dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `На ${dateString} уже известно о ${concertsCount} концертах. \
-Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} подходящие концерты, рекомендуем вернуться ближе к выбранной дате.`,
-    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `На ${dateString} уже известно о ${concertsCount} концертах. \
-Если тебе нравится то, что мы делаем, не забывай поддерживать нас лайком, это ведь так просто.`,
+    ({ user, dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `${dateString} тебя ждут ${concertsCount} \
+${getWordForm('концерт', 'nominative', concertsCount)}. Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} \
+подходящие концерты, рекомендуем вернуться ближе к выбранной дате.`,
+    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `${dateString} тебя ждут ${concertsCount} \
+${getWordForm('концерт', 'nominative', concertsCount)}. Если среди них тебе ничего не приглянулось, рекомендуем \
+вернуться ближе к выбранной дате, концерты пополняются раз в пару дней.`,
+    ({ user, dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `На ${dateString} уже известно о ${concertsCount} \
+${getWordForm('концерт', 'prepositional', concertsCount)}. Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} \
+подходящие концерты, рекомендуем вернуться ближе к выбранной дате.`,
+    ({ dateString, concertsCount }: ConcertsAtDayCaptionOptions) => `На ${dateString} уже известно о ${concertsCount} \
+${getWordForm('концерт', 'prepositional', concertsCount)}. Если тебе нравится то, что мы делаем, не забывай \
+поддерживать нас лайком, это ведь так просто.`,
   ],
   no_concerts_at_day: `К сожалению, на выбранное тобой число пока не назначено концертов. Рекомендуем вернуться ближе \
 к выбранной дате или рассмотреть другую.`,
   concert_at_week: (weekString: string) => `На ${weekString} известно только об одном концерте. Афиша пополняется раз в пару дней, \
 рекомендуем зайти позже или подписаться на рассылку Афиши в личные сообщения.`,
-  // TODO: fix concert word case
   concerts_at_week: [
-    ({ weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} ты можешь сходить на следующие ${concertsCount} концертов.`,
-    ({ user, weekString }: ConcertsAtWeekCaptionOptions) => `Концерты на ${weekString}. Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'}\
+    ({ weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} ты можешь сходить на следующие ${concertsCount} \
+${getWordForm('концерт', 'accusative', concertsCount)}.`,
+    ({ user, weekString }: ConcertsAtWeekCaptionOptions) => `Концерты на ${weekString}. Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} \
 подходящие концерты, рекомендуем вернуться ближе к началу выбранной недели.`,
-    ({ weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} тебя ждут ${concertsCount} концертов. Если тебе \
-нравится то, что мы делаем, не забывай поддерживать нас лайком, ведь это очень просто.`,
-    ({ weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `На ${weekString} уже известно о ${concertsCount} концертах. Если среди \
-них тебе ничего не приглянулось, рекомендуем вернуться ближе к началу выбранной недели, концерты пополняются раз в пару дней.`,
-    ({ user, weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} ты можешь сходить на следующие ${concertsCount} концертов. \
-Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} подходящие концерты, рекомендуем вернуться ближе к началу выбранной недели.`,
-    ({weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} ты можешь сходить на следующие ${concertsCount} концертов. \
-Если тебе нравится то, что мы делаем, не забывай поддерживать нас лайком, ведь это очень просто.`,
-    ({ weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} ты можешь сходить на следующие ${concertsCount} концертов. \
-Если среди них тебе ничего не приглянулось, рекомендуем вернуться ближе к началу выбранной недели, концерты пополняются раз в пару дней.`,
+    ({ weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} тебя ждут ${concertsCount} \
+${getWordForm('концерт', 'nominative', concertsCount)}. Если тебе нравится то, что мы делаем, не забывай \
+поддерживать нас лайком, ведь это очень просто.`,
+    ({ weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `На ${weekString} уже известно о ${concertsCount} \
+${getWordForm('концерт', 'prepositional', concertsCount)}. Если среди них тебе ничего не приглянулось, \
+рекомендуем вернуться ближе к началу выбранной недели, концерты пополняются раз в пару дней.`,
+    ({ user, weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} ты можешь сходить на следующие ${concertsCount} \
+${getWordForm('концерт', 'accusative', concertsCount)}. Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} \
+подходящие концерты, рекомендуем вернуться ближе к началу выбранной недели.`,
+    ({weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} ты можешь сходить на следующие ${concertsCount} \
+${getWordForm('концерт', 'accusative', concertsCount)}. Если тебе нравится то, что мы делаем, не забывай \
+поддерживать нас лайком, ведь это очень просто.`,
+    ({ weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} ты можешь сходить на следующие ${concertsCount} \
+${getWordForm('концерт', 'accusative', concertsCount)}. Если среди них тебе ничего не приглянулось, \
+рекомендуем вернуться ближе к началу выбранной недели, концерты пополняются раз в пару дней.`,
     ({ weekString }: ConcertsAtWeekCaptionOptions) => `Концерты на ${weekString}. Если тебе нравится то, что мы делаем, \
 не забывай поддерживать нас лайком, ведь это очень просто.`,
     ({ weekString }: ConcertsAtWeekCaptionOptions) => `Концерты на ${weekString}. Если среди них тебе ничего не приглянулось, \
 рекомендуем вернуться ближе к началу выбранной недели, концерты пополняются раз в пару дней.`,
-    ({ user, weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} тебя ждут ${concertsCount} концертов. \
-Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} подходящие концерты, рекомендуем вернуться ближе к началу выбранной недели.`,
-    ({ weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} тебя ждут ${concertsCount} концертов. \
-Если среди них тебе ничего не приглянулось, рекомендуем вернуться ближе к началу выбранной недели, концерты пополняются раз в пару дней.`,
-    ({ user, weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `На ${weekString} уже известно ${concertsCount} концертов. \
-Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} подходящие концерты, рекомендуем вернуться ближе к началу выбранной недели.`,
-    ({ weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `На ${weekString} уже известно ${concertsCount} концертов. \
-Если тебе нравится то, что мы делаем, не забывай поддерживать нас лайком, ведь это очень просто.`,
+    ({ user, weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} тебя ждут ${concertsCount} \
+${getWordForm('концерт', 'nominative', concertsCount)}. Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} \
+подходящие концерты, рекомендуем вернуться ближе к началу выбранной недели.`,
+    ({ weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `${weekString} тебя ждут ${concertsCount} \
+${getWordForm('концерт', 'nominative', concertsCount)}. Если среди них тебе ничего не приглянулось, \
+рекомендуем вернуться ближе к началу выбранной недели, концерты пополняются раз в пару дней.`,
+    ({ user, weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `На ${weekString} уже известно о ${concertsCount} \
+${getWordForm('концерт', 'prepositional', concertsCount)}. Если ты не ${user.sex === Sex.FEMALE ? 'нашла' : 'нашел'} \
+подходящие концерты, рекомендуем вернуться ближе к началу выбранной недели.`,
+    ({ weekString, concertsCount }: ConcertsAtWeekCaptionOptions) => `На ${weekString} уже известно о ${concertsCount} \
+${getWordForm('концерт', 'prepositional', concertsCount)}. Если тебе нравится то, что мы делаем, не забывай \
+поддерживать нас лайком, ведь это очень просто.`,
   ],
   no_concerts_at_week: `К сожалению, на выбранной неделе пока не назначено концертов. \
 Рекомендуем вернуться ближе к выбранной дате или рассмотреть другую.`,
@@ -855,6 +883,53 @@ Soundfest American Style. Весь вечер на сцене Blues Bastards, Nu
     `К сожалению, команда не может быть распознана. Вероятно, меню чат-бота было изменено. Повторите попытку заново.`
   ],
 };
+
+export const wordForms: Record<Word, Record<WordCase, Record<WordPluralForm, string>>> = {
+  концерт: {
+    nominative: {
+      1: 'концерт',
+      '2-4': 'концерта',
+      many: 'концертов',
+    },
+    genitive: {
+      1: 'концерта',
+      '2-4': 'концертов',
+      many: 'концертов',
+    },
+    dative: {
+      1: 'концерту',
+      '2-4': 'концертам',
+      many: 'концертам',
+    },
+    accusative: {
+      1: 'концерт',
+      '2-4': 'концерта',
+      many: 'концертов',
+    },
+    instrumental: {
+      1: 'концертом',
+      '2-4': 'концертами',
+      many: 'концертами',
+    },
+    prepositional: {
+      1: 'концерте',
+      '2-4': 'концертах',
+      many: 'концертах',
+    },
+  }
+};
+
+function getWordForm(word: Word, wordCase: WordCase, count: number): string {
+  const pluralForm = count >= 10 && count < 20
+    ? 'many'
+    : count % 10 === 1
+      ? 1
+      : [2, 3, 4].includes(count % 10)
+        ? '2-4'
+        : 'many';
+
+  return wordForms[word][wordCase][pluralForm];
+}
 
 export const genreNames: Record<Genre, string> = {
   [Genre.ROCK]: 'Рок',

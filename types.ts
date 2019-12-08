@@ -725,3 +725,9 @@ export interface DbConnection {
   port: number;
   database: string;
 }
+
+export type Word = 'концерт';
+
+export type WordCase = 'nominative' | 'genitive' | 'dative' | 'accusative' | 'instrumental' | 'prepositional';
+
+export type WordPluralForm = 1 | '2-4' | 'many';

@@ -35,7 +35,7 @@ import {
   VkUser,
   WallAttachment,
 } from './types';
-import { captions, services, subscriptionNames } from './constants';
+import { captions, genreMatches, genreNames, services, subscriptionNames } from './constants';
 import config from './config';
 import VKError from './VKError';
 import Logger from './Logger';
@@ -334,6 +334,10 @@ export function isConcertReady(concert: Concert): boolean {
   );
 }
 
+export function isConcertInGenre(concert: Concert, genre: Genre) {
+  return concert.genres.some((g) => g.toLowerCase() === genreNames[genre].toLowerCase() || genreMatches[genre].includes(g.toLowerCase()));
+}
+
 export async function getDailyConcerts(day: moment.Moment): Promise<Concert[]> {
   return await getConcerts(day.clone().startOf('day'), day.clone().endOf('day'));
 }
@@ -366,8 +370,8 @@ export function getConcertsByDaysString(groups: Record<string, Concert[]>): stri
   return _.map(groups, getConcertsGroupString).join('\n\n');
 }
 
-export function getConcertsByDaysStrings(groups: Record<string, Concert[]>): string[] {
-  const strings: string[] = [];
+export function getConcertsByDaysStrings(groups: Record<string, Concert[]>, header: string): string[] {
+  const strings: string[] = [header];
 
   _.forEach(groups, (group, startTime) => {
     const currentString = _.last(strings);
