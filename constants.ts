@@ -494,7 +494,7 @@ ${playlists.map(({ name }) => name).join(', ')}. Что послушаем се�
     `Отличный выбор. Переходим и слушаем.`,
     ({ user, playlist }: PlaylistsGenreTypeResponseCaptionOptions) => `${playlist.name}… конечно, что еще ты \
 ${user.sex === Sex.FEMALE ? 'могла' : 'мог'} выбрать.`,
-    ({ playlist }: PlaylistsGenreTypeResponseCaptionOptions) => `А мы подозревали, что ты выберешь ${playlist.name}.`,
+    // ({ playlist }: PlaylistsGenreTypeResponseCaptionOptions) => `А мы подозревали, что ты выберешь ${playlist.name}.`,
     ({ playlist }: PlaylistsGenreTypeResponseCaptionOptions) => `${playlist.name} - хороший выбор. Переходим и слушаем.`,
     `Чайковский перевернулся бы в гробу… но мы поддерживаем твой выбор.`,
     ({ playlist }: PlaylistsGenreTypeResponseCaptionOptions) => `${playlist.name}. Помни, наш чат-бот работает на лайках.`,
@@ -661,7 +661,7 @@ ${user.sex === Sex.FEMALE ? 'первой' : 'первым'}!`,
     ({ user }: WriteToSoundcheckResponseCaptionOptions) => `Привет, ${user.firstName}. \
 А мы думали: куда ты ${user.sex === Sex.FEMALE ? 'пропала' : 'пропал'}…`,
   ],
-  tell_about_group: 'Рассказать о себе',
+  tell_about_group: 'Рассказать о группе',
   tell_about_release: 'Сообщить о релизе',
   collaboration: 'Сотрудничество',
   tell_about_bug: 'Нашел ошибку',
