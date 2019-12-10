@@ -375,7 +375,7 @@ export default async (ctx: Context) => {
             forwardMessages: [messageId]
           })
         ]);
-      } if (payload.command === 'write_to_soundcheck/tell_about_bug') {
+      } else if (payload.command === 'write_to_soundcheck/tell_about_bug') {
         user.state = {
           command: 'write_to_soundcheck/tell_about_bug/message'
         };
