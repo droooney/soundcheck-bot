@@ -32,6 +32,7 @@ import {
   BackButtonDest,
   Body,
   ButtonPayload,
+  Genre,
   Hashtag,
   PhotoAttachment,
   PlaylistGenre,
@@ -209,7 +210,7 @@ export default async (ctx: Context) => {
         } else if (payload.type === 'genres') {
           const allConcerts = await getConcerts(moment().startOf('day'));
 
-          await respond(captions.choose_genre, { keyboard: generateGenrePosterKeyboard(allConcerts) });
+          await respond(generateRandomCaption(captions.choose_genre), { keyboard: generateGenrePosterKeyboard(allConcerts) });
         }
       } else if (payload.command === 'poster/type/day') {
         const date = moment(payload.dayStart);
@@ -265,7 +266,16 @@ export default async (ctx: Context) => {
         }
 
         const groups = getConcertsByDays(genreConcerts);
-        const concertsStrings = getConcertsByDaysStrings(groups, '');
+        const concertsStrings = getConcertsByDaysStrings(
+          groups,
+          genre === Genre.ABOUT_MUSIC
+            ? genreConcerts.length === 1
+              ? captions.music_event
+              : generateRandomCaption(captions.music_events, { user, eventsCount: genreConcerts.length })
+            : genreConcerts.length === 1
+              ? captions.concert_in_genre(genre)
+              : generateRandomCaption(captions.concerts_in_genre, { user, genre, concertsCount: genreConcerts.length })
+        );
 
         for (const concertsString of concertsStrings) {
           await respond(concertsString);

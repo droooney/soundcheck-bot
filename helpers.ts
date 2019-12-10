@@ -27,6 +27,7 @@ import {
   ManagersResponse,
   Message,
   MessageAttachment,
+  PlaylistGenre,
   Post,
   SendMessageResponse,
   Service,
@@ -711,6 +712,9 @@ export async function getClickStats(period: StatsPeriod): Promise<string> {
     { payload: { command: 'playlists/all' }, caption: `${captions.playlists} (${captions.playlists_all})` },
     { payload: { command: 'playlists/thematic' }, caption: `${captions.playlists} (${captions.playlists_thematic})` },
     { payload: { command: 'playlists/genre' }, caption: `${captions.playlists} (${captions.playlists_genre})` },
+    ..._.map(PlaylistGenre, (genre) => (
+      { payload: { command: 'playlists/genre/type' as 'playlists/genre/type', genre }, caption: captions.playlists_genre_type(genre) }
+    )),
     null,
     { payload: { command: 'releases' }, caption: captions.releases },
     { payload: { command: 'releases/week_releases' }, caption: captions.week_releases },
@@ -729,6 +733,10 @@ export async function getClickStats(period: StatsPeriod): Promise<string> {
     ..._.map(services, ({ name }, service) => (
       { payload: { command: 'services/service' as 'services/service', service: service as Service }, caption: `${captions.services} (${name})` }
     )),
+    null,
+    { payload: { command: 'soundfest' }, caption: captions.soundfest },
+    { payload: { command: 'soundfest/go_to_event' }, caption: captions.soundfest_go_to_event },
+    { payload: { command: 'soundfest/buy_ticket' }, caption: captions.soundfest_buy_ticket },
   ];
 
   return buttonStats

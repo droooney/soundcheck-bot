@@ -726,7 +726,7 @@ export interface DbConnection {
   database: string;
 }
 
-export type Word = 'концерт';
+export type Word = 'концерт' | 'мероприятие';
 
 export type WordCase = 'nominative' | 'genitive' | 'dative' | 'accusative' | 'instrumental' | 'prepositional';
 

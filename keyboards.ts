@@ -220,7 +220,7 @@ export const playlistsGenresKeyboard: Keyboard = {
     ...playlistsGenreButtons.map((buttons) => (
       buttons.map((genre) => generateButton(playlistsGenreNames[genre], { command: 'playlists/genre/type', genre }))
     )),
-    [generateBackButton(BackButtonDest.POSTER)],
+    [generateBackButton(BackButtonDest.PLAYLISTS)],
     [generateBackButton()],
   ]
 };
