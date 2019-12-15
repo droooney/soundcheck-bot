@@ -532,6 +532,7 @@ export interface Concert {
   location: string;
   entry: string;
   buyTicket: string;
+  fields: Partial<Record<string, string>>;
 }
 
 export interface EventsResponse {

@@ -291,11 +291,11 @@ export async function getVkUser(vkId: number): Promise<VkUser> {
 
 export function getConcertFields(description?: string): Partial<Record<string, string>> {
   const fields: Partial<Record<string, string>> = {};
-  let string = description || '';
+  let string = `\n${description || ''}`;
   let prevKey = '';
 
   while (string) {
-    const match = string.match(/(?:^|\n)([^:\n]*):/i);
+    const match = string.match(/\n+([^:\n]*):/i);
 
     if (!match) {
       fields[prevKey] = string.trim();
@@ -303,7 +303,10 @@ export function getConcertFields(description?: string): Partial<Record<string, s
       break;
     }
 
-    fields[prevKey] = string.slice(0, match.index).trim();
+    if (prevKey) {
+      fields[prevKey] = string.slice(0, match.index).trim();
+    }
+
     string = string.slice(match.index! + match[0].length);
     prevKey = match[1];
   }
@@ -323,6 +326,7 @@ export function getConcertFromEvent(event: Event): Concert {
     location: (event.location || '').trim(),
     entry: fields.Вход || '',
     buyTicket: fields['Купить билет'] || '',
+    fields,
   };
 }
 
