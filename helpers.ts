@@ -211,7 +211,7 @@ export async function sendVKMessage(dest: number | number[], message: string, op
     keyboard: JSON.stringify(options.keyboard),
     forward_messages: (options.forwardMessages || []).join(','),
     attachment: (options.attachments || []).map(({ type, id }) => type + id).join(','),
-    dont_parse_links: 'dontParseLinks' in options ? options.dontParseLinks : true,
+    dont_parse_links: +('dontParseLinks' in options ? options.dontParseLinks! : true),
     lat: options.lat,
     long: options.long
   });
