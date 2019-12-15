@@ -23,6 +23,7 @@ import {
   getWeekString,
   getWeeklyConcerts,
   isConcertInGenre,
+  isNumbersArray,
   sendVKMessage,
   sendVkMessageToAllConversations,
   sendVkMessageToSubscribedUsers,
@@ -777,10 +778,10 @@ export default async (ctx: Context) => {
 
           if (payload.group === 'all') {
             await sendVkMessageToAllConversations(payload.text, sendOptions);
-          } else if (typeof payload.group === 'string') {
-            await sendVkMessageToSubscribedUsers([payload.group], payload.text, sendOptions);
-          } else {
+          } else if (isNumbersArray(payload.group)) {
             await sendVKMessages(payload.group, payload.text, sendOptions);
+          } else {
+            await sendVkMessageToSubscribedUsers(payload.group, payload.text, sendOptions);
           }
 
           await respond(captions.message_successfully_sent);

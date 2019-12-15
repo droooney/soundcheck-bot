@@ -955,6 +955,7 @@ Soundfest American Style. Весь вечер на сцене Blues Bastards, Nu
   send_message_to_users: 'Разослать сообщение',
   choose_group: 'Выберите группу',
   to_all: 'Всем',
+  to_all_subscribed: 'Всем подпискам',
   to_group: 'Группе',
   enter_user_ids: 'Введите айди пользователей (в формате 175810060), разделенных запятой или пробелом',
   enter_message_text: 'Введите текст сообщения',

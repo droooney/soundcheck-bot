@@ -17,12 +17,10 @@ import {
   sendClickStatsMessage,
   sendPosterMessage,
   sendStatsMessage,
-  sendVkMessageToAllConversations,
   sendVKRequest,
 } from './helpers';
 import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
-import { generateMainKeyboard } from './keyboards';
 import config from './config';
 import { migrate } from './database';
 import Logger from './Logger';
@@ -87,15 +85,6 @@ async function main() {
   ]);
 
   managers = items.map(({ id }) => id);
-
-  if (false) {
-    console.log(
-      await sendVkMessageToAllConversations('test unique', {
-        keyboard: generateMainKeyboard(false),
-        randomId: 2n ** 30n + 2n ** 29n,
-      })
-    );
-  }
 
   await new Promise((resolve) => {
     server.listen(config.port, () => {

@@ -381,7 +381,7 @@ export interface AdminSendMessageToUsersButtonPayload {
 
 export interface AdminSendMessageToUsersGroupButtonPayload {
   command: 'admin/send_message_to_users/group';
-  group: Subscription | 'all' | 'pick';
+  group: Subscription[] | 'all' | 'pick';
 }
 
 export type SubscribeToSectionButtonPayload = (
@@ -626,25 +626,25 @@ export interface AdminSendMessageToUsersGroupSetGroupUserState {
 
 export interface AdminSendMessageToUsersGroupSetTextUserState {
   command: 'admin/send_message_to_users/group/set_text';
-  group: Subscription | 'all' | number[];
+  group: Subscription[] | 'all' | number[];
 }
 
 export interface AdminSendMessageToUsersGroupSetPostUserState {
   command: 'admin/send_message_to_users/group/set_post';
-  group: Subscription | 'all' | number[];
+  group: Subscription[] | 'all' | number[];
   text: string;
 }
 
 export interface AdminSendMessageToUsersGroupSetImageUserState {
   command: 'admin/send_message_to_users/group/set_image';
-  group: Subscription | 'all' | number[];
+  group: Subscription[] | 'all' | number[];
   text: string;
   post: string | null;
 }
 
 export interface AdminSendMessageToUsersGroupSetRefreshKeyboardUserState {
   command: 'admin/send_message_to_users/group/set_refresh_keyboard';
-  group: Subscription | 'all' | number[];
+  group: Subscription[] | 'all' | number[];
   text: string;
   post: string | null;
   image: string | null;

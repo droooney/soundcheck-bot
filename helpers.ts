@@ -293,7 +293,7 @@ export function getConcertFields(description?: string): Partial<Record<string, s
   let prevKey = '';
 
   while (string) {
-    const match = string.match(/(?:^|\n)([^:]*):/i);
+    const match = string.match(/(?:^|\n)([^:\s]*):/i);
 
     if (!match) {
       fields[prevKey] = string.trim();
@@ -954,6 +954,10 @@ export function generateRandomCaption<T>(captions: (string | ((options: T) => st
   return typeof caption === 'function'
     ? caption(options!)
     : caption || '';
+}
+
+export function isNumbersArray(array: unknown[]): array is number[] {
+  return array.every((value) => typeof value === 'number');
 }
 
 export function createEverydayDaemon(time: string, daemon: () => void) {

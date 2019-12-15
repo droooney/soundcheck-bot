@@ -417,13 +417,14 @@ export const adminSendMessageToUsersKeyboard: Keyboard = {
   buttons: [
     [
       generateButton(captions.to_all, { command: 'admin/send_message_to_users/group', group: 'all' }),
+      generateButton(captions.to_all_subscribed, { command: 'admin/send_message_to_users/group', group: _.map(Subscription) }),
       generateButton(captions.to_group, { command: 'admin/send_message_to_users/group', group: 'pick' }),
     ],
     ...subscriptionButtons.map((buttons) => (
       buttons.map((subscription) => (
         generateButton(subscriptionNames[subscription], {
           command: 'admin/send_message_to_users/group',
-          group: subscription
+          group: [subscription]
         })
       ))
     )),
