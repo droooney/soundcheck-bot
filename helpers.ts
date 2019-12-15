@@ -293,7 +293,7 @@ export function getConcertFields(description?: string): Partial<Record<string, s
   let prevKey = '';
 
   while (string) {
-    const match = string.match(/(?:^|\n)([^:\s]*):/i);
+    const match = string.match(/(?:^|\n)([^:\n]*):/i);
 
     if (!match) {
       fields[prevKey] = string.trim();
@@ -319,7 +319,8 @@ export function getConcertFromEvent(event: Event): Concert {
     genres: (fields.Жанр || '').split(/\s*,\s*/).filter(Boolean),
     description: fields.Описание || '',
     location: (event.location || '').trim(),
-    entry: fields.Вход || ''
+    entry: fields.Вход || '',
+    buyTicket: fields['Купить билет'] || '',
   };
 }
 
@@ -352,7 +353,8 @@ export function getConcertString(concert: Concert): string {
 ${concert.description}
 🎯Где: ${concert.location}
 Во сколько: ${concert.startTime.format('HH:mm')}
-💵Вход: ${concert.entry}`;
+💵Вход: ${concert.entry}${concert.buyTicket ? `
+➡Купить билет: ${concert.buyTicket}` : ''}`;
 }
 
 export function getConcertsString(concerts: Concert[]): string {

@@ -531,6 +531,7 @@ export interface Concert {
   description: string;
   location: string;
   entry: string;
+  buyTicket: string;
 }
 
 export interface EventsResponse {
