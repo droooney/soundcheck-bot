@@ -1132,5 +1132,5 @@ export const links = {
     [PlaylistGenre.FOLK]: 'https://vk.com/wall-177574047_1397',
   } as Record<PlaylistGenre, string>,
   soundfest_event: 'https://vk.com/soundfest_as_01_february',
-  soundfest_buy_ticket: 'https://vk.com/soundfest_as_01_february?w=app5575136_-189351237',
+  soundfest_buy_ticket: 'https://vk.com/app5575136_-189351237',
 };

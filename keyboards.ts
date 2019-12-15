@@ -22,7 +22,7 @@ import {
   subscriptionNames,
   subscriptionButtons,
 } from './constants';
-import { getDayString, getHolidays, getWeekString, isConcertInGenre } from './helpers';
+import { getShortDayString, getHolidays, getWeekString, isConcertInGenre } from './helpers';
 import User from './database/User';
 import Drawing from './database/Drawing';
 
@@ -146,7 +146,7 @@ export async function generateDayPosterKeyboard(concertGroups: Record<string, Co
     const dayOfTheWeek = dayMoment.weekday();
 
     return generateButton(
-      getDayString(dayMoment),
+      getShortDayString(dayMoment),
       { command: 'poster/type/day', dayStart: +day },
       dayOfTheWeek > 4 || holidays.some((holiday) => holiday.isSame(dayMoment, 'day')) ? ButtonColor.POSITIVE : ButtonColor.PRIMARY
     );

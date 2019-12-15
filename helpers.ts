@@ -412,6 +412,10 @@ export function getDayString(day: moment.Moment): string {
   return capitalizeWords(day.format('D MMMM'));
 }
 
+export function getShortDayString(day: moment.Moment): string {
+  return capitalizeWords(day.format('D MMM'));
+}
+
 export async function getPosterText(posterTime: moment.Moment): Promise<string | null> {
   const isWeekly = posterTime.weekday() === 0;
   const posterHeader = `🥃 Афиша выступлений местных музыкантов на ${
