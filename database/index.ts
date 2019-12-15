@@ -22,12 +22,12 @@ export async function migrate() {
   const queryInterface = sequelize.getQueryInterface();
 
   for (const [i, migration] of migrations.slice(currentVersion).entries()) {
-    console.log(`migration "${migration.name}" started`);
+    Logger.log(`migration "${migration.name}" started`);
 
     await migration.action(queryInterface, sequelize, currentVersion + i);
     await fs.writeFile(versionFile, currentVersion + i + 1, { encoding: 'utf8' });
 
-    console.log(`migration "${migration.name}" completed successfully`);
+    Logger.log(`migration "${migration.name}" completed successfully`);
   }
 }
 
