@@ -368,9 +368,9 @@ export function getConcertsString(concerts: Concert[]): string {
 }
 
 export function getConcertsGroupString(concerts: Concert[], startTime: string): string {
-  return `——————————————
+  return `——————————
 📌 ${capitalizeWords(moment(+startTime).format('DD MMMM - dddd'))}
-——————————————
+——————————
 
 ${getConcertsString(concerts)}`;
 }
