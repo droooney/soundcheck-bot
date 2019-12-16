@@ -698,7 +698,7 @@ export enum Hashtag {
 }
 
 export type Target = (
-  'tellAboutGroup' | 'tellAboutRelease' | 'tellAboutBug' | 'wantToParticipate' | 'other' | 'poster' | 'stats'
+  'tellAboutGroup' | 'tellAboutRelease' | 'tellAboutBug' | 'wantToParticipate' | 'other' | 'poster' | 'stats' | 'unknownMessage'
 );
 
 export interface Config {

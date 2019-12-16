@@ -797,6 +797,10 @@ export default async (ctx: Context) => {
       }
     } else if (isNewUser) {
       await respond(captions.welcome_text(user), { keyboard: mainKeyboard });
+    } else {
+      await sendVKMessage(config.targets.unknownMessage, captions.unknown_message, {
+        forwardMessages: [body.object.id]
+      });
     }
 
     user.lastMessageDate = newLastMessageDate;
