@@ -7,6 +7,7 @@ import moment = require('moment-timezone');
 import {
   createEverydayDaemon,
   deactivateExpiredDrawings,
+  getManagers,
   notifyUsersAboutSoonToExpireDrawing,
   refreshGoogleAccessToken,
   refreshUsersInfo,
@@ -17,7 +18,6 @@ import {
   sendClickStatsMessage,
   sendPosterMessage,
   sendStatsMessage,
-  sendVKRequest,
 } from './helpers';
 import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
@@ -75,16 +75,13 @@ app.use(router.routes());
 app.use(router.allowedMethods());
 
 async function main() {
-  const [{ items }] = await Promise.all([
-    sendVKRequest('groups.getMembers', {
-      group_id: config.soundcheckId,
-      filter: 'managers'
-    }),
+  const [fetchedManagers] = await Promise.all([
+    getManagers(),
     refreshGoogleAccessToken(),
     migrate()
   ]);
 
-  managers = items.map(({ id }) => id);
+  managers = fetchedManagers;
 
   await new Promise((resolve) => {
     server.listen(config.port, () => {

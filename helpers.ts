@@ -289,6 +289,19 @@ export async function getVkUser(vkId: number): Promise<VkUser> {
   return (await getVkUsers([vkId]))[0];
 }
 
+export async function getManagers(): Promise<number[]> {
+  try {
+    const { items } = await sendVKRequest('groups.getMembers', {
+      group_id: config.soundcheckId,
+      filter: 'managers'
+    });
+
+    return items.map(({ id }) => id);
+  } catch {
+    return [];
+  }
+}
+
 export function getConcertFields(description?: string): Partial<Record<string, string>> {
   const fields: Partial<Record<string, string>> = {};
   let string = `\n${description || ''}`;
