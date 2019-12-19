@@ -974,6 +974,7 @@ Soundfest American Style. Весь вечер на сцене Blues Bastards, Nu
     `К сожалению, команда не может быть распознана. Вероятно, меню чат-бота было изменено. Повторите попытку заново.`
   ],
   unknown_message: 'Нераспознанное сообщение',
+  unknown_message_response: `Для отправки сообщения просим воспользоваться соответствующей функцией Чат-бота в диалоге с сообществом.`,
 };
 
 export const wordForms: Record<Word, Record<WordCase, Record<WordPluralForm, string>>> = {
