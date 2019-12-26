@@ -472,34 +472,41 @@ export enum BackButtonDest {
   ADMIN_STATS = 'admin/stats',
 }
 
-export interface BaseButtonAction {
-  payload?: string;
+export interface TextButton {
+  action: {
+    type: 'text';
+    label: string;
+    payload?: string;
+  };
+  color?: ButtonColor;
 }
 
-export interface TextButtonAction extends BaseButtonAction {
-  type: 'text';
-  label: string;
+export interface LocationButton {
+  action: {
+    type: 'location';
+    payload?: string;
+  };
 }
 
-export interface LocationButtonAction extends BaseButtonAction {
-  type: 'location';
+export interface OpenLinkButton {
+  action: {
+    type: 'open_link';
+    link: string;
+    label: string;
+    payload?: string;
+  };
 }
 
-export interface OpenLinkButtonAction extends BaseButtonAction {
-  type: 'open_link';
-  link: string;
-  label: string;
+export interface OpenAppButton {
+  action: {
+    type: 'open_app';
+    app_id: number;
+    label: string;
+    owner_id?: number;
+    hash?: string;
+    payload?: string;
+  };
 }
-
-export interface OpenAppButtonAction extends BaseButtonAction {
-  type: 'open_app';
-  app_id: number;
-  label: string;
-  owner_id?: number;
-  hash?: string;
-}
-
-export type ButtonAction = TextButtonAction | LocationButtonAction | OpenLinkButtonAction | OpenAppButtonAction;
 
 export enum ButtonColor {
   PRIMARY = 'primary',
@@ -508,10 +515,7 @@ export enum ButtonColor {
   POSITIVE = 'positive'
 }
 
-export interface KeyboardButton {
-  action: ButtonAction;
-  color: ButtonColor;
-}
+export type KeyboardButton = TextButton | LocationButton | OpenLinkButton | OpenAppButton;
 
 export interface Keyboard {
   one_time?: boolean;

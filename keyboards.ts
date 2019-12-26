@@ -8,10 +8,12 @@ import {
   ClientInfo,
   Concert,
   Keyboard,
-  KeyboardButton,
+  OpenAppButton,
+  OpenLinkButton,
   Service,
   SubscribeToSectionButtonPayload,
   Subscription,
+  TextButton,
 } from './types';
 import {
   captions,
@@ -489,7 +491,7 @@ export async function generateDrawingsKeyboard(user: User): Promise<Keyboard> {
   };
 }
 
-export function generateTextButton(text: string, payload: ButtonPayload, color: ButtonColor = ButtonColor.PRIMARY): KeyboardButton {
+export function generateTextButton(text: string, payload: ButtonPayload, color: ButtonColor = ButtonColor.PRIMARY): TextButton {
   return {
     action: {
       type: 'text',
@@ -500,7 +502,7 @@ export function generateTextButton(text: string, payload: ButtonPayload, color: 
   };
 }
 
-export function generateLinkButton(text: string, url: string, payload: ButtonPayload, color: ButtonColor = ButtonColor.PRIMARY): KeyboardButton {
+export function generateLinkButton(text: string, url: string, payload: ButtonPayload): OpenLinkButton {
   return {
     action: {
       type: 'open_link',
@@ -508,17 +510,10 @@ export function generateLinkButton(text: string, url: string, payload: ButtonPay
       label: text,
       payload: JSON.stringify(payload)
     },
-    color,
   };
 }
 
-export function generateOpenAppButton(
-  text: string,
-  appId: number,
-  ownerId: number | null,
-  payload: ButtonPayload,
-  color: ButtonColor = ButtonColor.PRIMARY
-): KeyboardButton {
+export function generateOpenAppButton(text: string, appId: number, ownerId: number | null, payload: ButtonPayload): OpenAppButton {
   return {
     action: {
       type: 'open_app',
@@ -527,22 +522,21 @@ export function generateOpenAppButton(
       label: text,
       payload: JSON.stringify(payload)
     },
-    color,
   };
 }
 
-export function generateBackButton(dest: BackButtonDest = BackButtonDest.MAIN): KeyboardButton {
+export function generateBackButton(dest: BackButtonDest = BackButtonDest.MAIN): TextButton {
   return generateTextButton(`← ${backButtonText[dest]}`, { command: 'back', dest }, ButtonColor.SECONDARY);
 }
 
-export function generateServiceButton(service: Service): KeyboardButton {
+export function generateServiceButton(service: Service): TextButton {
   return generateTextButton(services[service].name, {
     command: 'services/service',
     service
   });
 }
 
-export function generateSubscribeButton(user: User, command: SubscribeToSectionButtonPayload['command']): KeyboardButton {
+export function generateSubscribeButton(user: User, command: SubscribeToSectionButtonPayload['command']): TextButton {
   const { subscription } = subscriptionMap[command];
   const subscribed = user.subscriptions.includes(subscription);
 
