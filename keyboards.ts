@@ -279,16 +279,20 @@ export const writeToSoundcheckKeyboard: Keyboard = {
 };
 
 export function generateSoundfestKeyboard(clientInfo: ClientInfo): Keyboard {
+  const supportsLinkButton = (clientInfo.button_actions || []).includes('open_link');
+
   return {
     one_time: false,
     buttons: [
       [
-        (clientInfo.button_actions || []).includes('open_link')
+        supportsLinkButton
           ? generateLinkButton(captions.soundfest_go_to_event, links.soundfest_event, { command: 'soundfest/go_to_event', linkButton: true })
           : generateTextButton(captions.soundfest_go_to_event, { command: 'soundfest/go_to_event', linkButton: false }),
       ],
       [
-        generateOpenAppButton(captions.soundfest_buy_ticket, 5575136, -189351237, { command: 'soundfest/buy_ticket' }),
+        supportsLinkButton
+          ? generateLinkButton(captions.soundfest_buy_ticket, links.soundfest_buy_ticket, { command: 'soundfest/buy_ticket', linkButton: true })
+          : generateTextButton(captions.soundfest_buy_ticket, { command: 'soundfest/buy_ticket', linkButton: false }),
       ],
       [generateBackButton()],
     ]

@@ -491,8 +491,9 @@ export default async (ctx: Context) => {
           await respond(`${captions.soundfest_go_to_event_response}\n\n➡ ${links.soundfest_event}`);
         }
       } else if (payload.command === 'soundfest/buy_ticket') {
-        // do nothing
-        // await respond(`${captions.soundfest_buy_ticket_response}\n\n➡ ${links.soundfest_buy_ticket}`);
+        if (!payload.linkButton) {
+          await respond(`${captions.soundfest_buy_ticket_response}\n\n➡ ${links.soundfest_buy_ticket}`);
+        }
       } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
         await respond(captions.choose_action, { keyboard: adminKeyboard });
       } else if (payload.command === 'admin/drawings' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN_DRAWINGS)) {
