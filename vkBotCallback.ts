@@ -243,6 +243,8 @@ export default async (ctx: Context) => {
 
         if (concerts.length === 1) {
           await respond(captions.concert_at_week(getWeekString(weekStart)));
+
+          break message;
         }
 
         const groups = getConcertsByDays(concerts);
