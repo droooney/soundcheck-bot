@@ -5,6 +5,7 @@ import {
   BackButtonDest,
   ButtonColor,
   ButtonPayload,
+  ClientInfo,
   Concert,
   Keyboard,
   KeyboardButton,
@@ -16,6 +17,7 @@ import {
   captions,
   genreButtons,
   genreNames,
+  links,
   playlistsGenreButtons,
   playlistsGenreNames,
   services,
@@ -33,7 +35,7 @@ import Drawing from './database/Drawing';
 
 export interface SubscriptionParams {
   subscription: Subscription;
-  generateKeyboard(user: User): Keyboard | Promise<Keyboard>;
+  generateKeyboard(user: User, clientInfo: ClientInfo): Keyboard | Promise<Keyboard>;
 }
 
 export const backButtonText: Record<BackButtonDest, string> = {
@@ -73,25 +75,25 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
     one_time: false,
     buttons: [
       [
-        generateButton(captions.poster, { command: 'poster' }),
-        generateButton(captions.playlists, { command: 'playlists' }),
-        generateButton(captions.releases, { command: 'releases' }),
+        generateTextButton(captions.poster, { command: 'poster' }),
+        generateTextButton(captions.playlists, { command: 'playlists' }),
+        generateTextButton(captions.releases, { command: 'releases' }),
       ],
       [
-        generateButton(captions.drawings, { command: 'drawings' }),
-        generateButton(captions.text_materials, { command: 'text_materials' }),
-        generateButton(captions.services, { command: 'services' }),
+        generateTextButton(captions.drawings, { command: 'drawings' }),
+        generateTextButton(captions.text_materials, { command: 'text_materials' }),
+        generateTextButton(captions.services, { command: 'services' }),
       ],
       [
-        generateButton(captions.subscriptions, { command: 'subscriptions' }),
-        generateButton(captions.write_to_soundcheck, { command: 'write_to_soundcheck' }),
+        generateTextButton(captions.subscriptions, { command: 'subscriptions' }),
+        generateTextButton(captions.write_to_soundcheck, { command: 'write_to_soundcheck' }),
       ],
       [
-        generateButton(captions.soundfest, { command: 'soundfest' }, ButtonColor.POSITIVE),
+        generateTextButton(captions.soundfest, { command: 'soundfest' }, ButtonColor.POSITIVE),
       ],
       ...(
         isManager
-          ? [[generateButton(captions.admin_section, { command: 'admin' }, ButtonColor.POSITIVE)]]
+          ? [[generateTextButton(captions.admin_section, { command: 'admin' }, ButtonColor.POSITIVE)]]
           : []
       ),
     ]
@@ -103,9 +105,9 @@ export function generatePosterKeyboard(user: User): Keyboard {
     one_time: false,
     buttons: [
       [
-        generateButton(captions.day, { command: 'poster/type', type: 'day' }),
-        generateButton(captions.week, { command: 'poster/type', type: 'week' }),
-        generateButton(captions.by_genres, { command: 'poster/type', type: 'genres' }),
+        generateTextButton(captions.day, { command: 'poster/type', type: 'day' }),
+        generateTextButton(captions.week, { command: 'poster/type', type: 'week' }),
+        generateTextButton(captions.by_genres, { command: 'poster/type', type: 'genres' }),
       ],
       [generateSubscribeButton(user, 'poster/subscribe')],
       [generateBackButton()],
@@ -126,7 +128,7 @@ export function generateWeekPosterKeyboard(): Keyboard {
     one_time: false,
     buttons: [
       ...weeks.map((week, index) => [
-        generateButton(index === 0 ? captions.this_week : getWeekString(week), { command: 'poster/type/week', weekStart: +week })
+        generateTextButton(index === 0 ? captions.this_week : getWeekString(week), { command: 'poster/type/week', weekStart: +week })
       ]),
       [generateBackButton(BackButtonDest.POSTER)],
       [generateBackButton()],
@@ -150,7 +152,7 @@ export async function generateDayPosterKeyboard(concertGroups: Record<string, Co
     const dayMoment = moment(+day);
     // const dayOfTheWeek = dayMoment.weekday();
 
-    return generateButton(
+    return generateTextButton(
       getShortDayString(dayMoment),
       { command: 'poster/type/day', dayStart: +day },
       // dayOfTheWeek > 4 || holidays.some((holiday) => holiday.isSame(dayMoment, 'day')) ? ButtonColor.POSITIVE : ButtonColor.PRIMARY
@@ -176,7 +178,7 @@ export function generateGenrePosterKeyboard(allConcerts: Concert[]): Keyboard {
         buttons.map((genre) => {
           const hasConcerts = allConcerts.some((concert) => isConcertInGenre(concert, genre));
 
-          return generateButton(
+          return generateTextButton(
             genreNames[genre],
             { command: 'poster/type/genre', genre },
             hasConcerts ? ButtonColor.PRIMARY : ButtonColor.SECONDARY
@@ -194,9 +196,9 @@ export function generatePlaylistsKeyboard(user: User): Keyboard {
     one_time: false,
     buttons: [
       [
-        generateButton(captions.playlists_all, { command: 'playlists/all' }),
-        generateButton(captions.playlists_thematic, { command: 'playlists/thematic' }),
-        generateButton(captions.playlists_genre, { command: 'playlists/genre' }),
+        generateTextButton(captions.playlists_all, { command: 'playlists/all' }),
+        generateTextButton(captions.playlists_thematic, { command: 'playlists/thematic' }),
+        generateTextButton(captions.playlists_genre, { command: 'playlists/genre' }),
       ],
       [generateSubscribeButton(user, 'playlists/subscribe')],
       [generateBackButton()],
@@ -209,10 +211,10 @@ export function generateReleasesKeyboard(user: User): Keyboard {
     one_time: false,
     buttons: [
       [
-        generateButton(captions.week_releases, { command: 'releases/week_releases' }),
+        generateTextButton(captions.week_releases, { command: 'releases/week_releases' }),
       ],
       [
-        generateButton(captions.digests, { command: 'releases/digests' }),
+        generateTextButton(captions.digests, { command: 'releases/digests' }),
       ],
       [generateSubscribeButton(user, 'releases/subscribe')],
       [generateBackButton()],
@@ -224,7 +226,7 @@ export const playlistsGenresKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     ...playlistsGenreButtons.map((buttons) => (
-      buttons.map((genre) => generateButton(playlistsGenreNames[genre], { command: 'playlists/genre/type', genre }))
+      buttons.map((genre) => generateTextButton(playlistsGenreNames[genre], { command: 'playlists/genre/type', genre }))
     )),
     [generateBackButton(BackButtonDest.PLAYLISTS)],
     [generateBackButton()],
@@ -247,8 +249,8 @@ export function generateTextMaterialsKeyboard(user: User): Keyboard {
     one_time: false,
     buttons: [
       [
-        generateButton(captions.longreads, { command: 'text_materials/longread' }),
-        generateButton(captions.group_history, { command: 'text_materials/group_history' }),
+        generateTextButton(captions.longreads, { command: 'text_materials/longread' }),
+        generateTextButton(captions.group_history, { command: 'text_materials/group_history' }),
       ],
       [generateSubscribeButton(user, 'text_materials/subscribe')],
       [generateBackButton()],
@@ -260,32 +262,36 @@ export const writeToSoundcheckKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton(captions.tell_about_group, { command: 'write_to_soundcheck/tell_about_group' }),
-      generateButton(captions.tell_about_release, { command: 'write_to_soundcheck/tell_about_release' }),
+      generateTextButton(captions.tell_about_group, { command: 'write_to_soundcheck/tell_about_group' }),
+      generateTextButton(captions.tell_about_release, { command: 'write_to_soundcheck/tell_about_release' }),
     ],
     [
-      generateButton(captions.want_to_participate, { command: 'write_to_soundcheck/want_to_participate' }),
-      generateButton(captions.tell_about_bug, { command: 'write_to_soundcheck/tell_about_bug' }),
+      generateTextButton(captions.want_to_participate, { command: 'write_to_soundcheck/want_to_participate' }),
+      generateTextButton(captions.tell_about_bug, { command: 'write_to_soundcheck/tell_about_bug' }),
     ],
     [
-      generateButton(captions.write_to_soundcheck_other, { command: 'write_to_soundcheck/other' }),
+      generateTextButton(captions.write_to_soundcheck_other, { command: 'write_to_soundcheck/other' }),
     ],
     [generateBackButton()],
   ]
 };
 
-export const soundfestKeyboard: Keyboard = {
-  one_time: false,
-  buttons: [
-    [
-      generateButton(captions.soundfest_go_to_event, { command: 'soundfest/go_to_event' }),
-    ],
-    [
-      generateButton(captions.soundfest_buy_ticket, { command: 'soundfest/buy_ticket' }),
-    ],
-    [generateBackButton()],
-  ]
-};
+export function generateSoundfestKeyboard(clientInfo: ClientInfo): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      [
+        clientInfo.buttons.includes('open_link')
+          ? generateLinkButton(captions.soundfest_go_to_event, links.soundfest_event, { command: 'soundfest/go_to_event', linkButton: true })
+          : generateTextButton(captions.soundfest_go_to_event, { command: 'soundfest/go_to_event', linkButton: false }),
+      ],
+      [
+        generateOpenAppButton(captions.soundfest_buy_ticket, 5575136, -189351237, { command: 'soundfest/buy_ticket' }),
+      ],
+      [generateBackButton()],
+    ]
+  };
+}
 
 export function generateSubscriptionsKeyboard(user: User): Keyboard {
   return {
@@ -296,7 +302,7 @@ export function generateSubscriptionsKeyboard(user: User): Keyboard {
           const subscribed = user.subscriptions.includes(subscription);
 
           return (
-            generateButton(`${subscribed ? `✓ ` : ''}${subscriptionNames[subscription]}`, {
+            generateTextButton(`${subscribed ? `✓ ` : ''}${subscriptionNames[subscription]}`, {
               command: 'subscriptions/subscription',
               subscription,
               subscribed
@@ -313,11 +319,11 @@ export const adminKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton(captions.drawings, { command: 'admin/drawings' }),
-      generateButton(captions.stats, { command: 'admin/stats' }),
+      generateTextButton(captions.drawings, { command: 'admin/drawings' }),
+      generateTextButton(captions.stats, { command: 'admin/stats' }),
     ],
     [
-      generateButton(captions.send_message_to_users, { command: 'admin/send_message_to_users' })
+      generateTextButton(captions.send_message_to_users, { command: 'admin/send_message_to_users' })
     ],
     [generateBackButton()],
   ]
@@ -327,12 +333,12 @@ export const adminStatsKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton(captions.subscriptions, { command: 'admin/stats/subscriptions' }),
-      generateButton(captions.clicks, { command: 'admin/stats/clicks' }),
+      generateTextButton(captions.subscriptions, { command: 'admin/stats/subscriptions' }),
+      generateTextButton(captions.clicks, { command: 'admin/stats/clicks' }),
     ],
     [
-      generateButton(captions.group, { command: 'admin/stats/group' }),
-      generateButton(captions.reposts, { command: 'admin/stats/reposts' }),
+      generateTextButton(captions.group, { command: 'admin/stats/group' }),
+      generateTextButton(captions.reposts, { command: 'admin/stats/reposts' }),
     ],
     [generateBackButton(BackButtonDest.ADMIN)],
     [generateBackButton()],
@@ -343,19 +349,19 @@ export const adminSubscriptionStatsKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton(captions.all_time, { command: 'admin/stats/subscriptions/period', period: 'all_time' }),
+      generateTextButton(captions.all_time, { command: 'admin/stats/subscriptions/period', period: 'all_time' }),
     ],
     [
-      generateButton(captions.today, { command: 'admin/stats/subscriptions/period', period: 'today' }),
-      generateButton(captions.yesterday, { command: 'admin/stats/subscriptions/period', period: 'yesterday' }),
+      generateTextButton(captions.today, { command: 'admin/stats/subscriptions/period', period: 'today' }),
+      generateTextButton(captions.yesterday, { command: 'admin/stats/subscriptions/period', period: 'yesterday' }),
     ],
     [
-      generateButton(captions.this_week, { command: 'admin/stats/subscriptions/period', period: 'this_week' }),
-      generateButton(captions.prev_week, { command: 'admin/stats/subscriptions/period', period: 'prev_week' }),
+      generateTextButton(captions.this_week, { command: 'admin/stats/subscriptions/period', period: 'this_week' }),
+      generateTextButton(captions.prev_week, { command: 'admin/stats/subscriptions/period', period: 'prev_week' }),
     ],
     [
-      generateButton(captions.this_month, { command: 'admin/stats/subscriptions/period', period: 'this_month' }),
-      generateButton(captions.prev_month, { command: 'admin/stats/subscriptions/period', period: 'prev_month' }),
+      generateTextButton(captions.this_month, { command: 'admin/stats/subscriptions/period', period: 'this_month' }),
+      generateTextButton(captions.prev_month, { command: 'admin/stats/subscriptions/period', period: 'prev_month' }),
     ],
     [generateBackButton(BackButtonDest.ADMIN_STATS)],
     [generateBackButton(BackButtonDest.ADMIN)],
@@ -367,16 +373,16 @@ export const adminClickStatsKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton(captions.today, { command: 'admin/stats/clicks/period', period: 'today' }),
-      generateButton(captions.yesterday, { command: 'admin/stats/clicks/period', period: 'yesterday' }),
+      generateTextButton(captions.today, { command: 'admin/stats/clicks/period', period: 'today' }),
+      generateTextButton(captions.yesterday, { command: 'admin/stats/clicks/period', period: 'yesterday' }),
     ],
     [
-      generateButton(captions.this_week, { command: 'admin/stats/clicks/period', period: 'this_week' }),
-      generateButton(captions.prev_week, { command: 'admin/stats/clicks/period', period: 'prev_week' }),
+      generateTextButton(captions.this_week, { command: 'admin/stats/clicks/period', period: 'this_week' }),
+      generateTextButton(captions.prev_week, { command: 'admin/stats/clicks/period', period: 'prev_week' }),
     ],
     [
-      generateButton(captions.this_month, { command: 'admin/stats/clicks/period', period: 'this_month' }),
-      generateButton(captions.prev_month, { command: 'admin/stats/clicks/period', period: 'prev_month' }),
+      generateTextButton(captions.this_month, { command: 'admin/stats/clicks/period', period: 'this_month' }),
+      generateTextButton(captions.prev_month, { command: 'admin/stats/clicks/period', period: 'prev_month' }),
     ],
     [generateBackButton(BackButtonDest.ADMIN_STATS)],
     [generateBackButton(BackButtonDest.ADMIN)],
@@ -388,12 +394,12 @@ export const adminGroupStatsKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton(captions.today, { command: 'admin/stats/group/period', period: 'today' }),
-      generateButton(captions.yesterday, { command: 'admin/stats/group/period', period: 'yesterday' }),
+      generateTextButton(captions.today, { command: 'admin/stats/group/period', period: 'today' }),
+      generateTextButton(captions.yesterday, { command: 'admin/stats/group/period', period: 'yesterday' }),
     ],
     [
-      generateButton(captions.this_week, { command: 'admin/stats/group/period', period: 'this_week' }),
-      generateButton(captions.prev_week, { command: 'admin/stats/group/period', period: 'prev_week' }),
+      generateTextButton(captions.this_week, { command: 'admin/stats/group/period', period: 'this_week' }),
+      generateTextButton(captions.prev_week, { command: 'admin/stats/group/period', period: 'prev_week' }),
     ],
     [generateBackButton(BackButtonDest.ADMIN_STATS)],
     [generateBackButton(BackButtonDest.ADMIN)],
@@ -405,12 +411,12 @@ export const adminRepostStatsKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton(captions.today, { command: 'admin/stats/reposts/period', period: 'today' }),
-      generateButton(captions.yesterday, { command: 'admin/stats/reposts/period', period: 'yesterday' }),
+      generateTextButton(captions.today, { command: 'admin/stats/reposts/period', period: 'today' }),
+      generateTextButton(captions.yesterday, { command: 'admin/stats/reposts/period', period: 'yesterday' }),
     ],
     [
-      generateButton(captions.this_week, { command: 'admin/stats/reposts/period', period: 'this_week' }),
-      generateButton(captions.prev_week, { command: 'admin/stats/reposts/period', period: 'prev_week' }),
+      generateTextButton(captions.this_week, { command: 'admin/stats/reposts/period', period: 'this_week' }),
+      generateTextButton(captions.prev_week, { command: 'admin/stats/reposts/period', period: 'prev_week' }),
     ],
     [generateBackButton(BackButtonDest.ADMIN_STATS)],
     [generateBackButton(BackButtonDest.ADMIN)],
@@ -422,13 +428,13 @@ export const adminSendMessageToUsersKeyboard: Keyboard = {
   one_time: false,
   buttons: [
     [
-      generateButton(captions.to_all, { command: 'admin/send_message_to_users/group', group: 'all' }),
-      generateButton(captions.to_all_subscribed, { command: 'admin/send_message_to_users/group', group: _.map(Subscription) }),
-      generateButton(captions.to_group, { command: 'admin/send_message_to_users/group', group: 'pick' }),
+      generateTextButton(captions.to_all, { command: 'admin/send_message_to_users/group', group: 'all' }),
+      generateTextButton(captions.to_all_subscribed, { command: 'admin/send_message_to_users/group', group: _.map(Subscription) }),
+      generateTextButton(captions.to_group, { command: 'admin/send_message_to_users/group', group: 'pick' }),
     ],
     ...subscriptionButtons.map((buttons) => (
       buttons.map((subscription) => (
-        generateButton(subscriptionNames[subscription], {
+        generateTextButton(subscriptionNames[subscription], {
           command: 'admin/send_message_to_users/group',
           group: [subscription]
         })
@@ -444,10 +450,10 @@ export async function generateAdminDrawingsKeyboard(): Promise<Keyboard> {
     one_time: false,
     buttons: [
       ...(await Drawing.getActiveDrawings()).map(({ id, name }) => [
-        generateButton(name, { command: 'admin/drawings/drawing', drawingId: id })
+        generateTextButton(name, { command: 'admin/drawings/drawing', drawingId: id })
       ]),
       [
-        generateButton(captions.add_drawing, { command: 'admin/drawings/add' }, ButtonColor.POSITIVE),
+        generateTextButton(captions.add_drawing, { command: 'admin/drawings/add' }, ButtonColor.POSITIVE),
       ],
       [generateBackButton(BackButtonDest.ADMIN)],
       [generateBackButton()],
@@ -459,10 +465,10 @@ export function generateAdminDrawingMenuKeyboard(drawing: Drawing): Keyboard {
   return {
     one_time: false,
     buttons: [
-      [generateButton(captions.edit_drawing_name, { command: 'admin/drawings/drawing/edit_name', drawingId: drawing.id })],
-      [generateButton(captions.edit_drawing_post, { command: 'admin/drawings/drawing/edit_post', drawingId: drawing.id })],
-      [generateButton(captions.edit_drawing_expires_at, { command: 'admin/drawings/drawing/edit_expires_at', drawingId: drawing.id })],
-      [generateButton(captions.delete_drawing, { command: 'admin/drawings/drawing/delete', drawingId: drawing.id }, ButtonColor.NEGATIVE)],
+      [generateTextButton(captions.edit_drawing_name, { command: 'admin/drawings/drawing/edit_name', drawingId: drawing.id })],
+      [generateTextButton(captions.edit_drawing_post, { command: 'admin/drawings/drawing/edit_post', drawingId: drawing.id })],
+      [generateTextButton(captions.edit_drawing_expires_at, { command: 'admin/drawings/drawing/edit_expires_at', drawingId: drawing.id })],
+      [generateTextButton(captions.delete_drawing, { command: 'admin/drawings/drawing/delete', drawingId: drawing.id }, ButtonColor.NEGATIVE)],
       [generateBackButton(BackButtonDest.ADMIN_DRAWINGS)],
       [generateBackButton(BackButtonDest.ADMIN)],
       [generateBackButton()],
@@ -471,7 +477,7 @@ export function generateAdminDrawingMenuKeyboard(drawing: Drawing): Keyboard {
 }
 
 export async function generateDrawingsKeyboard(user: User): Promise<Keyboard> {
-  const buttons = (await Drawing.getActiveDrawings()).map(({ id, name }) => [generateButton(name, { command: 'drawings/drawing', drawingId: id })]);
+  const buttons = (await Drawing.getActiveDrawings()).map(({ id, name }) => [generateTextButton(name, { command: 'drawings/drawing', drawingId: id })]);
 
   return {
     one_time: false,
@@ -483,7 +489,7 @@ export async function generateDrawingsKeyboard(user: User): Promise<Keyboard> {
   };
 }
 
-export function generateButton(text: string, payload: ButtonPayload, color: ButtonColor = ButtonColor.PRIMARY): KeyboardButton {
+export function generateTextButton(text: string, payload: ButtonPayload, color: ButtonColor = ButtonColor.PRIMARY): KeyboardButton {
   return {
     action: {
       type: 'text',
@@ -494,12 +500,43 @@ export function generateButton(text: string, payload: ButtonPayload, color: Butt
   };
 }
 
+export function generateLinkButton(text: string, url: string, payload: ButtonPayload, color: ButtonColor = ButtonColor.PRIMARY): KeyboardButton {
+  return {
+    action: {
+      type: 'open_link',
+      link: url,
+      label: text,
+      payload: JSON.stringify(payload)
+    },
+    color,
+  };
+}
+
+export function generateOpenAppButton(
+  text: string,
+  appId: number,
+  ownerId: number | null,
+  payload: ButtonPayload,
+  color: ButtonColor = ButtonColor.PRIMARY
+): KeyboardButton {
+  return {
+    action: {
+      type: 'open_app',
+      app_id: appId,
+      ...(ownerId ? { owner_id: ownerId } : {}),
+      label: text,
+      payload: JSON.stringify(payload)
+    },
+    color,
+  };
+}
+
 export function generateBackButton(dest: BackButtonDest = BackButtonDest.MAIN): KeyboardButton {
-  return generateButton(`← ${backButtonText[dest]}`, { command: 'back', dest }, ButtonColor.SECONDARY);
+  return generateTextButton(`← ${backButtonText[dest]}`, { command: 'back', dest }, ButtonColor.SECONDARY);
 }
 
 export function generateServiceButton(service: Service): KeyboardButton {
-  return generateButton(services[service].name, {
+  return generateTextButton(services[service].name, {
     command: 'services/service',
     service
   });
@@ -509,7 +546,7 @@ export function generateSubscribeButton(user: User, command: SubscribeToSectionB
   const { subscription } = subscriptionMap[command];
   const subscribed = user.subscriptions.includes(subscription);
 
-  return generateButton(
+  return generateTextButton(
     subscribed ? `✓ Вы уже подписаны` : 'Подписаться',
     { command, subscribed },
     subscribed ? ButtonColor.SECONDARY : ButtonColor.POSITIVE

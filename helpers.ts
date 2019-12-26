@@ -181,7 +181,7 @@ export interface VKRequestMap {
 
 export async function sendVKRequest<T extends keyof VKRequestMap>(method: T, query: object = {}): Promise<VKRequestMap[T]> {
   const response = await axios.post(`https://api.vk.com/method/${method}`, qs.stringify({
-    v: '5.101',
+    v: '5.103',
     access_token: config.vkToken,
     ...query,
   }));
@@ -1095,18 +1095,18 @@ export async function rotateDbDumps() {
 export async function removeUnusedDumpsInDrive() {
   const files = await getAllGoogleDriveFiles();
 
-  await Promise.all(
-    files.map(async (file) => {
-      if (file.mimeType === 'application/x-sql' && (!file.parents || !file.shared)) {
-        await sendGoogleRequest({
-          url: `https://www.googleapis.com/drive/v3/files/${file.id}`,
-          method: 'delete'
-        });
+  for (const file of files) {
+    if (file.mimeType === 'application/x-sql' && (!file.parents || !file.shared)) {
+      await sendGoogleRequest({
+        url: `https://www.googleapis.com/drive/v3/files/${file.id}`,
+        method: 'delete'
+      });
 
-        Logger.log(`dump ${file.name} deleted`);
-      }
-    })
-  );
+      Logger.log(`dump ${file.name} deleted`);
+    }
+
+    await timeout(5000);
+  }
 }
 
 export async function deactivateExpiredDrawings() {

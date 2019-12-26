@@ -61,6 +61,7 @@ import {
   generateReleasesKeyboard,
   generateDrawingsKeyboard,
   generateSubscriptionsKeyboard,
+  generateSoundfestKeyboard,
   generateAdminDrawingsKeyboard,
   generateAdminDrawingMenuKeyboard,
 
@@ -68,7 +69,6 @@ import {
   playlistsGenresKeyboard,
   servicesKeyboard,
   writeToSoundcheckKeyboard,
-  soundfestKeyboard,
   adminKeyboard,
   adminStatsKeyboard,
   adminSubscriptionStatsKeyboard,
@@ -100,14 +100,19 @@ export default async (ctx: Context) => {
   }
 
   eventHandler: if (body.type === 'message_new') {
-    const messageId = body.object.id;
-    const vkId = body.object.peer_id;
-    const text = body.object.text;
+    const {
+      message: {
+        id: messageId,
+        peer_id: vkId,
+        text
+      },
+      client_info: clientInfo
+    } = body.object;
     const isManager = ctx.managers.includes(vkId);
     const mainKeyboard = generateMainKeyboard(isManager);
     const respond = async (message: string, options: SendVkMessageOptions = {}) => {
       await sendVKMessage(vkId, message, {
-        randomId: body.object.conversation_message_id,
+        randomId: body.object.message.conversation_message_id,
         ...options
       });
     };
@@ -123,13 +128,13 @@ export default async (ctx: Context) => {
       });
     })();
     const userState = user.state;
-    const newLastMessageDate = new Date(body.object.date * 1000);
+    const newLastMessageDate = new Date(body.object.message.date * 1000);
     let buttonPayload: ButtonPayload | null = null;
     let payload: ButtonPayload | UserState | null = null;
 
-    if (body.object.payload) {
+    if (body.object.message.payload) {
       try {
-        buttonPayload = payload = JSON.parse(body.object.payload);
+        buttonPayload = payload = JSON.parse(body.object.message.payload);
       } catch (err) {}
     }
 
@@ -412,7 +417,7 @@ export default async (ctx: Context) => {
         await Promise.all([
           respond(captions.write_to_soundcheck_other_message_response(user)),
           sendVKMessage(config.targets.other, captions.write_to_soundcheck_other_message, {
-            forwardMessages: [body.object.id]
+            forwardMessages: [messageId]
           })
         ]);
       } else if (payload.command === 'services') {
@@ -468,7 +473,7 @@ export default async (ctx: Context) => {
           await user.save();
           await respond(
             `${captions.unsubscribe_response(user, subscription)} ${captions.subscribeOrUnsubscribeFooter(user)}`,
-            { keyboard: await generateKeyboard(user) }
+            { keyboard: await generateKeyboard(user, clientInfo) }
           );
         } else {
           user.subscribe(subscription);
@@ -476,15 +481,18 @@ export default async (ctx: Context) => {
           await user.save();
           await respond(
             `${captions.subscribe_response(user, subscription)} ${captions.subscribeOrUnsubscribeFooter(user)}`,
-            { keyboard: await generateKeyboard(user) }
+            { keyboard: await generateKeyboard(user, clientInfo) }
           );
         }
       } else if (payload.command === 'soundfest') {
-        await respond(captions.soundfest_response(user), { keyboard: soundfestKeyboard });
+        await respond(captions.soundfest_response(user), { keyboard: generateSoundfestKeyboard(clientInfo) });
       } else if (payload.command === 'soundfest/go_to_event') {
-        await respond(`${captions.soundfest_go_to_event_response}\n\n➡ ${links.soundfest_event}`);
+        if (!payload.linkButton) {
+          await respond(`${captions.soundfest_go_to_event_response}\n\n➡ ${links.soundfest_event}`);
+        }
       } else if (payload.command === 'soundfest/buy_ticket') {
-        await respond(`${captions.soundfest_buy_ticket_response}\n\n➡ ${links.soundfest_buy_ticket}`);
+        // do nothing
+        // await respond(`${captions.soundfest_buy_ticket_response}\n\n➡ ${links.soundfest_buy_ticket}`);
       } else if (payload.command === 'admin' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN)) {
         await respond(captions.choose_action, { keyboard: adminKeyboard });
       } else if (payload.command === 'admin/drawings' || (payload.command === 'back' && payload.dest === BackButtonDest.ADMIN_DRAWINGS)) {
@@ -503,7 +511,7 @@ export default async (ctx: Context) => {
 
         await respond(captions.send_drawing_post);
       } else if (payload.command === 'admin/drawings/add/set_post') {
-        const postId = getPostId(body.object);
+        const postId = getPostId(body.object.message);
 
         if (postId) {
           user.state = {
@@ -589,7 +597,7 @@ export default async (ctx: Context) => {
         const drawing = await Drawing.findByPk(payload.drawingId);
 
         if (drawing) {
-          const postId = getPostId(body.object);
+          const postId = getPostId(body.object.message);
 
           if (postId) {
             drawing.postId = postId;
@@ -727,7 +735,7 @@ export default async (ctx: Context) => {
 
         await respond(captions.enter_message_post);
       } else if (payload.command === 'admin/send_message_to_users/group/set_post') {
-        const postId = getPostId(body.object);
+        const postId = getPostId(body.object.message);
 
         if (postId || negativeAnswers.includes(text.toLowerCase())) {
           user.state = {
@@ -744,7 +752,7 @@ export default async (ctx: Context) => {
           await respond(captions.enter_message_post);
         }
       } else if (payload.command === 'admin/send_message_to_users/group/set_image') {
-        const photoAttachment = (body.object.attachments.find(({ type }) => type === 'photo') || null) as PhotoAttachment | null;
+        const photoAttachment = (body.object.message.attachments.find(({ type }) => type === 'photo') || null) as PhotoAttachment | null;
 
         if (photoAttachment || negativeAnswers.includes(text.toLowerCase())) {
           user.state = {
@@ -801,7 +809,7 @@ export default async (ctx: Context) => {
       await Promise.all([
         respond(captions.unknown_message_response),
         sendVKMessage(config.targets.unknownMessage, captions.unknown_message, {
-          forwardMessages: [body.object.id]
+          forwardMessages: [messageId]
         })
       ]);
     }

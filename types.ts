@@ -36,7 +36,10 @@ export interface ConfirmationBody extends BaseBody {
 
 export interface NewMessageBody extends BaseBody {
   type: 'message_new';
-  object: Message;
+  object: {
+    message: Message;
+    client_info: ClientInfo;
+  };
 }
 
 export interface ChangeManagerBody extends BaseBody {
@@ -129,6 +132,13 @@ export type Attachment = WallAttachment | PhotoAttachment;
 export interface MessageAttachment {
   type: 'market' | 'wall' | 'photo';
   id: string;
+}
+
+export interface ClientInfo {
+  buttons: string[];
+  keyboard: boolean;
+  inline_keyboard: boolean;
+  carousel: boolean;
 }
 
 export interface StartButtonPayload {
@@ -292,6 +302,7 @@ export interface SoundfestButtonPayload {
 
 export interface SoundfestGoToEventButtonPayload {
   command: 'soundfest/go_to_event';
+  linkButton: boolean;
 }
 
 export interface SoundfestBuyTicketButtonPayload {
@@ -474,7 +485,21 @@ export interface LocationButtonAction extends BaseButtonAction {
   type: 'location';
 }
 
-export type ButtonAction = TextButtonAction | LocationButtonAction;
+export interface OpenLinkButtonAction extends BaseButtonAction {
+  type: 'open_link';
+  link: string;
+  label: string;
+}
+
+export interface OpenAppButtonAction extends BaseButtonAction {
+  type: 'open_app';
+  app_id: number;
+  label: string;
+  owner_id?: number;
+  hash?: string;
+}
+
+export type ButtonAction = TextButtonAction | LocationButtonAction | OpenLinkButtonAction | OpenAppButtonAction;
 
 export enum ButtonColor {
   PRIMARY = 'primary',
