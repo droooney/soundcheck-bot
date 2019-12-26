@@ -281,7 +281,7 @@ export function generateSoundfestKeyboard(clientInfo: ClientInfo): Keyboard {
     one_time: false,
     buttons: [
       [
-        clientInfo.buttons.includes('open_link')
+        (clientInfo.button_actions || []).includes('open_link')
           ? generateLinkButton(captions.soundfest_go_to_event, links.soundfest_event, { command: 'soundfest/go_to_event', linkButton: true })
           : generateTextButton(captions.soundfest_go_to_event, { command: 'soundfest/go_to_event', linkButton: false }),
       ],

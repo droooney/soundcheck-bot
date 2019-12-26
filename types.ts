@@ -135,10 +135,10 @@ export interface MessageAttachment {
 }
 
 export interface ClientInfo {
-  buttons: string[];
-  keyboard: boolean;
-  inline_keyboard: boolean;
-  carousel: boolean;
+  button_actions?: string[];
+  keyboard?: boolean;
+  inline_keyboard?: boolean;
+  carousel?: boolean;
 }
 
 export interface StartButtonPayload {
