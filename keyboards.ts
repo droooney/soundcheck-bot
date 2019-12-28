@@ -205,6 +205,8 @@ export function generatePlaylistsKeyboard(user: User, clientInfo: ClientInfo): K
           { command: 'playlists/all' },
           clientInfo
         ),
+      ],
+      [
         generateLinkButtonIfPossible(
           captions.playlists_thematic,
           links.playlists_thematic,
