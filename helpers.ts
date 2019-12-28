@@ -881,7 +881,7 @@ export async function restoreDbDump(filename: string) {
 export async function getAllGoogleDriveFiles(): Promise<File[]> {
   const {
     data: {
-      files
+      files: fileIds
     }
   } = await sendGoogleRequest<FilesResponse>({
     url: 'https://www.googleapis.com/drive/v3/files',
@@ -890,9 +890,10 @@ export async function getAllGoogleDriveFiles(): Promise<File[]> {
       pageSize: 1000
     }
   });
+  const files: File[] = [];
 
-  return Promise.all(
-    files.map(async ({ id }) => (
+  for (const { id } of fileIds) {
+    files.push(
       (await sendGoogleRequest<File>({
         url: `https://www.googleapis.com/drive/v3/files/${id}`,
         method: 'get',
@@ -900,8 +901,12 @@ export async function getAllGoogleDriveFiles(): Promise<File[]> {
           fields: 'kind, id, name, mimeType, shared, parents'
         }
       })).data
-    ))
-  );
+    );
+
+    await timeout(5000);
+  }
+
+  return files;
 }
 
 export async function uploadFile(filename: string, mimeType: string, parentFolder?: string) {
