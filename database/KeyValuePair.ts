@@ -56,3 +56,4 @@ KeyValuePair.init({
   sequelize,
   tableName: 'key_value_pairs'
 });
+KeyValuePair.removeAttribute('id');
