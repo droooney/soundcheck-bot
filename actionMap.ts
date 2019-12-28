@@ -53,6 +53,7 @@ import {
   generateDayPosterKeyboard,
   generateGenrePosterKeyboard,
   generatePlaylistsKeyboard,
+  generatePlaylistsGenresKeyboard,
   generateTextMaterialsKeyboard,
   generateReleasesKeyboard,
   generateDrawingsKeyboard,
@@ -62,7 +63,6 @@ import {
   generateAdminDrawingMenuKeyboard,
 
   subscriptionMap,
-  playlistsGenresKeyboard,
   servicesKeyboard,
   writeToSoundcheckKeyboard,
   adminKeyboard,
@@ -76,6 +76,7 @@ import {
 import config from './config';
 import User from './database/User';
 import Drawing from './database/Drawing';
+import KeyValuePair from './database/KeyValuePair';
 
 export interface ActionOptions<T> {
   respond(message: string, options?: SendVkMessageOptions): void;
@@ -96,7 +97,7 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
   async start({ respond, user, mainKeyboard }) {
     await respond(captions.welcome_text(user), { keyboard: mainKeyboard });
   },
-  async back({ respond, payload, user, mainKeyboard }) {
+  async back({ respond, payload, user, clientInfo, mainKeyboard }) {
     if (payload.dest === BackButtonDest.MAIN) {
       const buttonsCount = mainKeyboard.buttons.reduce((count, buttons) => count + buttons.length, 0);
 
@@ -104,7 +105,10 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
     } else if (payload.dest === BackButtonDest.POSTER) {
       await respond(generateRandomCaption(captions.back_to_poster, { user }), { keyboard: generatePosterKeyboard(user) });
     } else if (payload.dest === BackButtonDest.PLAYLISTS) {
-      await respond(generateRandomCaption(captions.back_to_playlists, { user }), { keyboard: generatePlaylistsKeyboard(user) });
+      await respond(
+        generateRandomCaption(captions.back_to_playlists, { user }),
+        { keyboard: generatePlaylistsKeyboard(user, clientInfo) }
+      );
     } else if (payload.dest === BackButtonDest.ADMIN) {
       await respond(captions.choose_action, { keyboard: adminKeyboard });
     } else if (payload.dest === BackButtonDest.ADMIN_DRAWINGS) {
@@ -212,8 +216,11 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
     }
   },
 
-  async playlists({ respond, user }) {
-    await respond(generateRandomCaption(captions.playlists_response, { user }), { keyboard: generatePlaylistsKeyboard(user) });
+  async playlists({ respond, user, clientInfo }) {
+    await respond(
+      generateRandomCaption(captions.playlists_response, { user }),
+      { keyboard: generatePlaylistsKeyboard(user, clientInfo) }
+    );
   },
   async 'playlists/all'({ respond }) {
     await respond(`${generateRandomCaption(captions.playlists_all_response)}\n\n➡ ${links.playlists_all}`);
@@ -221,10 +228,13 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
   async 'playlists/thematic'({ respond }) {
     await respond(`${generateRandomCaption(captions.playlists_thematic_response)}\n\n➡ ${links.playlists_thematic}`);
   },
-  async 'playlists/genre'({ respond }) {
+  async 'playlists/genre'({ respond, clientInfo }) {
     const playlists = _.map(PlaylistGenre, (genre) => ({ name: playlistsGenreNames[genre] }));
 
-    await respond(generateRandomCaption(captions.playlists_genres_response, { playlists }), { keyboard: playlistsGenresKeyboard });
+    await respond(
+      generateRandomCaption(captions.playlists_genres_response, { playlists }),
+      { keyboard: generatePlaylistsGenresKeyboard(clientInfo) }
+    );
   },
   async 'playlists/genre/type'({ respond, payload, user }) {
     const playlist = {
@@ -235,14 +245,21 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
     await respond(`${generateRandomCaption(captions.playlists_genre_response, { user, playlist })}\n\n➡ ${playlist.link}`);
   },
 
-  async releases({ respond, user }) {
-    await respond(generateRandomCaption(captions.releases_response, { user }), { keyboard: generateReleasesKeyboard(user) });
+  async releases({ respond, user, clientInfo }) {
+    await respond(
+      generateRandomCaption(captions.releases_response, { user }),
+      { keyboard: await generateReleasesKeyboard(user, clientInfo) }
+    );
   },
   async 'releases/week_releases'({ respond, user }) {
-    await respond(`${generateRandomCaption(captions.week_releases_response, { user })}\n\n➡ ${links.releases}`);
+    const latestReleasesLink = await KeyValuePair.findOrAdd('latest_releases_link');
+
+    await respond(`${generateRandomCaption(captions.week_releases_response, { user })}\n\n➡ ${latestReleasesLink.value}`);
   },
   async 'releases/digests'({ respond }) {
-    await respond(`${generateRandomCaption(captions.digests_response)}\n\n➡ ${links.digests}`);
+    const latestDigestLink = await KeyValuePair.findOrAdd('latest_releases_link');
+
+    await respond(`${generateRandomCaption(captions.digests_response)}\n\n➡ ${latestDigestLink.value}`);
   },
 
   async drawings({ respond, user }) {
@@ -284,8 +301,11 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
     }
   },
 
-  async text_materials({ respond, user }) {
-    await respond(generateRandomCaption(captions.text_materials_response, { user }), { keyboard: generateTextMaterialsKeyboard(user) });
+  async text_materials({ respond, user, clientInfo }) {
+    await respond(
+      generateRandomCaption(captions.text_materials_response, { user }),
+      { keyboard: generateTextMaterialsKeyboard(user, clientInfo) }
+    );
   },
   async 'text_materials/longread'({ respond, user }) {
     await respond(`${generateRandomCaption(captions.longreads_response, { user })}\n\n➡ ${links.longreads}`);
@@ -425,15 +445,11 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
   async soundfest({ respond, user, clientInfo }) {
     await respond(captions.soundfest_response(user), { keyboard: generateSoundfestKeyboard(clientInfo) });
   },
-  async 'soundfest/go_to_event'({ respond, payload }) {
-    if (!payload.linkButton) {
-      await respond(`${captions.soundfest_go_to_event_response}\n\n➡ ${links.soundfest_event}`);
-    }
+  async 'soundfest/go_to_event'({ respond }) {
+    await respond(`${captions.soundfest_go_to_event_response}\n\n➡ ${links.soundfest_event}`);
   },
-  async 'soundfest/buy_ticket'({ respond, payload }) {
-    if (!payload.linkButton) {
-      await respond(`${captions.soundfest_buy_ticket_response}\n\n➡ ${links.soundfest_buy_ticket}`);
-    }
+  async 'soundfest/buy_ticket'({ respond }) {
+    await respond(`${captions.soundfest_buy_ticket_response}\n\n➡ ${links.soundfest_buy_ticket}`);
   },
 
   async admin({ respond }) {

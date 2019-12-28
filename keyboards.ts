@@ -34,6 +34,7 @@ import {
 } from './helpers';
 import User from './database/User';
 import Drawing from './database/Drawing';
+import KeyValuePair from './database/KeyValuePair';
 
 export interface SubscriptionParams {
   subscription: Subscription;
@@ -193,13 +194,23 @@ export function generateGenrePosterKeyboard(allConcerts: Concert[]): Keyboard {
   };
 }
 
-export function generatePlaylistsKeyboard(user: User): Keyboard {
+export function generatePlaylistsKeyboard(user: User, clientInfo: ClientInfo): Keyboard {
   return {
     one_time: false,
     buttons: [
       [
-        generateTextButton(captions.playlists_all, { command: 'playlists/all' }),
-        generateTextButton(captions.playlists_thematic, { command: 'playlists/thematic' }),
+        generateLinkButtonIfPossible(
+          captions.playlists_all,
+          links.playlists_all,
+          { command: 'playlists/all' },
+          clientInfo
+        ),
+        generateLinkButtonIfPossible(
+          captions.playlists_thematic,
+          links.playlists_thematic,
+          { command: 'playlists/thematic' },
+          clientInfo
+        ),
         generateTextButton(captions.playlists_genre, { command: 'playlists/genre' }),
       ],
       [generateSubscribeButton(user, 'playlists/subscribe')],
@@ -208,15 +219,33 @@ export function generatePlaylistsKeyboard(user: User): Keyboard {
   };
 }
 
-export function generateReleasesKeyboard(user: User): Keyboard {
+export async function generateReleasesKeyboard(user: User, clientInfo: ClientInfo): Promise<Keyboard> {
+  const [
+    latestReleasesLink,
+    latestDigestLink
+  ] = await Promise.all([
+    KeyValuePair.findOrAdd('latest_releases_link'),
+    KeyValuePair.findOrAdd('latest_digest_link')
+  ]);
+
   return {
     one_time: false,
     buttons: [
       [
-        generateTextButton(captions.week_releases, { command: 'releases/week_releases' }),
+        generateLinkButtonIfPossible(
+          captions.week_releases,
+          latestReleasesLink.value,
+          { command: 'releases/week_releases' },
+          clientInfo
+        ),
       ],
       [
-        generateTextButton(captions.digests, { command: 'releases/digests' }),
+        generateLinkButtonIfPossible(
+          captions.digests,
+          latestDigestLink.value,
+          { command: 'releases/digests' },
+          clientInfo
+        ),
       ],
       [generateSubscribeButton(user, 'releases/subscribe')],
       [generateBackButton()],
@@ -224,16 +253,25 @@ export function generateReleasesKeyboard(user: User): Keyboard {
   };
 }
 
-export const playlistsGenresKeyboard: Keyboard = {
-  one_time: false,
-  buttons: [
-    ...playlistsGenreButtons.map((buttons) => (
-      buttons.map((genre) => generateTextButton(playlistsGenreNames[genre], { command: 'playlists/genre/type', genre }))
-    )),
-    [generateBackButton(BackButtonDest.PLAYLISTS)],
-    [generateBackButton()],
-  ]
-};
+export function generatePlaylistsGenresKeyboard(clientInfo: ClientInfo): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      ...playlistsGenreButtons.map((buttons) => (
+        buttons.map((genre) => (
+          generateLinkButtonIfPossible(
+            playlistsGenreNames[genre],
+            links.playlists_genre[genre],
+            { command: 'playlists/genre/type', genre },
+            clientInfo
+          )
+        ))
+      )),
+      [generateBackButton(BackButtonDest.PLAYLISTS)],
+      [generateBackButton()],
+    ]
+  };
+}
 
 export const servicesKeyboard: Keyboard = {
   one_time: false,
@@ -246,13 +284,23 @@ export const servicesKeyboard: Keyboard = {
   ]
 };
 
-export function generateTextMaterialsKeyboard(user: User): Keyboard {
+export function generateTextMaterialsKeyboard(user: User, clientInfo: ClientInfo): Keyboard {
   return {
     one_time: false,
     buttons: [
       [
-        generateTextButton(captions.longreads, { command: 'text_materials/longread' }),
-        generateTextButton(captions.group_history, { command: 'text_materials/group_history' }),
+        generateLinkButtonIfPossible(
+          captions.longreads,
+          links.longreads,
+          { command: 'text_materials/longread' },
+          clientInfo
+        ),
+        generateLinkButtonIfPossible(
+          captions.group_history,
+          links.group_history,
+          { command: 'text_materials/group_history' },
+          clientInfo
+        ),
       ],
       [generateSubscribeButton(user, 'text_materials/subscribe')],
       [generateBackButton()],
@@ -279,20 +327,24 @@ export const writeToSoundcheckKeyboard: Keyboard = {
 };
 
 export function generateSoundfestKeyboard(clientInfo: ClientInfo): Keyboard {
-  const supportsLinkButton = (clientInfo.button_actions || []).includes('open_link');
-
   return {
     one_time: false,
     buttons: [
       [
-        supportsLinkButton
-          ? generateLinkButton(captions.soundfest_go_to_event, links.soundfest_event, { command: 'soundfest/go_to_event', linkButton: true })
-          : generateTextButton(captions.soundfest_go_to_event, { command: 'soundfest/go_to_event', linkButton: false }),
+        generateLinkButtonIfPossible(
+          captions.soundfest_go_to_event,
+          links.soundfest_event,
+          { command: 'soundfest/go_to_event' },
+          clientInfo
+        ),
       ],
       [
-        supportsLinkButton
-          ? generateLinkButton(captions.soundfest_buy_ticket, links.soundfest_buy_ticket, { command: 'soundfest/buy_ticket', linkButton: true })
-          : generateTextButton(captions.soundfest_buy_ticket, { command: 'soundfest/buy_ticket', linkButton: false }),
+        generateLinkButtonIfPossible(
+          captions.soundfest_buy_ticket,
+          links.soundfest_buy_ticket,
+          { command: 'soundfest/buy_ticket' },
+          clientInfo
+        ),
       ],
       [generateBackButton()],
     ]
@@ -527,6 +579,18 @@ export function generateOpenAppButton(text: string, appId: number, ownerId: numb
       payload: JSON.stringify(payload)
     },
   };
+}
+
+export function generateLinkButtonIfPossible(
+  text: string,
+  url: string,
+  payload: ButtonPayload,
+  clientInfo: ClientInfo,
+  color: ButtonColor = ButtonColor.PRIMARY
+): OpenLinkButton | TextButton {
+  return (clientInfo.button_actions || []).includes('open_link')
+    ? generateLinkButton(text, url, payload)
+    : generateTextButton(text, payload, color);
 }
 
 export function generateBackButton(dest: BackButtonDest = BackButtonDest.MAIN): TextButton {

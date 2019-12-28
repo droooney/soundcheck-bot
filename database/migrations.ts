@@ -397,6 +397,34 @@ const migrations: Migration[] = [
       });
     }
   },
+
+  {
+    name: 'create key value pairs table',
+    async action(queryInterface) {
+      await queryInterface.createTable('key_value_pairs', {
+        key: {
+          type: Sequelize.STRING,
+          allowNull: false,
+          unique: true,
+        },
+        value: {
+          type: Sequelize.JSONB,
+          allowNull: true,
+          defaultValue: null,
+        },
+        createdAt: {
+          type: Sequelize.DATE,
+          field: 'created_at',
+          allowNull: false,
+        },
+        updatedAt: {
+          type: Sequelize.DATE,
+          field: 'updated_at',
+          allowNull: false,
+        },
+      });
+    }
+  },
 ];
 
 export default migrations;

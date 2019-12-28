@@ -7,6 +7,7 @@ import {
   SendVkMessageOptions,
 
   generateRandomCaption,
+  getPostLink,
   getRepostPostId,
   getVkUser,
   sendVKMessage,
@@ -35,6 +36,7 @@ import User from './database/User';
 import Click from './database/Click';
 import GroupUser from './database/GroupUser';
 import Repost from './database/Repost';
+import KeyValuePair from './database/KeyValuePair';
 
 export default async (ctx: Context) => {
   const body: Body = ctx.request.body;
@@ -230,6 +232,23 @@ export default async (ctx: Context) => {
       const hashtag = hashtagFromCombination
         ? hashtagFromCombination[1]
         : _.find(Hashtag, (hashtag) => hashtags.includes(hashtag));
+
+      const isNewReleasesPost = hashtags.includes(Hashtag.NEW_RELEASE);
+      const isDigestPost = hashtags.includes(Hashtag.DIGEST);
+
+      if (isDigestPost && !isNewReleasesPost) {
+        const latestDigestLink = await KeyValuePair.findOrAdd('latest_digest_link');
+
+        latestDigestLink.value = getPostLink(postId);
+
+        await latestDigestLink.save();
+      } else if (isNewReleasesPost) {
+        const latestReleasesLink = await KeyValuePair.findOrAdd('latest_releases_link');
+
+        latestReleasesLink.value = getPostLink(postId);
+
+        await latestReleasesLink.save();
+      }
 
       if (hashtag) {
         const subscriptionCaptions = captions.subscription_message[hashtag];

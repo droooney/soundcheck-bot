@@ -302,12 +302,10 @@ export interface SoundfestButtonPayload {
 
 export interface SoundfestGoToEventButtonPayload {
   command: 'soundfest/go_to_event';
-  linkButton: boolean;
 }
 
 export interface SoundfestBuyTicketButtonPayload {
   command: 'soundfest/buy_ticket';
-  linkButton: boolean;
 }
 
 export interface AdminButtonPayload {
