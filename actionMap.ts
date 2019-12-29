@@ -171,18 +171,14 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
       return;
     }
 
-    if (concerts.length === 1) {
-      await respond(captions.concert_at_week(getWeekString(weekStart)));
-
-      return;
-    }
-
+    const weekString = getWeekString(weekStart);
     const groups = getConcertsByDays(concerts);
-    const concertsStrings = getConcertsByDaysStrings(groups, generateRandomCaption(captions.concerts_at_week, {
-      user,
-      weekString: getWeekString(weekStart),
-      concertsCount: concerts.length
-    }));
+    const concertsStrings = getConcertsByDaysStrings(
+      groups,
+      concerts.length === 1
+        ? captions.concert_at_week(weekString)
+        : generateRandomCaption(captions.concerts_at_week, { user, weekString, concertsCount: concerts.length })
+    );
 
     for (const concertsString of concertsStrings) {
       await respond(concertsString);
