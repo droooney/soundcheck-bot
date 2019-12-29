@@ -181,7 +181,7 @@ export interface VKRequestMap {
 
 export async function sendVKRequest<T extends keyof VKRequestMap>(method: T, query: object = {}): Promise<VKRequestMap[T]> {
   const response = await axios.post(`https://api.vk.com/method/${method}`, qs.stringify({
-    v: '5.101',
+    v: '5.103',
     access_token: config.vkToken,
     ...query,
   }));
@@ -521,6 +521,10 @@ export function getUserLink(userId: number): string {
 
 export function getPostLink(postId: string): string {
   return `https://vk.com/wall${postId}`;
+}
+
+export function getProductLink(productId: string): string {
+  return `https://vk.com/soundcheck_ural?w=product${productId}`;
 }
 
 export function getSectionsString(sections: { header: string; rows: string[]; }[]): string {
@@ -881,7 +885,7 @@ export async function restoreDbDump(filename: string) {
 export async function getAllGoogleDriveFiles(): Promise<File[]> {
   const {
     data: {
-      files
+      files: fileIds
     }
   } = await sendGoogleRequest<FilesResponse>({
     url: 'https://www.googleapis.com/drive/v3/files',
@@ -890,9 +894,10 @@ export async function getAllGoogleDriveFiles(): Promise<File[]> {
       pageSize: 1000
     }
   });
+  const files: File[] = [];
 
-  return Promise.all(
-    files.map(async ({ id }) => (
+  for (const { id } of fileIds) {
+    files.push(
       (await sendGoogleRequest<File>({
         url: `https://www.googleapis.com/drive/v3/files/${id}`,
         method: 'get',
@@ -900,8 +905,12 @@ export async function getAllGoogleDriveFiles(): Promise<File[]> {
           fields: 'kind, id, name, mimeType, shared, parents'
         }
       })).data
-    ))
-  );
+    );
+
+    await timeout(5000);
+  }
+
+  return files;
 }
 
 export async function uploadFile(filename: string, mimeType: string, parentFolder?: string) {
@@ -1095,18 +1104,18 @@ export async function rotateDbDumps() {
 export async function removeUnusedDumpsInDrive() {
   const files = await getAllGoogleDriveFiles();
 
-  await Promise.all(
-    files.map(async (file) => {
-      if (file.mimeType === 'application/x-sql' && (!file.parents || !file.shared)) {
-        await sendGoogleRequest({
-          url: `https://www.googleapis.com/drive/v3/files/${file.id}`,
-          method: 'delete'
-        });
+  for (const file of files) {
+    if (file.mimeType === 'application/x-sql' && (!file.parents || !file.shared)) {
+      await sendGoogleRequest({
+        url: `https://www.googleapis.com/drive/v3/files/${file.id}`,
+        method: 'delete'
+      });
 
-        Logger.log(`dump ${file.name} deleted`);
-      }
-    })
-  );
+      Logger.log(`dump ${file.name} deleted`);
+    }
+
+    await timeout(5000);
+  }
 }
 
 export async function deactivateExpiredDrawings() {

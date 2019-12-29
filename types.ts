@@ -36,7 +36,10 @@ export interface ConfirmationBody extends BaseBody {
 
 export interface NewMessageBody extends BaseBody {
   type: 'message_new';
-  object: Message;
+  object: {
+    message: Message;
+    client_info: ClientInfo;
+  };
 }
 
 export interface ChangeManagerBody extends BaseBody {
@@ -129,6 +132,13 @@ export type Attachment = WallAttachment | PhotoAttachment;
 export interface MessageAttachment {
   type: 'market' | 'wall' | 'photo';
   id: string;
+}
+
+export interface ClientInfo {
+  button_actions?: string[];
+  keyboard?: boolean;
+  inline_keyboard?: boolean;
+  carousel?: boolean;
 }
 
 export interface StartButtonPayload {
@@ -461,20 +471,41 @@ export enum BackButtonDest {
   ADMIN_STATS = 'admin/stats',
 }
 
-export interface BaseButtonAction {
-  payload?: string;
+export interface TextButton {
+  action: {
+    type: 'text';
+    label: string;
+    payload?: string;
+  };
+  color?: ButtonColor;
 }
 
-export interface TextButtonAction extends BaseButtonAction {
-  type: 'text';
-  label: string;
+export interface LocationButton {
+  action: {
+    type: 'location';
+    payload?: string;
+  };
 }
 
-export interface LocationButtonAction extends BaseButtonAction {
-  type: 'location';
+export interface OpenLinkButton {
+  action: {
+    type: 'open_link';
+    link: string;
+    label: string;
+    payload?: string;
+  };
 }
 
-export type ButtonAction = TextButtonAction | LocationButtonAction;
+export interface OpenAppButton {
+  action: {
+    type: 'open_app';
+    app_id: number;
+    label: string;
+    owner_id?: number;
+    hash?: string;
+    payload?: string;
+  };
+}
 
 export enum ButtonColor {
   PRIMARY = 'primary',
@@ -483,10 +514,7 @@ export enum ButtonColor {
   POSITIVE = 'positive'
 }
 
-export interface KeyboardButton {
-  action: ButtonAction;
-  color: ButtonColor;
-}
+export type KeyboardButton = TextButton | LocationButton | OpenLinkButton | OpenAppButton;
 
 export interface Keyboard {
   one_time?: boolean;

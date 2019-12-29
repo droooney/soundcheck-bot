@@ -1,7 +1,6 @@
 import {
   Genre,
   Hashtag,
-  MessageAttachment,
   PlaylistGenre,
   Service,
   Subscription,
@@ -15,7 +14,8 @@ import Drawing from './database/Drawing';
 interface ServiceParams {
   name: string;
   message: (string | ((options: ServiceResponseCaptionOptions) => string))[];
-  attachments?: MessageAttachment[];
+  type: 'market' | 'wall';
+  vkId: string;
 }
 
 export interface BackToMainMenuCaptionOptions {
@@ -1106,7 +1106,8 @@ export const services: Record<Service, ServiceParams> = {
 Переходи в товар за своей порцией стикеров.`,
       `Стикеры от Soundcheck. Более 10 музыкантов уже оценили на себе мультяшную магию Soundcheck. Настала твоя очередь.`,
     ],
-    attachments: [{ type: 'market', id: '-177574047_3113786' }]
+    type: 'market',
+    vkId: '-177574047_3113786',
   },
   soundcheck_ads: {
     name: 'Реклама в Soundcheck',
@@ -1115,7 +1116,8 @@ export const services: Record<Service, ServiceParams> = {
       `Реклама концертов или твоего продукта. В музыкальной среде музыкальная продукция заходит, как надо.`,
       `Не знаешь, где прорекламировать свой концерт или продукт? Тогда тебе к нам. Переходи в товар и получи свою порцию дополнительного охвата.`,
     ],
-    attachments: [{ type: 'market', id: '-177574047_2685381' }]
+    type: 'market',
+    vkId: '-177574047_2685381',
   },
 };
 
