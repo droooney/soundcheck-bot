@@ -91,16 +91,16 @@ async function main() {
     });
   });
 
-  createEverydayDaemon('15:00:00', sendPosterMessage);
+  createEverydayDaemon('00:01:00', saveDailyStats);
+  createEverydayDaemon('00:05:00', deactivateExpiredDrawings);
+  createEverydayDaemon('01:00:00', sendClickStatsMessage);
   createEverydayDaemon('05:00:00', sendStatsMessage);
   createEverydayDaemon('05:10:00', rotateClicks);
-  createEverydayDaemon('00:01:00', saveDailyStats);
-  createEverydayDaemon('01:00:00', sendClickStatsMessage);
+  createEverydayDaemon('05:15:00', refreshUsersInfo);
   createEverydayDaemon('05:30:00', rotateDbDumps);
   createEverydayDaemon('06:00:00', removeUnusedDumpsInDrive);
-  createEverydayDaemon('00:05:00', deactivateExpiredDrawings);
+  createEverydayDaemon('15:00:00', sendPosterMessage);
   createEverydayDaemon('15:00:00', notifyUsersAboutSoonToExpireDrawing);
-  createEverydayDaemon('05:15:00', refreshUsersInfo);
 }
 
 (async () => {
