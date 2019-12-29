@@ -27,6 +27,8 @@ import {
   subscriptionButtons,
 } from './constants';
 import {
+  getPostLink,
+  getProductLink,
   getShortDayString,
   // getHolidays,
   getWeekString,
@@ -275,16 +277,18 @@ export function generatePlaylistsGenresKeyboard(clientInfo: ClientInfo): Keyboar
   };
 }
 
-export const servicesKeyboard: Keyboard = {
-  one_time: false,
-  buttons: [
-    [
-      generateServiceButton('stickers_design'),
-      generateServiceButton('soundcheck_ads'),
-    ],
-    [generateBackButton()],
-  ]
-};
+export function generateServicesKeyboard(clientInfo: ClientInfo): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      [
+        generateServiceButton('stickers_design', clientInfo),
+        generateServiceButton('soundcheck_ads', clientInfo),
+      ],
+      [generateBackButton()],
+    ]
+  };
+}
 
 export function generateTextMaterialsKeyboard(user: User, clientInfo: ClientInfo): Keyboard {
   return {
@@ -536,8 +540,15 @@ export function generateAdminDrawingMenuKeyboard(drawing: Drawing): Keyboard {
   };
 }
 
-export async function generateDrawingsKeyboard(user: User): Promise<Keyboard> {
-  const buttons = (await Drawing.getActiveDrawings()).map(({ id, name }) => [generateTextButton(name, { command: 'drawings/drawing', drawingId: id })]);
+export async function generateDrawingsKeyboard(user: User, clientInfo: ClientInfo): Promise<Keyboard> {
+  const buttons = (await Drawing.getActiveDrawings()).map(({ id, name, postId }) => [
+    generateLinkButtonIfPossible(
+      name,
+      getPostLink(postId),
+      { command: 'drawings/drawing', drawingId: id },
+      clientInfo
+    )
+  ]);
 
   return {
     one_time: false,
@@ -599,11 +610,15 @@ export function generateBackButton(dest: BackButtonDest = BackButtonDest.MAIN): 
   return generateTextButton(`← ${backButtonText[dest]}`, { command: 'back', dest }, ButtonColor.SECONDARY);
 }
 
-export function generateServiceButton(service: Service): TextButton {
-  return generateTextButton(services[service].name, {
-    command: 'services/service',
-    service
-  });
+export function generateServiceButton(service: Service, clientInfo: ClientInfo): TextButton | OpenLinkButton {
+  const { name, type, vkId } = services[service];
+
+  return generateLinkButtonIfPossible(
+    name,
+    type === 'wall' ? getPostLink(vkId) : getProductLink(vkId),
+    { command: 'services/service', service },
+    clientInfo
+  );
 }
 
 export function generateSubscribeButton(user: User, command: SubscribeToSectionButtonPayload['command']): TextButton {

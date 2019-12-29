@@ -523,6 +523,10 @@ export function getPostLink(postId: string): string {
   return `https://vk.com/wall${postId}`;
 }
 
+export function getProductLink(productId: string): string {
+  return `https://vk.com/soundcheck_ural?w=product${productId}`;
+}
+
 export function getSectionsString(sections: { header: string; rows: string[]; }[]): string {
   return sections.map(({ header, rows }) => [header, ...rows].join('\n')).join('\n\n');
 }

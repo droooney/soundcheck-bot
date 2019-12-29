@@ -58,12 +58,12 @@ import {
   generateReleasesKeyboard,
   generateDrawingsKeyboard,
   generateSubscriptionsKeyboard,
+  generateServicesKeyboard,
   generateSoundfestKeyboard,
   generateAdminDrawingsKeyboard,
   generateAdminDrawingMenuKeyboard,
 
   subscriptionMap,
-  servicesKeyboard,
   writeToSoundcheckKeyboard,
   adminKeyboard,
   adminStatsKeyboard,
@@ -262,8 +262,8 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
     await respond(`${generateRandomCaption(captions.digests_response)}\n\n➡ ${latestDigestLink.value}`);
   },
 
-  async drawings({ respond, user }) {
-    const keyboard = await generateDrawingsKeyboard(user);
+  async drawings({ respond, user, clientInfo }) {
+    const keyboard = await generateDrawingsKeyboard(user, clientInfo);
     const hasDrawings = keyboard.buttons.some((buttons) => (
       buttons.some(({ action }) => (
         !!action.payload && (JSON.parse(action.payload) as ButtonPayload).command === 'drawings/drawing'
@@ -277,7 +277,7 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
       { keyboard }
     );
   },
-  async 'drawings/drawing'({ respond, payload, user }) {
+  async 'drawings/drawing'({ respond, payload, user, clientInfo }) {
     const drawing = await Drawing.findByPk(payload.drawingId);
 
     if (drawing) {
@@ -286,7 +286,7 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
       });
     } else {
       const [keyboard, drawings] = await Promise.all([
-        generateDrawingsKeyboard(user),
+        generateDrawingsKeyboard(user, clientInfo),
         Drawing.getActiveDrawings(),
       ]);
 
@@ -393,13 +393,13 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
     ]);
   },
 
-  async services({ respond, user }) {
-    await respond(captions.services_response(user), { keyboard: servicesKeyboard });
+  async services({ respond, user, clientInfo }) {
+    await respond(captions.services_response(user), { keyboard: generateServicesKeyboard(clientInfo) });
   },
   async 'services/service'({ respond, payload, user }) {
-    const { message, attachments } = services[payload.service];
+    const { message, type, vkId } = services[payload.service];
 
-    await respond(generateRandomCaption(message, { user }), { attachments });
+    await respond(generateRandomCaption(message, { user }), { attachments: [{ type, id: vkId }] });
   },
 
   async subscriptions({ respond, user }) {
