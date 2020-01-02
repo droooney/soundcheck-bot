@@ -6,10 +6,12 @@ import moment = require('moment-timezone');
 
 import {
   createEverydayDaemon,
+  createRepeatingTask,
   deactivateExpiredDrawings,
   getManagers,
   notifyUsersAboutSoonToExpireDrawing,
   refreshGoogleAccessToken,
+  refreshOnlineStatus,
   refreshUsersInfo,
   removeUnusedDumpsInDrive,
   rotateClicks,
@@ -101,6 +103,8 @@ async function main() {
   createEverydayDaemon('06:00:00', removeUnusedDumpsInDrive);
   createEverydayDaemon('15:00:00', sendPosterMessage);
   createEverydayDaemon('15:00:00', notifyUsersAboutSoonToExpireDrawing);
+
+  createRepeatingTask(5 * 60 * 1000, refreshOnlineStatus);
 }
 
 (async () => {

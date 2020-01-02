@@ -27,6 +27,7 @@ import {
   ManagersResponse,
   Message,
   MessageAttachment,
+  OnlineStatusResponse,
   PlaylistGenre,
   Post,
   SendMessageResponse,
@@ -177,6 +178,8 @@ export interface VKRequestMap {
   'messages.getConversations': ConversationsResponse;
   'messages.send': SendMessageResponse;
   'users.get': GetUsersResponse;
+  'groups.getOnlineStatus': OnlineStatusResponse;
+  'groups.enableOnline': 1;
 }
 
 export async function sendVKRequest<T extends keyof VKRequestMap>(method: T, query: object = {}): Promise<VKRequestMap[T]> {
@@ -1025,6 +1028,24 @@ export function createEverydayDaemon(time: string, daemon: () => void) {
   }, +nextDaemonRunTime - +now);
 }
 
+export function createRepeatingTask(ms: number, task: () => void) {
+  const taskFunc = async () => {
+    try {
+      Logger.log(`repeating task "${task.name}" started`);
+
+      await task();
+
+      Logger.log(`repeating task "${task.name}" finished successfully`);
+    } catch (err) {
+      Logger.error(err, `repeating task "${task.name}" failed`);
+    }
+  };
+
+  taskFunc();
+
+  setInterval(taskFunc, ms);
+}
+
 export async function sendPosterMessage() {
   const posterDay = moment()
     .add(1, 'day')
@@ -1179,4 +1200,12 @@ export async function refreshUsersInfo() {
       }
     })
   );
+}
+
+export async function refreshOnlineStatus() {
+  const { status } = await sendVKRequest('groups.getOnlineStatus', { group_id: config.soundcheckId });
+
+  if (status === 'none') {
+    await sendVKRequest('groups.enableOnline', { group_id: config.soundcheckId })
+  }
 }

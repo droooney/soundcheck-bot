@@ -110,6 +110,11 @@ export type SendMessageResponse = (
 
 export type GetUsersResponse = VkUser[];
 
+export interface OnlineStatusResponse {
+  status: 'none' | 'online' | 'answer_mark';
+  minutes?: number;
+}
+
 export interface WallAttachment {
   type: 'wall';
   wall: {
