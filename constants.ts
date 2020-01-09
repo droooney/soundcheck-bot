@@ -123,6 +123,10 @@ export interface BackToPlaylistsCaptionOptions {
   user: User;
 }
 
+export const dumpDir = `${__dirname}/database/dumps`;
+
+export const versionFile = `${__dirname}/database/version`;
+
 export const captions = {
   // main menu
   welcome_text: (user: User) => `Привет, ${user.firstName}. Ты ${user.sex === Sex.FEMALE ? 'активировала' : 'активировал'} чат-бота Soundcheck. \

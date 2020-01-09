@@ -4,13 +4,12 @@ import BodyParser = require('koa-bodyparser');
 import Router = require('koa-router');
 import moment = require('moment-timezone');
 
+import { getManagers, refreshGoogleAccessToken } from './helpers';
 import {
   createEverydayDaemon,
   createRepeatingTask,
   deactivateExpiredDrawings,
-  getManagers,
   notifyUsersAboutSoonToExpireDrawing,
-  refreshGoogleAccessToken,
   refreshOnlineStatus,
   refreshUsersInfo,
   removeUnusedDumpsInDrive,
@@ -20,7 +19,7 @@ import {
   sendClickStatsMessage,
   sendPosterMessage,
   sendStatsMessage,
-} from './helpers';
+} from './daemons';
 import vkBotCallback from './vkBotCallback';
 import getConcertsCallback from './getConcertsCallback';
 import config from './config';
