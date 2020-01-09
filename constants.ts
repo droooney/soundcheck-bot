@@ -979,6 +979,7 @@ Soundfest American Style. Весь вечер на сцене Blues Bastards, Nu
   ],
   unknown_message: 'Нераспознанное сообщение',
   unknown_message_response: `Для отправки сообщения просим воспользоваться соответствующей функцией Чат-бота в диалоге с сообществом.`,
+  name_too_long: 'Слишком длинное название',
 };
 
 export const wordForms: Record<Word, Record<WordCase, Record<WordPluralForm, string>>> = {

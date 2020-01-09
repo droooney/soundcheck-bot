@@ -462,10 +462,20 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
 
     await respond(captions.enter_drawing_name);
   },
-  async 'admin/drawings/add/set_name'({ respond, user, message }) {
+  async 'admin/drawings/add/set_name'({ respond, payload, user, message }) {
+    const name = message.text;
+
+    if (name.length > 40) {
+      user.state = { ...payload };
+
+      await respond(captions.name_too_long);
+
+      return;
+    }
+
     user.state = {
       command: 'admin/drawings/add/set_post',
-      name: message.text
+      name
     };
 
     await respond(captions.send_drawing_post);
