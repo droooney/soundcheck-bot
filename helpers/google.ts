@@ -10,11 +10,11 @@ import * as uuid from 'uuid';
 import { Event, EventsResponse, File, FileMetadata, FilesResponse } from '../types';
 import { timeout } from './common';
 
-const {
+import {
   private_key,
   client_email,
   token_uri
-} = require('./googleCredentials.json');
+} from '../googleCredentials.json';
 
 let googleAPIAccessToken = '';
 
