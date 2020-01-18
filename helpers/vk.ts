@@ -70,7 +70,7 @@ export async function sendVKMessage(dest: number | number[], message: string, op
 
 export async function sendVKMessages(dest: number[], message: string, options?: SendVkMessageOptions): Promise<SendMessageResponse> {
   const response: SendMessageResponse = [];
-  const chunks = _.chunk(dest, 100);
+  const chunks = _.chunk(dest, 50);
 
   for (const chunk of chunks) {
     response.push(...await sendVKMessage(chunk, message, options));

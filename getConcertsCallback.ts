@@ -12,7 +12,6 @@ export default async (ctx: Context) => {
   const posterText = await getPosterText(moment(date));
 
   ctx.body = posterText
-    ? `${posterText.replace(new RegExp('—'.repeat(10), 'g'), '—'.repeat(14))}\n\nОставайся с Soundcheck – Музыка Екатеринбурга, \
-чтобы не пропустить свежие новости, и, конечно, рассказывай друзьям – им точно будет интереcно!`
+    ? posterText.replace(new RegExp('—'.repeat(10), 'g'), '—'.repeat(14))
     : 'Недостаточно концертов';
 };

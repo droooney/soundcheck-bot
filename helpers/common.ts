@@ -43,9 +43,11 @@ export function getShortDayString(day: moment.Moment): string {
 
 export async function getPosterText(posterTime: moment.Moment): Promise<string | null> {
   const isWeekly = posterTime.weekday() === 0;
-  const posterHeader = `🥃 Афиша выступлений местных музыкантов на ${
-    isWeekly ? getWeekString(posterTime) : getDayString(posterTime)
-  } от @soundcheck_ural (Soundcheck – Музыка Екатеринбурга).`;
+  const posterHeader = `🥃 Афиша выступлений местных музыкантов на ${isWeekly ? getWeekString(posterTime) : getDayString(posterTime)} от \
+@soundcheck_ural (Soundcheck – Музыка Екатеринбурга).
+
+Больше концертов: по дням, жанрам и на другие недели, ты сможешь найти у нашего чат-бота:
+➡️ https://vk.com/im?sel=-177574047`;
   let posterText: string | null = null;
 
   if (isWeekly) {
@@ -64,7 +66,17 @@ export async function getPosterText(posterTime: moment.Moment): Promise<string |
     }
   }
 
-  return posterText;
+  // old footer Оставайся с Soundcheck – Музыка Екатеринбурга,
+  // чтобы не пропустить свежие новости, и, конечно, рассказывай друзьям – им точно будет интереcно!
+
+  return `${posterText}
+
+Больше концертов: по дням, жанрам и на другие недели, ты сможешь найти у нашего чат-бота:
+➡️ https://vk.com/im?sel=-177574047
+
+Оставайся с @soundcheck_ural (Soundcheck – Музыка Екатеринбурга) и не забывай, что 1 февраля мы празднуем \
+День рождения на @soundfest_as_01_february (Soundfest American Style). Обязательно приходи и зови друзей. Последние билеты по 400 рублей:
+➡️ https://vk.com/app5575136_-189351237`;
 }
 
 export function getSectionsString(sections: { header: string; rows: string[]; }[]): string {
