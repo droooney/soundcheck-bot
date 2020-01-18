@@ -965,7 +965,9 @@ Soundfest American Style. Весь вечер на сцене Blues Bastards, Nu
   enter_message_post: 'Отправьте запись с розыгрышем (чтобы пропустить, отправьте "нет")',
   enter_message_image: 'Отправьте картинку (чтобы пропустить, отправьте "нет")',
   need_to_refresh_keyboard: 'Надо ли послать обновленную клавиатуру главного меню?',
-  message_successfully_sent: 'Сообщение успешно послано (или нет, проверяйте в ВКАдмин)',
+  message_handling: 'Сообщение обрабатывается',
+  message_successfully_sent: 'Сообщение успешно послано',
+  message_send_error: 'Возникла ошибка при посылке сообщения',
 
   // rest
   group_history_message: 'Рассказ о группе',

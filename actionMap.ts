@@ -796,12 +796,16 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
           } else {
             await sendVkMessageToSubscribedUsers(payload.group, payload.text, sendOptions);
           }
+
+          respond(captions.message_successfully_sent, { randomId: 0 });
         } catch (err) {
           Logger.error(err, 'send messages error');
+
+          respond(captions.message_send_error, { randomId: 0 });
         }
       })();
 
-      await respond(captions.message_successfully_sent);
+      await respond(captions.message_handling);
     } else {
       user.state = { ...payload };
 
