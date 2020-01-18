@@ -754,6 +754,8 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
   async 'admin/send_message_to_users/group/set_image'({ respond, payload, user, message }) {
     const photoAttachment = (message.attachments.find(({ type }) => type === 'photo') || null) as PhotoAttachment | null;
 
+    console.log(photoAttachment);
+
     if (photoAttachment || negativeAnswers.includes(message.text.toLowerCase())) {
       user.state = {
         command: 'admin/send_message_to_users/group/set_refresh_keyboard',
