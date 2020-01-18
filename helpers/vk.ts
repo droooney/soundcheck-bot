@@ -56,7 +56,7 @@ export interface SendVkMessageOptions {
 
 export async function sendVKMessage(dest: number | number[], message: string, options: SendVkMessageOptions = {}): Promise<SendMessageResponse> {
   return await sendVKRequest('messages.send', {
-    user_ids: typeof dest === 'number' ? dest : dest.join(','),
+    user_ids: typeof dest === 'number' ? dest : dest.filter((id) => id <= 2e9).join(','),
     random_id: (options.randomId || 0).toString(),
     message,
     keyboard: JSON.stringify(options.keyboard),
@@ -70,7 +70,7 @@ export async function sendVKMessage(dest: number | number[], message: string, op
 
 export async function sendVKMessages(dest: number[], message: string, options?: SendVkMessageOptions): Promise<SendMessageResponse> {
   const response: SendMessageResponse = [];
-  const chunks = _.chunk(dest, 50);
+  const chunks = _.chunk(dest, 100);
 
   for (const chunk of chunks) {
     response.push(...await sendVKMessage(chunk, message, options));
