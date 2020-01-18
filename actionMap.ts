@@ -77,6 +77,7 @@ import config from './config';
 import User from './database/User';
 import Drawing from './database/Drawing';
 import KeyValuePair from './database/KeyValuePair';
+import Logger from './Logger';
 
 export interface ActionOptions<T> {
   respond(message: string, options?: SendVkMessageOptions): void;
@@ -784,13 +785,19 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
           : undefined
       };
 
-      if (payload.group === 'all') {
-        await sendVkMessageToAllConversations(payload.text, sendOptions);
-      } else if (isNumbersArray(payload.group)) {
-        await sendVKMessages(payload.group, payload.text, sendOptions);
-      } else {
-        await sendVkMessageToSubscribedUsers(payload.group, payload.text, sendOptions);
-      }
+      (async () => {
+        try {
+          if (payload.group === 'all') {
+            await sendVkMessageToAllConversations(payload.text, sendOptions);
+          } else if (isNumbersArray(payload.group)) {
+            await sendVKMessages(payload.group, payload.text, sendOptions);
+          } else {
+            await sendVkMessageToSubscribedUsers(payload.group, payload.text, sendOptions);
+          }
+        } catch (err) {
+          Logger.error(err, 'send messages error');
+        }
+      })();
 
       await respond(captions.message_successfully_sent);
     } else {
