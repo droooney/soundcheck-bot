@@ -754,15 +754,15 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
   async 'admin/send_message_to_users/group/set_image'({ respond, payload, user, message }) {
     const photoAttachment = (message.attachments.find(({ type }) => type === 'photo') || null) as PhotoAttachment | null;
 
-    console.log(photoAttachment);
-
     if (photoAttachment || negativeAnswers.includes(message.text.toLowerCase())) {
       user.state = {
         command: 'admin/send_message_to_users/group/set_refresh_keyboard',
         group: payload.group,
         text: payload.text,
         post: payload.post,
-        image: photoAttachment && `${photoAttachment.photo.owner_id}_${photoAttachment.photo.id}`
+        image: photoAttachment && `${photoAttachment.photo.owner_id}_${photoAttachment.photo.id}${
+          photoAttachment.photo.access_key ? `_${photoAttachment.photo.access_key}` : ''
+        }`
       };
 
       await respond(captions.need_to_refresh_keyboard);

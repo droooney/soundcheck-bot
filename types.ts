@@ -129,6 +129,7 @@ export interface PhotoAttachment {
     id: number;
     owner_id: number;
     text: string;
+    access_key?: string;
   };
 }
 
