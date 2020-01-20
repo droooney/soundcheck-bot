@@ -48,7 +48,7 @@ export async function getPosterText(posterTime: moment.Moment): Promise<string |
 
 Больше концертов: по дням, жанрам и на другие недели, ты сможешь найти у нашего чат-бота:
 ➡️ https://vk.com/im?sel=-177574047`;
-  let posterText: string | null = null;
+  let posterText: string = '';
 
   if (isWeekly) {
     const concerts = await getWeeklyConcerts(posterTime);
@@ -64,6 +64,10 @@ export async function getPosterText(posterTime: moment.Moment): Promise<string |
     if (concerts.length > 1) {
       posterText = `${posterHeader}\n\n${getConcertsString(concerts)}`;
     }
+  }
+
+  if (!posterText) {
+    return null;
   }
 
   // old footer Оставайся с Soundcheck – Музыка Екатеринбурга,
