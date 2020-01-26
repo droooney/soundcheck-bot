@@ -124,7 +124,8 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
   },
   async 'poster/type'({ respond, payload }) {
     if (payload.type === 'day') {
-      const upcomingConcerts = await getConcerts(moment().startOf('day'));
+      const now = +moment();
+      const upcomingConcerts = (await getConcerts(moment().startOf('day'))).filter(({ startTime }) => +startTime >= now);
 
       if (!upcomingConcerts.length) {
         await respond(captions.no_concerts_by_day);
@@ -145,10 +146,14 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
   },
   async 'poster/type/day'({ respond, payload, user }) {
     const date = moment(payload.dayStart);
+    const now = +moment();
     const concerts = await getDailyConcerts(date);
+    const upcomingConcerts = (await getConcerts(moment().startOf('day'))).filter(({ startTime }) => +startTime >= now);
+    const concertsByDays = getConcertsByDays(upcomingConcerts);
+    const newKeyboard = await generateDayPosterKeyboard(concertsByDays);
 
     if (!concerts.length) {
-      await respond(captions.no_concerts_at_day);
+      await respond(captions.no_concerts_at_day, { keyboard: newKeyboard });
 
       return;
     }
@@ -159,15 +164,16 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
       ? generateRandomCaption(captions.concerts_at_day, { user, dateString, concertsCount: concerts.length })
       : generateRandomCaption(captions.concert_at_day, { dateString });
 
-    await respond(`${caption}\n\n${concertsString}`);
+    await respond(`${caption}\n\n${concertsString}`, { keyboard: newKeyboard });
   },
   async 'poster/type/week'({ respond, payload, user }) {
     const today = +moment().startOf('day');
     const weekStart = moment(payload.weekStart);
     const concerts = (await getWeeklyConcerts(weekStart)).filter(({ startTime }) => +startTime >= today);
+    const newKeyboard = generateWeekPosterKeyboard();
 
     if (!concerts.length) {
-      await respond(captions.no_concerts_at_week);
+      await respond(captions.no_concerts_at_week, { keyboard: newKeyboard });
 
       return;
     }
@@ -182,7 +188,7 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
     );
 
     for (const concertsString of concertsStrings) {
-      await respond(concertsString);
+      await respond(concertsString, { keyboard: newKeyboard });
     }
   },
   async 'poster/type/genre'({ respond, payload, user }) {

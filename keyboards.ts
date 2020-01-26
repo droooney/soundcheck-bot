@@ -132,8 +132,8 @@ export function generateWeekPosterKeyboard(): Keyboard {
   return {
     one_time: false,
     buttons: [
-      ...weeks.map((week, index) => [
-        generateTextButton(index === 0 ? captions.this_week : getWeekString(week), { command: 'poster/type/week', weekStart: +week })
+      ...weeks.map((week) => [
+        generateTextButton(getWeekString(week), { command: 'poster/type/week', weekStart: +week })
       ]),
       [generateBackButton(BackButtonDest.POSTER)],
       [generateBackButton()],

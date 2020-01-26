@@ -72,7 +72,9 @@ export function isConcertInGenre(concert: Concert, genre: Genre) {
 }
 
 export async function getDailyConcerts(day: moment.Moment): Promise<Concert[]> {
-  return await getConcerts(day.clone().startOf('day'), day.clone().endOf('day'));
+  const startOfDay = day.clone().startOf('day');
+
+  return (await getConcerts(startOfDay, day.clone().endOf('day'))).filter(({ startTime }) => startTime.isSameOrAfter(startOfDay));
 }
 
 export async function getWeeklyConcerts(week: moment.Moment): Promise<Concert[]> {
