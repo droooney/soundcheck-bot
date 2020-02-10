@@ -314,6 +314,18 @@ export interface SoundfestBuyTicketButtonPayload {
   command: 'soundfest/buy_ticket';
 }
 
+export interface ClothesButtonPayload {
+  command: 'clothes';
+}
+
+export interface ClothesTShirtsButtonPayload {
+  command: 'clothes/t_shirts';
+}
+
+export interface ClothesSweatshirtsButtonPayload {
+  command: 'clothes/sweatshirts';
+}
+
 export interface AdminButtonPayload {
   command: 'admin';
 }
@@ -447,6 +459,9 @@ export type ButtonPayload = (
   | SoundfestButtonPayload
   | SoundfestGoToEventButtonPayload
   | SoundfestBuyTicketButtonPayload
+  | ClothesButtonPayload
+  | ClothesTShirtsButtonPayload
+  | ClothesSweatshirtsButtonPayload
   | AdminButtonPayload
   | AdminDrawingsButtonPayload
   | AdminDrawingButtonPayload

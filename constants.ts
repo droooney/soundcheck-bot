@@ -908,6 +908,15 @@ Soundfest American Style. Весь вечер на сцене Blues Bastards, Nu
   soundfest_go_to_event_response: `Вот ссылка на мероприятие. Вступай и узнай больше о выступающих группах и самом концерте.`,
   soundfest_buy_ticket_response: `Купить билет на концерт можно по этой ссылке. Ждем тебя 1 Февраля в Клубе «Ц»!`,
 
+  clothes: 'Одежда',
+  clothes_response: `Хей, у нас есть для тебя крутые футболки и толстовки из коллекции Январь 2020. Заценить их ты сможешь, нажав на кнопки ниже!`,
+  clothes_t_shirts: 'Футболки Soundcheck',
+  clothes_sweatshirts: 'Толстовка Soundcheck',
+  clothes_t_shirts_response: `А ты не промах! Специально для тебя у нас есть 6 футболок, в которых ты сможешь со стилем заявить о своей любви \
+к Музыке Урала. Осталось перейти в товары!`,
+  clothes_sweatshirts_response: (user: User) => `Ты просто космос, ${user.firstName}! И специально для тебя у нас есть худи с крутым астронавтом \
+в космосе Уральской музыки. Переходи в товары и смотри, как она выглядит!`,
+
   // admin
   you_re_not_a_manager: 'Вы не являетесь администратором',
   stats: 'Статистика',
@@ -1144,4 +1153,6 @@ export const links = {
   } as Record<PlaylistGenre, string>,
   soundfest_event: 'https://vk.com/soundfest_as_01_february',
   soundfest_buy_ticket: 'https://vk.com/app5575136_-189351237',
+  clothes_t_shirts: 'https://vk.com/soundcheck_ural?w=product-177574047_3418201',
+  clothes_sweatshirts: 'https://vk.com/market-177574047?w=product-177574047_3418220',
 };

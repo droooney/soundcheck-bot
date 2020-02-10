@@ -60,6 +60,7 @@ import {
   generateSubscriptionsKeyboard,
   generateServicesKeyboard,
   generateSoundfestKeyboard,
+  generateClothesKeyboard,
   generateAdminDrawingsKeyboard,
   generateAdminDrawingMenuKeyboard,
 
@@ -453,6 +454,16 @@ const actionMap: { [command in Action['command']]: ActionCallback<CommandAction<
   },
   async 'soundfest/buy_ticket'({ respond }) {
     await respond(`${captions.soundfest_buy_ticket_response}\n\n➡ ${links.soundfest_buy_ticket}`);
+  },
+
+  async clothes({ respond, clientInfo }) {
+    await respond(captions.clothes_response, { keyboard: generateClothesKeyboard(clientInfo) });
+  },
+  async 'clothes/t_shirts'({ respond }) {
+    await respond(`${captions.clothes_t_shirts_response}\n\n➡ ${links.clothes_t_shirts}`);
+  },
+  async 'clothes/sweatshirts'({ respond, user }) {
+    await respond(`${captions.clothes_sweatshirts_response(user)}\n\n➡ ${links.clothes_sweatshirts}`);
   },
 
   async admin({ respond }) {

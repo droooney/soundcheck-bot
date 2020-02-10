@@ -2,13 +2,12 @@ import * as _ from 'lodash';
 import moment = require('moment-timezone');
 import * as Sequelize from 'sequelize';
 
-import { ButtonPayload, ClicksGroup, Genre, PlaylistGenre, Service, StatsPeriod, Subscription } from '../types';
-import { captions, services, subscriptionNames } from '../constants';
+import { ButtonPayload, ClicksGroup, Genre, StatsPeriod, Subscription } from '../types';
+import { captions, subscriptionNames } from '../constants';
 import { getSectionsString, getSubscriptionGroups } from './common';
 import { getPostLink, getUserLink } from './vk';
 import DailyStats from '../database/DailyStats';
 import Click from '../database/Click';
-import Drawing from '../database/Drawing';
 import GroupUser from '../database/GroupUser';
 import Repost from '../database/Repost';
 
@@ -196,7 +195,6 @@ export async function getClickStats(period: StatsPeriod): Promise<string> {
     return captions.no_clicks;
   }
 
-  const drawings = await Drawing.findAll();
   const buttonStats: ({ payload: Partial<ButtonPayload> | 'all'; caption: string; } | null)[] = [
     { payload: 'all', caption: captions.clicks_all },
     null,
@@ -211,34 +209,12 @@ export async function getClickStats(period: StatsPeriod): Promise<string> {
     )),
     null,
     { payload: { command: 'playlists' }, caption: captions.playlists },
-    { payload: { command: 'playlists/all' }, caption: `${captions.playlists} (${captions.playlists_all})` },
-    { payload: { command: 'playlists/thematic' }, caption: `${captions.playlists} (${captions.playlists_thematic})` },
-    { payload: { command: 'playlists/genre' }, caption: `${captions.playlists} (${captions.playlists_genre})` },
-    ..._.map(PlaylistGenre, (genre) => (
-      { payload: { command: 'playlists/genre/type' as 'playlists/genre/type', genre }, caption: captions.playlists_genre_type(genre) }
-    )),
-    null,
     { payload: { command: 'releases' }, caption: captions.releases },
-    { payload: { command: 'releases/week_releases' }, caption: captions.week_releases },
-    { payload: { command: 'releases/digests' }, caption: captions.digests },
-    null,
     { payload: { command: 'drawings' }, caption: captions.drawings },
-    ...drawings.map((drawing) => (
-      { payload: { command: 'drawings/drawing' as 'drawings/drawing', drawingId: drawing.id }, caption: `${captions.drawing} (${drawing.name})` }
-    )),
-    null,
     { payload: { command: 'text_materials' }, caption: captions.text_materials },
-    { payload: { command: 'text_materials/longread' }, caption: captions.longreads },
-    { payload: { command: 'text_materials/group_history' }, caption: captions.group_history },
-    null,
     { payload: { command: 'services' }, caption: captions.services },
-    ..._.map(services, ({ name }, service) => (
-      { payload: { command: 'services/service' as 'services/service', service: service as Service }, caption: `${captions.services} (${name})` }
-    )),
-    null,
     { payload: { command: 'soundfest' }, caption: captions.soundfest },
-    { payload: { command: 'soundfest/go_to_event' }, caption: captions.soundfest_go_to_event },
-    { payload: { command: 'soundfest/buy_ticket' }, caption: captions.soundfest_buy_ticket },
+    { payload: { command: 'clothes' }, caption: captions.clothes },
   ];
 
   return buttonStats

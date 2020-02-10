@@ -94,7 +94,7 @@ export function generateMainKeyboard(isManager: boolean): Keyboard {
         generateTextButton(captions.write_to_soundcheck, { command: 'write_to_soundcheck' }),
       ],
       [
-        generateTextButton(captions.soundfest, { command: 'soundfest' }, ButtonColor.POSITIVE),
+        generateTextButton(captions.clothes, { command: 'clothes' }),
       ],
       ...(
         isManager
@@ -349,6 +349,31 @@ export function generateSoundfestKeyboard(clientInfo: ClientInfo): Keyboard {
           captions.soundfest_buy_ticket,
           links.soundfest_buy_ticket,
           { command: 'soundfest/buy_ticket' },
+          clientInfo
+        ),
+      ],
+      [generateBackButton()],
+    ]
+  };
+}
+
+export function generateClothesKeyboard(clientInfo: ClientInfo): Keyboard {
+  return {
+    one_time: false,
+    buttons: [
+      [
+        generateLinkButtonIfPossible(
+          captions.clothes_t_shirts,
+          links.clothes_t_shirts,
+          { command: 'clothes/t_shirts' },
+          clientInfo
+        ),
+      ],
+      [
+        generateLinkButtonIfPossible(
+          captions.clothes_sweatshirts,
+          links.clothes_sweatshirts,
+          { command: 'clothes/sweatshirts' },
           clientInfo
         ),
       ],
