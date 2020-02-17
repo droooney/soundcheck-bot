@@ -741,6 +741,7 @@ export enum Hashtag {
   CHART = '#chart@soundcheck_ural',
   DIGEST = '#audio@soundcheck_ural',
   NEW_RELEASE = '#new_release@soundcheck_ural',
+  ONE_RELEASE = '#one_release@soundcheck_ural',
   TEXT = '#text@soundcheck_ural',
   DRAWING = '#prize@soundcheck_ural',
   FOR_MUSICIANS = '#for_musicians@soundcheck_ural',

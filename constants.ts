@@ -848,6 +848,11 @@ ${user.sex === Sex.FEMALE ? 'рада' : 'рад'}, что у Soundcheck поя�
       `Привет, тут новые релизы в твой плейлист подъехали.`,
       `Псс… тут новые релизы подъехали.`,
     ],
+    [Hashtag.ONE_RELEASE]: [
+      `Хэй, а тут новый релиз подъехал прямо в твои сообщения.`,
+      `Нельзя так просто взять… и не заценить новый релиз от Soundcheck.`,
+      `А вот и новый релиз. Если тебе понравится трек, не забудь подписаться на авторов и поделиться с нами своим сердечком.`,
+    ],
     [Hashtag.DIGEST]: [
       `Привет, тут новый выпуск Soundcheck Music Digest подъехал.`,
       `Лучшие треки местных музыкантов в новом Soundcheck Music Digest.`,
@@ -1096,7 +1101,7 @@ export const subscriptionButtons = [
 export const subscriptionHashtags: Record<Subscription, Hashtag[]> = {
   [Subscription.POSTER]: [Hashtag.POSTER_WEEK, Hashtag.POSTER_DAY, Hashtag.CONCERT_ANNOUNCEMENT],
   [Subscription.PLAYLISTS]: [Hashtag.CHART, Hashtag.GROUP_PLAYLIST, Hashtag.THEMATIC_PLAYLIST],
-  [Subscription.RELEASES]: [Hashtag.NEW_RELEASE, Hashtag.DIGEST],
+  [Subscription.RELEASES]: [Hashtag.NEW_RELEASE, Hashtag.DIGEST, Hashtag.ONE_RELEASE],
   [Subscription.TEXT_MATERIALS]: [Hashtag.TEXT],
   [Subscription.AUDIO_MATERIALS]: [Hashtag.DIGEST],
   [Subscription.DRAWINGS]: [Hashtag.DRAWING],
