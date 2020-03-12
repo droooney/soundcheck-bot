@@ -219,65 +219,63 @@ export default async (ctx: Context) => {
     });
   } else if (body.type === 'wall_post_new') {
     const photoAttachment = (body.object.attachments || []).find(({ type }) => type === 'photo') as PhotoAttachment | undefined;
+    const postId = `${body.object.owner_id}_${body.object.id}`;
+    const hashtags = (photoAttachment ? photoAttachment.photo.text : body.object.text)
+      .split(/\s+/)
+      .slice(photoAttachment ? 0 : -10)
+      .map((hashtag) => hashtag.trim())
+      .filter(Boolean);
+    const hashtagFromCombination = _.find(hashtagCombinations, ([combination]) => (
+      combination.every((hashtag) => hashtags.includes(hashtag))
+    ));
+    const hashtag = hashtagFromCombination
+      ? hashtagFromCombination[1]
+      : _.find(Hashtag, (hashtag) => hashtags.includes(hashtag));
 
-    if (photoAttachment) {
-      const postId = `${body.object.owner_id}_${body.object.id}`;
-      const hashtags = photoAttachment.photo.text
-        .split(/\s+/)
-        .map((hashtag) => hashtag.trim())
-        .filter(Boolean);
-      const hashtagFromCombination = _.find(hashtagCombinations, ([combination]) => (
-        combination.every((hashtag) => hashtags.includes(hashtag))
+    const isNewReleasesPost = hashtags.includes(Hashtag.NEW_RELEASE);
+    const isDigestPost = hashtags.includes(Hashtag.DIGEST);
+
+    if (isDigestPost && !isNewReleasesPost) {
+      const latestDigestLink = await KeyValuePair.findOrAdd('latest_digest_link');
+
+      latestDigestLink.value = getPostLink(postId);
+
+      await latestDigestLink.save();
+    } else if (isNewReleasesPost) {
+      const latestReleasesLink = await KeyValuePair.findOrAdd('latest_releases_link');
+
+      latestReleasesLink.value = getPostLink(postId);
+
+      await latestReleasesLink.save();
+    }
+
+    if (hashtag) {
+      const subscriptionCaptions = captions.subscription_message[hashtag];
+      const subscriptions = _.filter(Subscription, (subscription) => (
+        subscriptionHashtags[subscription].some((hashtag) => hashtags.includes(hashtag))
       ));
-      const hashtag = hashtagFromCombination
-        ? hashtagFromCombination[1]
-        : _.find(Hashtag, (hashtag) => hashtags.includes(hashtag));
+      const caption = subscriptionCaptions[Math.floor(Math.random() * subscriptionCaptions.length)];
+      const messageOptions: SendVkMessageOptions = {
+        attachments: [{ type: 'wall', id: postId }],
+        randomId: 2n ** 30n + BigInt(body.object.id),
+      };
 
-      const isNewReleasesPost = hashtags.includes(Hashtag.NEW_RELEASE);
-      const isDigestPost = hashtags.includes(Hashtag.DIGEST);
+      if (typeof caption === 'string') {
+        await sendVkMessageToSubscribedUsers(subscriptions, caption, messageOptions);
 
-      if (isDigestPost && !isNewReleasesPost) {
-        const latestDigestLink = await KeyValuePair.findOrAdd('latest_digest_link');
-
-        latestDigestLink.value = getPostLink(postId);
-
-        await latestDigestLink.save();
-      } else if (isNewReleasesPost) {
-        const latestReleasesLink = await KeyValuePair.findOrAdd('latest_releases_link');
-
-        latestReleasesLink.value = getPostLink(postId);
-
-        await latestReleasesLink.save();
+        break eventHandler;
       }
 
-      if (hashtag) {
-        const subscriptionCaptions = captions.subscription_message[hashtag];
-        const subscriptions = _.filter(Subscription, (subscription) => (
-          subscriptionHashtags[subscription].some((hashtag) => hashtags.includes(hashtag))
-        ));
-        const caption = subscriptionCaptions[Math.floor(Math.random() * subscriptionCaptions.length)];
-        const messageOptions: SendVkMessageOptions = {
-          attachments: [{ type: 'wall', id: postId }],
-          randomId: 2n ** 30n + BigInt(body.object.id),
-        };
+      const subscribedUsers = (await User.findAll()).filter((user) => (
+        user.subscriptions.some((subscription) => subscriptions.includes(subscription))
+      ));
+      const messageGroups = _.groupBy(subscribedUsers, (user) => (caption as Exclude<typeof caption, string>)({ user }));
 
-        if (typeof caption === 'string') {
-          await sendVkMessageToSubscribedUsers(subscriptions, caption, messageOptions);
+      for (const message in messageGroups) {
+        if (messageGroups.hasOwnProperty(message)) {
+          const vkIds = messageGroups[message].map(({ vkId }) => vkId);
 
-          break eventHandler;
-        }
-
-        const subscribedUsers = (await User.findAll()).filter((user) => (
-          user.subscriptions.some((subscription) => subscriptions.includes(subscription))
-        ));
-        const messageGroups = _.groupBy(subscribedUsers, (user) => (caption as Exclude<typeof caption, string>)({ user }));
-
-        for (const message in messageGroups) {
-          if (messageGroups.hasOwnProperty(message)) {
-            const vkIds = messageGroups[message].map(({ vkId }) => vkId);
-
-            await sendVKMessages(vkIds, message, messageOptions);
-          }
+          await sendVKMessages(vkIds, message, messageOptions);
         }
       }
     }
