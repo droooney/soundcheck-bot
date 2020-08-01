@@ -125,13 +125,13 @@ export async function saveDailyStats() {
 }
 
 export async function rotateClicks() {
-  await Click.destroy({
-    where: {
-      createdAt: {
-        [Sequelize.Op.lt]: moment().subtract(6, 'months').startOf('day').toDate()
-      }
-    }
-  });
+  // await Click.destroy({
+  //   where: {
+  //     createdAt: {
+  //       [Sequelize.Op.lt]: moment().subtract(6, 'months').startOf('day').toDate()
+  //     }
+  //   }
+  // });
 }
 
 export async function rotateDbDumps() {
