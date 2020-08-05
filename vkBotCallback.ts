@@ -139,6 +139,10 @@ export default async (ctx: Context) => {
         break message;
       }
 
+      if (payload.command.startsWith('write_to_soundcheck')) {
+        await respond('Привет. В данный момент портал находится на каникулах. Публикация афиш и релизов приостановлена. Спасибо за твое обращение.');
+      }
+
       if (payload.command in actionMap) {
         const action = actionMap[payload.command] as ActionCallback<CommandAction<typeof payload.command>>;
 
